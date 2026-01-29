@@ -10,7 +10,7 @@ import itertools
 import ctypes
 import subprocess
 from ROOT import TLatex, TFile, TCanvas, TLegend, TH1D, TH1F, TGraphAsymmErrors # pylint: disable=import-error,no-name-in-module
-from ROOT import gROOT, gPad, gInterpreter, kBlack, kRed, kAzure, kOrange, kGreen, kFullCircle, kFullSquare, kOpenCircle # pylint: disable=import-error,no-name-in-module
+from ROOT import gROOT, gPad, gInterpreter, kBlack, kRed, kBlue, kMagenta, kAzure, kOrange, kGreen, kFullCircle, kFullSquare, kOpenCircle # pylint: disable=import-error,no-name-in-module
 script_dir = os.path.dirname(os.path.realpath(__file__))
 import ROOT
 ROOT.gErrorIgnoreLevel = ROOT.kError  # Only show errors and above
@@ -56,12 +56,17 @@ os.sys.path.append(os.path.join(script_dir, '..', 'utils'))
 from StyleFormatter import SetGlobalStyle, SetObjectStyle
 from fit_utils import RebinHisto
 from utils import logger, get_centrality_bins, get_vnfitter_results, get_refl_histo, get_particle_info
+from correlated_bkgs import get_corr_bkg
 
-def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
+def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMultitrial):
     #______________________________________________________
     # Read configuration file
     with open(fitConfigFileName, 'r', encoding='utf8') as ymlfitConfigFile:
         config = yaml.load(ymlfitConfigFile, yaml.FullLoader)
+
+    print(f"Loading cutset configuration from {cutsetFileName}")
+    with open(cutsetFileName, 'r', encoding='utf8') as ymlcutsetFile:
+        cfg_cutset = yaml.load(ymlcutsetFile, yaml.FullLoader)
 
     # Set outfile name
     outFileName = os.path.join(os.path.dirname(os.path.dirname(inFileName)),
@@ -178,11 +183,15 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
             SgnFunc.append(InvMassFitter.kGaus)
         elif sgnStr == 'k2Gaus':
             SgnFunc.append(InvMassFitter.k2Gaus)
+        elif sgnStr == 'kDoubleCBAsymm':
+            SgnFunc.append(InvMassFitter.kDoubleCBAsymm)
+        elif sgnStr == 'kDoubleCBSymm':
+            SgnFunc.append(InvMassFitter.kDoubleCBSymm)
         elif sgnStr == 'k2GausSigmaRatioPar':
             SgnFunc.append(InvMassFitter.k2GausSigmaRatioPar)
         else:
-            logger('Only kGaus, k2Gaus and k2GausSigmaRatioPar signal functions supported! Falling back to gaussian!', level='ERROR')
-            SgnFunc.append(InvMassFitter.kGaus)
+            print('ERROR: only kGaus, k2Gaus, kDoubleCBAsymm, kDoubleCBSymm and k2GausSigmaRatioPar signal functions supported! Exit!')
+            sys.exit()
 
     # Set particle configuration
     partTitle, massAxisTit, decay, massForFit, massSecPeak, secPeakLabel = get_particle_info(particleName)
@@ -195,7 +204,12 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
     hRefl, hMass, hMassForFit, hVn, hVnForFit, fTotFuncMass,\
     fTotFuncVn, fSgnFuncMass, fBkgFuncMass, fMassBkgRflFunc,\
     fMassSecPeakFunc, fBkgFuncVn, fVnSecPeakFunc, fVnCompFuncts,\
-    hMCSgn, hMCRefl = ([] for _ in range(16))
+    hMCSgn, hMCRefl, hPulls, hPullsPrefit = ([] for _ in range(18))
+
+    useTemplates = True if config.get('corr_bkgs') else False
+    fMassTemplFuncts = [[None]*nPtBins] if useTemplates else []
+    fMassTemplTotFuncts = [None]*nPtBins if useTemplates and (particleName == 'Dplus' or particleName == 'Ds') else []
+
     for iPt, (ptMin, ptMax) in enumerate(zip(ptmins, ptmaxs)):
         hMass.append(infile.Get(f'pt_{ptMin*10:.0f}_{ptMax*10:.0f}/hMassData'))
         hVn.append(infile.Get(f'pt_{ptMin*10:.0f}_{ptMax*10:.0f}/hVnVsMassData'))
@@ -216,7 +230,7 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
         hSigmaToFix = infileSigma.Get('hRawYieldsSigma')
         hSigmaToFix.SetDirectory(0)
         if hSigmaToFix.GetNbinsX() != nPtBins:
-            logger('DDifferent number of bins for this analysis and histo for fix sigma', level='WARNING')
+            logger('Different number of bins for this analysis and histo for fix sigma', level='WARNING')
         infileSigma.Close()
         # Load sigma of second gaussian
         infileSigma2 = TFile.Open(configfit['SigmaRatioFile'])
@@ -254,6 +268,7 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
     hRedChi2SBVnPrefit = TH1D('hRedChi2SBVnPrefit', f';{ptTit};#chi^{{2}}/#it{{ndf}}', nPtBins, ptBinsArr)
     hProbSBVnPrefit = TH1D('hProbSBVnPrefit', f';{ptTit};prob', nPtBins, ptBinsArr)
     hVnSimFit = TH1D('hVnSimFit',f';{ptTit};V2 (SP)', nPtBins, ptBinsArr)
+    hTemplOverSgn = TH1D('hTemplOverSgn', f';{ptTit};Templ / Sgn', nPtBins, ptBinsArr)
 
     SetObjectStyle(hSigmaSimFit, color=kBlack, markerstyle=kFullCircle)
     SetObjectStyle(hMeanSimFit, color=kBlack, markerstyle=kFullCircle)
@@ -280,18 +295,23 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
     gVnUnc.SetName('gVnUnc')
     gVnUncSecPeak = TGraphAsymmErrors(1)
     gVnUncSecPeak.SetName('gVnUncSecPeak')
-
+    # gVnTempls = [TGraphAsymmErrors(1) for _ in range(len(corrBkgsTemplates))] if useTemplates else []
+    # gVnTemplsUncs = [TGraphAsymmErrors(1) for _ in range(len(corrBkgsTemplates))] if useTemplates else []
     SetObjectStyle(gVnSimFit, color=kBlack, markerstyle=kFullCircle)
     SetObjectStyle(gVnSimFitSecPeak, color=kRed, markerstyle=kOpenCircle)
     SetObjectStyle(gVnUnc, color=kBlack, markerstyle=kFullCircle)
     SetObjectStyle(gVnUncSecPeak, color=kRed, markerstyle=kOpenCircle)
+    # for gvnTempl, gvnTemplUnc in zip(gVnTempls, gVnTemplsUncs):
+    #     SetObjectStyle(gvnTempl, color=kBlack, markerstyle=kFullCircle)
+    #     SetObjectStyle(gvnTemplUnc, color=kRed, markerstyle=kOpenCircle)
 
     # Create canvases
-    cSimFit = []
+    cSimFit, cInvMassPrefits = [], []
     for i in range(nPtBins):
         ptLow = ptmins[i]
         ptHigh = ptmaxs[i]
         cSimFit.append(TCanvas(f'cSimFit_pt{ptLow}_{ptHigh}', f'cSimFit_pt{ptLow}_{ptHigh}', 400, 900))
+        cInvMassPrefits.append(TCanvas(f'cMassPrefit_Pt{ptLow}_{ptHigh}', f'cMassPrefit_Pt{ptLow}_{ptHigh}', 400, 900))
         cSimFit[-1].Divide(1, 2)
     latex = TLatex()
     latex.SetNDC()
@@ -377,8 +397,84 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
             if configfit['InitBkg'][iPt] != []:
                 vnFitter[iPt].SetBkgPars(list(itertools.chain(*configfit['InitBkg'][iPt])))
 
+        # Check if to use correlated bkgs templates
+        cfg_corr_bkgs = config.get('corr_bkgs', None)
+        if cfg_corr_bkgs:
+            for cocktail in cfg_corr_bkgs['cocktails']:
+                if [ptMin, ptMax] in cocktail['pt_ranges']:
+                    useTemplatesPtBin = True
+                    cocktail_cfg = cocktail
+                    break
+
+        if useTemplatesPtBin:
+            pt_dir = f"pt_{ptMin*10:.0f}_{ptMax*10:.0f}"
+            corr_bkg_file = TFile.Open(f"{config['outdir']}/corrbkgs/templs_{pt_dir}.root", 'r')
+            sel_string = f"fMlScore0 < {cfg_cutset['ScoreBkg']['max'][iPt]} && fMlScore1 > {cfg_cutset['ScoreFD']['min'][iPt]}" \
+                         f" && fMlScore1 < {cfg_cutset['ScoreFD']['max'][iPt]}"
+            sgn_hist, sgn_frac = get_corr_bkg(corr_bkg_file, cfg_corr_bkgs['sgn_chn'], sel_string, pt_dir, "raw", "hist", verbose=True)
+            templates = {}
+            for chn in cocktail_cfg['channels']:
+                templates[chn] = {}
+                print(f"Getting correlated bkg template for channel {chn} .....")
+                histo, frac = get_corr_bkg(corr_bkg_file, chn, sel_string, pt_dir, "raw", "hist",
+                                                         config['Dmeson'], configfit.get('CorrectAbundances', False),
+                                                         verbose=True)
+                histo.SetDirectory(0)
+                templates[chn]['histo'] = histo
+                templates[chn]['frac'] = frac
+            
+            # Normalize fractions with respect to sgn chn
+            print(f"templates: {templates}")
+            for templ_name, templ_dict in templates.items():
+                templ_dict['frac'] /= sgn_frac
+
+            print(f"Using correlated bkgs templates for pt {ptMin} - {ptMax} GeV/c:")
+            print(f"templates: {templates}")
+
+            print(f"Setting template parameters .....")
+            vnFitter[iPt].SetTemplatesHisto([templ['histo'] for templ in templates.values()],
+                                            [templ['frac'] for templ in templates.values()],
+                                            cfg_corr_bkgs.get('anchor_mode', 2))
+            print("Histo templates set!")
+            corr_bkg_file.Close()
+
+        # Initial fit parameters
+        if configfit.get('InitFitPars') and configfit['InitFitPars'][iPt] != []:
+            initPars = configfit['InitFitPars'][iPt]
+        else:
+            initPars = []
+
+        # Retrieve histogram to fix signal
+        if configfit.get("FixSgnFromMC") or configfit.get("InitSgnFromMC"):
+            parFile = TFile.Open(configfit['FixSgnFromMC'], 'r')
+            sgnParsFromHisto = []
+            for key in parFile.GetListOfKeys():
+                # pick histograms containing pt-dependent parameters
+                if "hist_" in key.GetName():
+                    parHist = key.ReadObj()
+                    parValue = parHist.GetBinContent(iPt+1)
+                    parName = convert_flarefly_par_name(key.GetName().replace("hist_", ""))
+                    if configfit.get("FixSgnFromMC") and parName is not None:
+                        lowLim = 0 if parName not in ["Mean", "Sigma"] else parValue-(0.3*parValue)
+                        upLim = -1 if parName not in ["Mean", "Sigma"] else parValue+(0.3*parValue)
+                        sgnParsFromHisto.append([parName, parValue, lowLim, upLim])
+                    elif configfit.get("InitSgnFromMC") and parName is not None: 
+                        lowLim = 0 if parName not in ["Mean", "Sigma"] else parValue-(configfit["InitSgnFromMC"]*parValue)
+                        upLim = -1 if parName not in ["Mean", "Sigma"] else parValue+(configfit["InitSgnFromMC"]*parValue)
+                        sgnParsFromHisto.append([parName, parValue, lowLim, upLim])
+                    else:
+                        logger(f'Parameter name {parName} not recognized for signal fit. Skip it.', level='WARNING')
+            initPars.extend(sgnParsFromHisto)
+
+        print(f"\ninit pars: {initPars}\n")
         # Collect fit results
+
+        # if configfit.get('InitFitPars') and configfit['InitFitPars'][iPt] != []:
+            # vnFitter[iPt].SetInitPars(configfit['InitFitPars'][iPt])
+        vnFitter[iPt].SetInitPars(initPars)
+
         isfitGood = vnFitter[iPt].SimultaneousFit(False)
+        print(f"Fit status for pt {ptMin} - {ptMax} GeV/c: {isfitGood}")
 
         # Try recovering fit if it failed for disappearing second peak
         if not isfitGood and secPeak:
@@ -387,6 +483,7 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
             isfitGood = vnFitter[iPt].SimultaneousFit(False)
             secPeak = False
 
+        print(f"Fit status for pt {ptMin} - {ptMax} GeV/c after recovery: {isfitGood}")
         # Quality selection for systematics multitrial
         if isMultitrial:
             try:
@@ -405,9 +502,11 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
             except Exception as e:
                 print(f'[{inFileName}] Exception {e} caught during significance calculation. Rejecting trial.')
                 return
-
+        print("Fit completed.")
         if isfitGood:
-            vnResults = get_vnfitter_results(vnFitter[iPt], secPeak, useRefl, False)
+            print("Getting fit results ...")
+            vnResults = get_vnfitter_results(vnFitter[iPt], secPeak, useRefl, useTemplatesPtBin)
+            print(f"vnResults: {vnResults}")
             hSigmaSimFit.SetBinContent(iPt+1, vnResults['sigma'])
             hSigmaSimFit.SetBinError(iPt+1, vnResults['sigmaUnc'])
             hMeanSimFit.SetBinContent(iPt+1, vnResults['mean'])
@@ -428,18 +527,17 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
             gVnSimFit.SetPointError(iPt, (ptMax-ptMin)/2, (ptMax-ptMin)/2, vnResults['vnUnc'], vnResults['vnUnc'])
             gVnUnc.SetPoint(iPt, (ptMin+ptMax)/2, vnResults['vnUnc'])
             gVnUnc.SetPointError(iPt, (ptMax-ptMin)/2, (ptMax-ptMin)/2, 1.e-20, 1.e-20)
-            hRawYieldsSoverBSimFit.SetBinContent(iPt+1, vnResults['ry']/vnResults['bkg'])
+            hPulls.append(vnResults['pulls'])
 
-            for bkgHisto, bkgParVal, bkgParErr in zip(hVnBkgCoeffs[iPt], vnResults['bkgPars'], vnResults['bkgParsUncs']):
-                bkgHisto.SetBinContent(iPt+1, bkgParVal)
-                bkgHisto.SetBinError(iPt+1, bkgParErr)
-
+            print("Appending total mass function ...")
             fTotFuncMass.append(vnResults['fTotFuncMass'])
             fTotFuncVn.append(vnResults['fTotFuncVn'])
             fSgnFuncMass.append(vnResults['fSgnFuncMass'])
             fBkgFuncMass.append(vnResults['fBkgFuncMass'])
             fBkgFuncVn.append(vnResults['fBkgFuncVn'])
-            
+
+            print(f"fTotFuncMass: {fTotFuncMass}")
+            print(f"iPt: {iPt}")
             SetObjectStyle(fTotFuncMass[iPt], color=kAzure+4, linewidth=3)
             SetObjectStyle(fSgnFuncMass[iPt], fillcolor=kAzure+4, fillstyle=1000, linewidth=0, fillalpha=0.3)
             SetObjectStyle(fBkgFuncMass[iPt], color=kOrange+1, linestyle=9, linewidth=2)
@@ -463,7 +561,7 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
                 gVnUncSecPeak.SetPointError(iPt, (ptMax-ptMin)/2, (ptMax-ptMin)/2, 1.e-20, 1.e-20)
                 fMassSecPeakFunc.append(vnResults['fMassSecPeakFunc'])
                 fVnSecPeakFunc.append(vnResults['fVnSecPeakFunct'])
-                SetObjectStyle(fMassSecPeakFunc[-1], fillcolor=kGreen+1, fillstyle=1000, linewidth=0, fillalpha=0.3)
+                SetObjectStyle(fMassSecPeakFunc[-1], fillcolor=kGreen+1, fillstyle=1000, linewidth=0, fillalpha=0.3)   
 
             if useRefl:
                 hRefl.append(vnResults['fMassRflFunc'])
@@ -474,6 +572,7 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
             if configfit.get('DrawVnComps'):
                 fVnCompFuncts.append(vnResults['fVnCompsFuncts'])
 
+            print("Drawing fit results ...")
             # Draw upper pad
             cSimFit[iPt].cd(1)
             hMassForFit[iPt].GetYaxis().SetRangeUser(0.2*hMassForFit[iPt].GetMinimum(),
@@ -503,11 +602,35 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
                 latex.DrawLatex(0.18, 0.50,
                                 f'#sigma ({secPeakLabel}) = {vnResults["secPeakSigmaMass"]:.3f} #pm {vnResults["secPeakSigmaMassUnc"]:.3f} GeV/c^{2}')
 
+            print("Drawing templates ...")
+            if useTemplatesPtBin:
+                fMassTemplFuncts[iPt] = vnResults['fMassTemplFuncts']
+                fMassTemplTotFuncts[iPt] = vnResults['fMassTemplTotFunc']
+                # REVIEW: I would suggest to use the append here
+
+                print(f"Filling TemplOverSgn: {vnFitter[iPt].GetTemplOverSig()}")
+                hTemplOverSgn.SetBinContent(iPt+1, vnFitter[iPt].GetTemplOverSig())
+                print(f"vnResults['vnTemplates']: {vnResults['vnTemplates']}")
+                # for iTempl, (templVn, templVnUnc) in enumerate(zip(vnResults["vnTemplates"], vnResults["vnTemplatesUncs"])):
+                #     gVnTempls[iTempl].SetPoint(iPt, (ptMin+ptMax)/2, templVn)
+                #     gVnTempls[iTempl].SetPointError(iPt, (ptMax-ptMin)/2, (ptMax-ptMin)/2, 1.e-20, 1.e-20)
+                #     gVnTemplsUncs[iTempl].SetPoint(iPt, (ptMin+ptMax)/2, templVnUnc)
+                #     gVnTemplsUncs[iTempl].SetPointError(iPt, (ptMax-ptMin)/2, (ptMax-ptMin)/2, 1.e-20, 1.e-20)
+
+                SetObjectStyle(fMassTemplTotFuncts[iPt], color=kRed, linewidth=2)
+                fMassTemplTotFuncts[iPt].Draw('same')
+                cSimFit[iCanv].Modified()
+                cSimFit[iCanv].Update()
+                if configfit.get("DrawSingleTempls"):
+                    for iMassTemplFunct, massTemplFunct in enumerate(fMassTemplFuncts[iPt]):
+                        SetObjectStyle(massTemplFunct, color=kMagenta+2+iMassTemplFunct*2, linewidth=3)
+                        massTemplFunct.Draw('same')
+                        cSimFit[iCanv].Modified()
+                        cSimFit[iCanv].Update()
             # Draw lower pad
             cSimFit[iPt].cd(2)
             hVnForFit[iPt].GetXaxis().SetRangeUser(massMin, massMax)
             hVnForFit[iPt].GetYaxis().SetTitle(f'#it{{v}}_{{{harmonic}}} (SP)')
-            hVnForFit[iPt].GetYaxis().SetTitleOffset(1.4)
             hVnForFit[iPt].GetYaxis().SetDecimals()
             hVnForFit[iPt].GetYaxis().SetRangeUser(0.5*hVnForFit[iPt].GetMinimum(),
                                                     1.5*hVnForFit[iPt].GetMaximum())
@@ -523,6 +646,12 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
                 latex.DrawLatex(0.18, 0.75,
                                 f'#it{{v}}{harmonic}({secPeakLabel}) = {vnResults["vnSecPeak"]:.3f} #pm {vnResults["vnSecPeakUnc"]:.3f}')
             
+            if useTemplatesPtBin:
+                # for iVnTempl, (vnCoeff, vnCoeffUnc) in enumerate(zip(vnResults["vnTemplates"], vnResults["vnTemplatesUncs"])):
+                #     latex.DrawLatex(0.18, 0.70-iVnTempl*0.05,
+                #                 f'#it{{v}}{harmonic}(Templ{iVnTempl}) = {vnCoeff:.3f} #pm {vnCoeffUnc:.3f}')
+                    cSimFit[iCanv].Modified()
+                    cSimFit[iCanv].Update()
             if configfit.get('DrawVnComps'):
                 legVnCompn = TLegend(0.72, 0.15, 0.9, 0.35)
                 legVnCompn.SetBorderSize(0)
@@ -539,6 +668,10 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
                 if secPeak:
                     SetObjectStyle(fVnCompFuncts[iPt]['vnSecPeak'], fillcolor=kGreen+1, fillstyle=3254, linewidth=0)
                     legVnCompn.AddEntry(fVnCompFuncts[iPt]['vnSecPeak'], f"Second peak #it{{v}}{harmonic}", 'f')
+                if useTemplatesPtBin:
+                    for iTempl in range(len(fVnCompFuncts[iPt])-2-secPeak):
+                        SetObjectStyle(fVnCompFuncts[iPt][f'vnTempl{iTempl}'], color=kMagenta+2+iTempl*2, linewidth=3)
+                        legVnCompn.AddEntry(fVnCompFuncts[iPt][f'vnTempl{iTempl}'], f"Templ{iTempl} #it{{v}}{harmonic}", 'l')
                 for _, vnCompFunct in fVnCompFuncts[iPt].items():
                     vnCompFunct.Draw('same')
                     cSimFit[iCanv].Modified()
@@ -548,54 +681,36 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
             cSimFit[iCanv].Modified()
             cSimFit[iCanv].Update()
 
-            # Draw on full canvas
-            massPadIndex = iPt + 1 + nCols*(iPt // nCols)
-            vnPadIndex = massPadIndex + nCols
-            cSimFitFull.cd(massPadIndex)
-            hMassForFit[iPt].Draw('E')
-            fSgnFuncMass[iPt].Draw('fc same')
-            fBkgFuncMass[iPt].Draw('same')
-            fTotFuncMass[iPt].Draw('same')
-            if secPeak:
-                fMassSecPeakFunc[-1].Draw('fc same')
-                latex.DrawLatex(0.18, 0.55,
-                                f'#mu ({secPeakLabel}) = {vnResults["secPeakMeanMass"]:.3f} #pm {vnResults["secPeakMeanMassUnc"]:.3f} GeV/c^{2}')
-                latex.DrawLatex(0.18, 0.50,
-                                f'#sigma ({secPeakLabel}) = {vnResults["secPeakSigmaMass"]:.3f} #pm {vnResults["secPeakSigmaMassUnc"]:.3f} GeV/c^{2}')
-            if useRefl:
-                fMassBkgRflFunc[iPt].Draw('same')
-                hRefl[iPt].Draw('same')
-                latex.DrawLatex(0.18, 0.20, f'RoverS = {SoverR:.2f}')
-            latex.DrawLatex(0.18, 0.80, f'#mu = {vnResults["mean"]:.3f} #pm {vnResults["meanUnc"]:.3f} GeV/c^{2}')
-            latex.DrawLatex(0.18, 0.75, f'#sigma = {vnResults["sigma"]:.3f} #pm {vnResults["sigmaUnc"]:.3f} GeV/c^{2}')
-            latex.DrawLatex(0.18, 0.70, f'S = {vnResults["ry"]:.0f} #pm {vnResults["ryUnc"]:.0f}')
-            latex.DrawLatex(0.18, 0.65, f'S/B (3#sigma) = {vnResults["ry"]/vnResults["bkg"]:.2f}')
-            latex.DrawLatex(0.18, 0.60, f'Signif. (3#sigma) = {round(vnResults["signif"], 2)}')
-            cSimFitFull.cd(vnPadIndex)
-            hVnForFit[iPt].Draw('E')
-            fBkgFuncVn[iPt].Draw('same')
-            fTotFuncVn[iPt].Draw('same')
-            latex.DrawLatex(0.18, 0.18, f'#chi^{{2}}/ndf = {vnResults["chi2"]:.2f}')
-            latex.DrawLatex(0.18, 0.80,
-                            f'#it{{v}}_{{{harmonic}}}({partTitle}) = {vnResults["vn"]:.3f} #pm {vnResults["vnUnc"]:.3f}')
-            if secPeak:
-                latex.DrawLatex(0.18, 0.75,
-                                f'#it{{v}}_{{{harmonic}}}({secPeakLabel}) = {vnResults["vnSecPeak"]:.3f} #pm {vnResults["vnSecPeakUnc"]:.3f}')
-            cSimFitFull.Modified()
-            cSimFitFull.Update()
+        invMassPrefit = vnFitter[iPt].GetMassPrefitObject()
+        hPullsPrefit.append(invMassPrefit.GetPullDistribution())
+        histoMassPrefit = invMassPrefit.GetHistoClone()
+        totFuncMassPrefit = invMassPrefit.GetMassFunc()
+        bkgFuncMassPrefit = invMassPrefit.GetBackgroundRecalcFunc()
+        sgnFuncMassPrefit = invMassPrefit.GetSignalFunc()
+        cInvMassPrefits[iPt] = TCanvas(f"cMass_{ptMin*10:.0f}_{ptMax*10:.0f}", f"Mass Fit {ptMin}-{ptMax} GeV/c", 800, 600)
+        histoMassPrefit.SetStats(0)
+        histoMassPrefit.Draw("E")
+        bkgFuncMassPrefit.SetLineColor(kGreen+2)
+        bkgFuncMassPrefit.SetLineWidth(2)
+        bkgFuncMassPrefit.SetLineWidth(3)
+        bkgFuncMassPrefit.Draw("same")
+        sgnFuncMassPrefit.SetLineColor(kBlue)
+        sgnFuncMassPrefit.SetLineWidth(2)
+        sgnFuncMassPrefit.SetLineWidth(3)
+        sgnFuncMassPrefit.Draw("same")
+        if useTemplatesPtBin:
+            templFuncMassPrefit = invMassPrefit.GetTemplFunc()
+            print(f"invMassPrefit.GetTemplOverSig(): {invMassPrefit.GetTemplOverSig()}")
+            print(f"vnFitter[iPt].GetTemplOverSig(): {vnFitter[iPt].GetTemplOverSig()}")
+            templFuncMassPrefit.SetLineColor(kMagenta)
+            templFuncMassPrefit.SetLineWidth(2)
+            templFuncMassPrefit.SetLineWidth(3)
+            templFuncMassPrefit.Draw("same")
 
-        else:
-            fTotFuncMass.append(None)
-            fTotFuncVn.append(None)
-            fSgnFuncMass.append(None)
-            fBkgFuncMass.append(None)
-            fMassBkgRflFunc.append(None)
-            fMassSecPeakFunc.append(None)
-            fBkgFuncVn.append(None)
-            fVnSecPeakFunc.append(None)
-            fVnCompFuncts.append(None)
-
-            logger(f'Fit failed for pt bin {ptMin} - {ptMax} GeV/c. Skipping.', level='WARNING')
+        totFuncMassPrefit.SetLineColor(kRed)
+        totFuncMassPrefit.SetLineWidth(2)
+        totFuncMassPrefit.SetLineWidth(3)
+        totFuncMassPrefit.Draw("same")
 
     canvVn.cd().SetLogx()
     hframe = canvVn.DrawFrame(0.5, -0.5, gVnSimFit.GetXaxis().GetXmax()+0.5, 0.5,
@@ -646,6 +761,10 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
         hist.Write(f'hist_mass_pt{ptmins[ih]*10:.0f}_{ptmaxs[ih]*10:.0f}')
     for ih, hist in enumerate(hVn):
         hist.Write(f'hist_vn_pt{ptmins[ih]*10:.0f}_{ptmaxs[ih]*10:.0f}')
+    for hist in hPulls:
+        hist.Write('hist_pulls')
+    # for hist in hPullsPrefit:
+    #     hist.Write('hist_pulls_prefit')
     for ipt, (ptmin, ptmax) in enumerate(zip(ptmins, ptmaxs)):
         try:
             fTotFuncMass[ipt].Write(f'fTotFuncMass_pt{ptmin*10:.0f}_{ptmax*10:.0f}')
@@ -653,8 +772,6 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
             fSgnFuncMass[ipt].Write(f'fSgnFuncMass_pt{ptmin*10:.0f}_{ptmax*10:.0f}')
             fBkgFuncMass[ipt].Write(f'fBkgFuncMass_pt{ptmin*10:.0f}_{ptmax*10:.0f}')
             fBkgFuncVn[ipt].Write(f'fBkgFuncVn_pt{ptmin*10:.0f}_{ptmax*10:.0f}')
-            for bkgHisto in hVnBkgCoeffs[ipt]:
-                bkgHisto.Write(f'{bkgHisto.GetName()}_pt{ptmin*10:.0f}_{ptmax*10:.0f}')
         except:
             logger(f'Fit function for pt {ptmin*10:.0f}-{ptmax*10:.0f} not available. Skipping.', level='WARNING')
 
@@ -674,12 +791,17 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
     hRedChi2SBVnPrefit.Write()
     hProbSBVnPrefit.Write()
     hVnSimFit.Write()
+    hTemplOverSgn.Write()
 
     gVnSimFit.Write()
     gVnUnc.Write()
     if secPeak:
         gVnSimFitSecPeak.Write()
         gVnUncSecPeak.Write()
+    # if useTemplates:
+    #     for gvnTempl, gvnTemplUnc in zip(gVnTempls, gVnTemplsUncs):
+    #         gvnTempl.Write('gvnTempl')
+    #         gvnTemplUnc.Write('gvnTemplUnc')
 
     outFile.Close()
 
@@ -689,6 +811,7 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Arguments')
     parser.add_argument('fitConfigFileName', metavar='text', default='config_Ds_Fit.yml')
+    parser.add_argument('cutset_file_name', metavar='text', default='config_Ds_Fit.yml')
     parser.add_argument('inFileName', metavar='text', default='')
     parser.add_argument('--batch', '-b', help='suppress video output', action='store_true')
     parser.add_argument('--multitrial', help='suppress redundant prints', action='store_true')
@@ -696,6 +819,7 @@ if __name__ == "__main__":
 
     get_vn_vs_mass(
         args.fitConfigFileName,
+        args.cutset_file_name,
         args.inFileName,
         args.batch,
         args.multitrial

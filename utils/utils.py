@@ -203,18 +203,20 @@ def get_vnfitter_results(vnFitter, secPeak, useRefl, useTempl):
     vn_results['fBkgFuncMass'] = vnFitter.GetMassBkgFitFunc()
     vn_results['fBkgFuncVn'] = vnFitter.GetVnVsMassBkgFitFunc()
     vn_results['fSgnFuncMass'] = vnFitter.GetMassSignalFitFunc()
-
-    bkg_pars_with_uncs = vnFitter.GetBkgPars()
-    vn_results['bkgPars'] = bkg_pars_with_uncs[:len(bkg_pars_with_uncs)//2]
-    vn_results['bkgParsUncs'] = bkg_pars_with_uncs[len(bkg_pars_with_uncs)//2:]
-
+    vn_results['pulls'] = vnFitter.GetPullDistribution()
+    
     vn_results['fVnCompsFuncts'] = {}
-    vn_comps = vnFitter.GetVnCompsFuncts()
-    vn_results['fVnCompsFuncts']['vnSgn'] = vn_comps[0]
-    vn_results['fVnCompsFuncts']['vnBkg'] = vn_comps[1]
+    vnComps = vnFitter.GetVnCompsFuncts()
+    vn_results['fVnCompsFuncts']['vnSgn'] = vnComps[0]
+    vn_results['fVnCompsFuncts']['vnBkg'] = vnComps[1]
     if secPeak:
-        vn_results['fVnCompsFuncts']['vnSecPeak'] = vn_comps[2]
-
+        vn_results['fVnCompsFuncts']['vnSecPeak'] = vnComps[2]
+    vn_results['fMassTemplTotFunc'] = vnFitter.GetMassTemplFitFunc()
+    vn_results['fMassTemplFuncts'] = vnFitter.GetMassTemplFuncts()
+    if useTempl:
+        for iTempl in range(len(vn_results['fMassTemplFuncts'])):
+            vn_results['fVnCompsFuncts'][f'vnTempl{iTempl}'] = vnComps[2+secPeak+iTempl]
+    
     bkg, bkgUnc = ctypes.c_double(), ctypes.c_double()
     vnFitter.Background(3, bkg, bkgUnc)
     vn_results['bkg'] = bkg.value
@@ -232,7 +234,8 @@ def get_vnfitter_results(vnFitter, secPeak, useRefl, useTempl):
     massBkgPars = vnFitter.GetNMassBkgPars()
     massSecPeakPars = vnFitter.GetNMassSecPeakPars()
     massReflPars = vnFitter.GetNMassReflPars()
-    totMassPars = massSgnPars + massBkgPars + massSecPeakPars +  massReflPars
+    massTemplPars = len(vn_results['fMassTemplFuncts'])
+    totMassPars = massSgnPars + massBkgPars + massSecPeakPars +  massReflPars + massTemplPars
     vnSgnPars = vnFitter.GetNVnSgnPars()
     vnBkgPars = vnFitter.GetNVnBkgPars()
 

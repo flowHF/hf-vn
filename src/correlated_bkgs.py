@@ -21,7 +21,7 @@ from corr_bkgs_brs import final_states
 from ROOT import RooRealVar, RooDataSet, RooArgSet, RooKeysPdf, TFile, TH3F, TH1F
 
 def get_corr_bkg(corr_bkg_file, corr_bkg_chn, sel_string, pt_label, templ_type, output_type,
-                 get_smoothed=True, sgn_d_meson='Dplus', corr_abundances=False, **kwargs):
+                 corr_abundances=False, sgn_d_meson='Dplus', get_smoothed=True, **kwargs):
     '''
     Get correlated background template and normalization factor
     '''
@@ -50,6 +50,8 @@ def get_corr_bkg(corr_bkg_file, corr_bkg_chn, sel_string, pt_label, templ_type, 
     full_tree = corr_bkg_file.Get(f"{input_folder}/{templ_type}/treeFracMassScoresBkgFD")
     templ_rdataframe_full = ROOT.RDataFrame(full_tree)
     n_entries = templ_rdataframe_full.Filter(sel_string).Count().GetValue()
+    if kwargs.get("verbose", False):
+        logger(f"Number of entries after selection '{sel_string}': {n_entries} for correlated bkg source {corr_bkg_chn}", "INFO")
     corr_abundance = 1 if not corr_abundances else final_states[corr_bkg_chn].get(f"abundance_to_{sgn_d_meson}", 1)
     if corr_abundance != 1:
         if kwargs.get("verbose", False):

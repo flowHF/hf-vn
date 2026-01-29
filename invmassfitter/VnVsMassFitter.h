@@ -7,6 +7,7 @@
 #include <Riostream.h>
 #include <TVirtualPad.h>
 #include <TH1F.h>
+#include <TH1D.h>
 #include <TKDE.h>
 #include "Fit/Fitter.h"
 #include "Fit/Chi2FCN.h"
@@ -21,8 +22,9 @@ public:
   ~VnVsMassFitter();
 
   enum ETypeOfBkg{kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5, kPoln=6};
-  enum ETypeOfSgn{kGaus=0, k2Gaus=1};
+  enum ETypeOfSgn{kGaus=0, k2Gaus=1, kDoubleCBAsymm=3, kDoubleCBSymm=4};
   enum ETypeOfVnRfl{kSameVnSignal=0, kOppVnSignal=1, kSameVnBkg=2, kFreePar=3};
+  enum TemplAnchorMode{AnchorToFirst=1, AnchorToSgn=2};
 
   Bool_t SimultaneousFit(Bool_t drawFit=kTRUE);
   void DrawHere(TVirtualPad* c);
@@ -62,28 +64,109 @@ public:
     fMaxRefl=maxRange;
     fReflections=kTRUE;
   }
-  void SetKDETemplates(std::vector<TF1> templs, std::vector<int> templsnames,
-                       std::vector<Double_t> initweights, std::vector<Double_t> minweights, std::vector<Double_t> maxweights, 
-                       std::vector<Double_t> vninitweights, std::vector<Double_t> vnminweights, std::vector<Double_t> vnmaxweights, 
-                       Bool_t samevnofsignal) {
-    fKDETemplates=templs;
-    fMassInitWeights=initweights;
-    fMassWeightsLowerLims=minweights;
-    fMassWeightsUpperLims=maxweights;
-    fVnInitWeights=vninitweights;
-    fVnWeightsLowerLims=vnminweights;
-    fVnWeightsUpperLims=vnmaxweights;
-    for(int iFunc=0; iFunc<fKDETemplates.size(); iFunc++) {
-      fKDETemplates[iFunc].SetName(Form("TemplFlag_%i", templsnames[iFunc]));
-      fKDETemplates[iFunc].SetTitle(Form("TemplFlag_%i", templsnames[iFunc]));
+
+void SetTemplatesHisto(const std::vector<const TH1*>& histotempls,
+                       const std::vector<double>& relweights,
+                       int anchorMode)
+{
+    fTemplates = kTRUE;
+
+    if (histotempls.size() != relweights.size()) {
+      std::cerr << "ERROR: Number of templates and weights does not match!" << std::endl;
+      return;
     }
-    if(samevnofsignal) {printf("WARNING: Vn parameter of templates will be the same as the one of the signal! \n");}
-    fTemplSameVnOfSignal=samevnofsignal;
-    fTemplates=kTRUE;
-  }
-  void SetBkgPars(std::vector<Double_t> initpars) {
-    fMassBkgInitPars = initpars;
-  }
+
+    for (size_t i = 0; i < histotempls.size(); ++i) {
+      if (!histotempls[i]) {
+          cerr << "ERROR: histotempls[" << i << "] is nullptr!" << endl;
+      }
+    }
+
+    for (size_t i = 0; i < histotempls.size(); ++i) {
+      const TH1* hist = histotempls[i];
+      double weight = relweights[i];
+
+      // Match RooRealVar to histogram binning
+      Double_t xmin  = hist->GetXaxis()->GetXmin();
+      Double_t xmax  = hist->GetXaxis()->GetXmax();
+      Int_t    nbins = hist->GetNbinsX();
+      fMassVar.setRange("fullRange", xmin, xmax);
+      fMassVar.setBins(nbins);
+      fMassVar.setMin(xmin);
+      fMassVar.setMax(xmax);
+
+      // Clone + normalize
+      TH1D* histPdf = (TH1D*) hist->Clone(Form("histPdf_%zu", i));
+      histPdf->SetDirectory(nullptr);
+      histPdf->Scale(1.0 / histPdf->Integral("width"));
+
+      auto data_hist = new RooDataHist(Form("templ_%zu", i),
+      Form("templ_%zu", i),
+      RooArgList(fMassVar), histPdf);
+
+      auto pdf = new RooHistPdf(Form("CorrBkgsTempls_%zu", i),
+      Form("CorrBkgsTempls_%zu", i),
+      RooArgSet(fMassVar), *data_hist);
+      
+      // Store
+      fHistoTemplates.push_back(pdf);
+      fRelWeights.push_back(weight);
+    }
+
+    // Set anchoring mode
+    if (anchorMode == (int)TemplAnchorMode::AnchorToSgn) {
+      fAnchorTemplsMode = TemplAnchorMode::AnchorToSgn;
+    } else if (anchorMode == (int)TemplAnchorMode::AnchorToFirst) {
+      fAnchorTemplsMode = TemplAnchorMode::AnchorToFirst;
+    } else {
+      std::cerr << "WARNING: Unknown anchorMode, defaulting to AnchorToSgn" << std::endl;
+      fAnchorTemplsMode = TemplAnchorMode::AnchorToSgn;
+    }
+
+    std::cout << "WARNING: Vn parameter of templates will be the same as the signal!" << std::endl;
+
+    // Pass templates to fitter (adapt this if it expects RooHistPdf vector instead of TH1*)
+    fMassFitter->SetTemplatesHisto(histotempls, relweights, anchorMode);
+}
+
+
+  // void SetTemplatesHisto(const TH1* histotempl, int anchorMode) {
+  //   fTemplates = kTRUE;
+
+  //   // Match RooRealVar to histogram binning
+  //   Double_t xmin  = histotempl->GetXaxis()->GetXmin();
+  //   Double_t xmax  = histotempl->GetXaxis()->GetXmax();
+  //   Int_t    nbins = histotempl->GetNbinsX();
+  //   fMassVar.setRange("fullRange", xmin, xmax);
+  //   fMassVar.setBins(nbins);
+  //   fMassVar.setMin(xmin);
+  //   fMassVar.setMax(xmax);
+
+  //   // Normalized histogram (unit area, width-weighted)
+  //   TH1D* histPdf = (TH1D*) histotempl->Clone("histPdf_AnchoredToSgn");
+  //   // histPdf->Scale(1.0 / histPdf->Integral("width"));
+  //   RooDataHist* data_hist = new RooDataHist("templ_AnchoredToSgn", 
+  //                                            "templ_AnchoredToSgn",
+  //                                            RooArgList(fMassVar), histPdf);
+  //   RooHistPdf* pdf = new RooHistPdf("templ_AnchoredToSgn_pdf", 
+  //                                    "templ_AnchoredToSgn_pdf",
+  //                                    RooArgSet(fMassVar), *data_hist);
+
+  //   fHistoTemplates.push_back(pdf);
+  //   fHistoTemplates[0]->SetName("CorrBkgsTempls_AnchoredToSgn");
+  //   fHistoTemplates[0]->SetTitle("CorrBkgsTempls_AnchoredToSgn");
+
+  //   fAnchorTemplsMode = TemplAnchorMode::AnchorToSgn;
+  //   // fAnchorTemplsMode = TemplAnchorMode::AnchorToFirst;
+  //   // if (relweightsignal < 0.7) {
+  //   //   fRelWeights.push_back(relweightsignal);
+  //   //   fAnchorTemplsMode = TemplAnchorMode::AnchorToSgn;
+  //   // }
+  //   std::cout << "WARNING: Vn parameter of templates will be the same as the signal!" << std::endl;
+
+  //   // Pass templates to fitter
+  //   fMassFitter->SetTemplatesHisto(histotempl, anchorMode);
+  // }
   void SetInitialReflOverS(Double_t rovers){fRflOverSig=rovers;}
   void SetFixReflOverS(Double_t rovers){
     SetInitialReflOverS(rovers);
@@ -107,8 +190,19 @@ public:
     fDoSecondPeakVn=kFALSE;
     fFixVnSecPeakToSgn=kFALSE;
   }
+  void SetInitPars(std::vector<std::tuple<TString, double, double, double>>  initFuncPars) {
+    cout << "SetInitPars VnVsMassfitter" << endl;
+    fInitFuncPars = initFuncPars;
+  }
+  void ApplyInitPars();
   void SetHarmonic(Int_t harmonic=2) {fHarmonic=harmonic;}
   void SetSuppressOutput(Bool_t suppress) {fSuppressOutput=suppress;}
+
+  // Double-sided crystal ball functions
+  Double_t DoubleSidedCBAsymmForVn(double x, double mu, double width, double a1, double n1, double a2, double n2);
+  Double_t DoubleSidedCBSymmForVn(double x, double mu, double width, double a, double n);
+
+  TH1D *GetPullDistribution();
 
   //getters
   Double_t GetVn() const {return fVn;}
@@ -127,6 +221,7 @@ public:
   Int_t GetSBVnPrefitNDF() const {return fSBVnPrefitNDF;}
   Double_t GetSBVnPrefitReducedChiSquare() const {return fSBVnPrefitChiSquare/fSBVnPrefitNDF;}
   Double_t GetSBVnPrefitProbability() const {return fSBVnPrefitProb;}
+  InvMassFitter* GetMassPrefitObject() const {return fMassFitter;}
   Double_t GetMassPrefitChiSquare() const {return fMassPrefitChiSquare;}
   Int_t GetMassPrefitNDF() const {return fMassPrefitNDF;}
   Double_t GetMassPrefitReducedChiSquare() const {return fMassPrefitChiSquare/fMassPrefitNDF;}
@@ -191,6 +286,10 @@ public:
     if(fMassBkgFunc) return fMassBkgFunc;
     else return nullptr;
   }
+  TF1* GetMassTemplFitFunc() const {
+    if(fMassTemplFunc) return fMassTemplFunc;
+    else return nullptr;
+  }
   TF1* GetVnVsMassTotFitFunc() const {
     if(fVnTotFunc) return fVnTotFunc;
     else return nullptr;
@@ -216,39 +315,29 @@ public:
     else return nullptr;
   }
   std::vector<TF1*> GetMassTemplFuncts() const {
-    if(fTemplates) return fKDEMassTemplatesDraw;
+    if(fTemplates) return fMassTemplatesDraw;
     else return {};
+  }
+  double GetTemplOverSig() const {
+    if(fMassTemplFunc && fMassSgnFunc) return fMassTemplFunc->Integral(this->fMassMin, this->fMassMax) / fMassSgnFunc->Integral(this->fMassMin, this->fMassMax);
+    else return 0;
   }
   std::vector<TF1*> GetVnCompsFuncts() const {
     return fVnCompsDraw;
   }
-  std::vector<TF1> GetKDEs() const {
-    if(fTemplates) return fKDETemplates;
-    else return {};
-  }
   std::vector<double> GetVnTemplates() const {
+    std::cout << "The vn of templates is equal to the one of signal: " << GetVn() << std::endl;
     std::vector<double> vnPars;
-    if(!fTemplSameVnOfSignal) {
-      for(int iFunc=0; iFunc<fKDETemplates.size(); iFunc++) {
-        vnPars.push_back(fVnTotFunc->GetParameter(iFunc+fNParsMassSgn+fNParsMassBkg+fNParsSec+fNParsRfl+fNParsTempls+fNParsVnBkg+fNParsVnSgn+fNParsVnSecPeak+fNParsRfl));
-      }
-    } else {
-      for(int iFunc=0; iFunc<fKDETemplates.size(); iFunc++) {
-        vnPars.push_back(GetVn());
-      }
+    for(int iFunc=0; iFunc<fHistoTemplates.size(); iFunc++) {
+      vnPars.push_back(GetVn());
     }
     return vnPars;
   }
   std::vector<double> GetVnTemplatesUncertainties() const {
+    std::cout << "The vn of templates is equal to the one of signal: " << GetVn() << std::endl;
     std::vector<double> vnPars;
-    if(!fTemplSameVnOfSignal) {
-      for(int iFunc=0; iFunc<fKDETemplates.size(); iFunc++) {
-        vnPars.push_back(fVnTotFunc->GetParError(iFunc+fNParsMassSgn+fNParsMassBkg+fNParsSec+fNParsRfl+fNParsTempls+fNParsVnBkg+fNParsVnSgn+fNParsVnSecPeak+fNParsRfl));
-      }
-    } else {
-      for(int iFunc=0; iFunc<fKDETemplates.size(); iFunc++) {
-        vnPars.push_back(GetVnUncertainty());
-      }
+    for(int iFunc=0; iFunc<fHistoTemplates.size(); iFunc++) {
+      vnPars.push_back(GetVnUncertainty());
     }
     return vnPars;
   }
@@ -281,7 +370,6 @@ private:
   Double_t MassFunc(Double_t *m, Double_t *pars);
   Double_t vnBkgFunc(Double_t *m, Double_t *pars);
   Double_t vnFunc(Double_t *m, Double_t *pars);
-  Double_t VnTemplates(Double_t *m,Double_t *pars);
 
     ///private methods
   void DefineNumberOfParameters();
@@ -299,6 +387,7 @@ private:
   TF1*                  fMassFuncFromPrefit;            /// mass fit function (1st step, from prefit)
   TF1*                  fMassBkgFunc;                   /// mass bkg fit function (final, after simultaneus fit)
   TF1*                  fMassSgnFunc;                   /// mass signal fit function (final, after simultaneus fit)
+  TF1*                  fMassTemplFunc;                 /// mass signal fit function (final, after simultaneus fit)
   TF1*                  fMassTotFunc;                   /// mass fit function (final, after simultaneus fit)
   TF1*                  fVnBkgFuncSb;                   /// vn bkg fit function (1st step from SB prefit)
   TF1*                  fVnBkgFunc;                     /// vn bkg fit function (final, after simultaneus fit)
@@ -378,17 +467,17 @@ private:
   Int_t                 fHarmonic;                      /// harmonic number for drawing
   Bool_t                fTemplates;                     /// flag use/not use templates
   Int_t                 fNParsTempls;                   /// fit parameters to include templates
-  std::vector<TF1>      fKDETemplates;                  /// vector to store TKDE to be added as templates to the fit function 
   std::vector<TF1 *>    fVnCompsDraw;                   /// vector to store TKDE to be added as templates to the fit function 
-  std::vector<TF1 *>    fKDEMassTemplatesDraw;          /// vector to store TKDE to be added as templates to the fit function 
+  std::vector<TF1 *>    fMassTemplatesDraw;          /// vector to store TKDE to be added as templates to the fit function 
+  std::vector<Double_t> fRelWeights;                    /// relative weights of templates 
   std::vector<Double_t> fMassWeightsUpperLims;          /// upper limit of the templates' weights
   std::vector<Double_t> fMassWeightsLowerLims;          /// lower limit of the templates' weights
-  std::vector<Double_t> fVnWeightsUpperLims;            /// upper limit of the templates' weights
-  std::vector<Double_t> fVnWeightsLowerLims;            /// lower limit of the templates' weights
   std::vector<Double_t> fMassInitWeights;               /// init values of the templates' weights
-  std::vector<Double_t> fVnInitWeights;                 /// init values of the templates' weights
-  Bool_t                fTemplSameVnOfSignal;           /// init values of the templates' weights
-  Bool_t                fSuppressOutput;                /// flag to suppress outputs (for multitrial fits) 
+  TemplAnchorMode       fAnchorTemplsMode;              /// init values of the templates' weights
+  std::vector<std::tuple<TString, double, double, double>> fInitFuncPars;  /// init values of total fit function
+  RooRealVar fMassVar;
+  std::vector<RooHistPdf*> fHistoTemplates;             /// vector to store TKDE to be added as templates to the fit function
+  Bool_t                fSuppressOutput;                /// flag to suppress outputs (for multitrial fits)
 
     /// \cond CLASSDEF
   ClassDef(VnVsMassFitter,5);

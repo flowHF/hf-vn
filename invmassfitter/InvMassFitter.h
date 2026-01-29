@@ -2,15 +2,23 @@
 #define INVMASSFITTER_H
 
 #include <TNamed.h>
-#include "TF1.h"
-#include <TH1.h>
-#include <TH1F.h>
+
+#include <RooRealVar.h>
+#include <RooHistPdf.h>
+#include <RooDataHist.h>
+#include <RooHistPdf.h>
+#include <RooCrystalBall.h>
+
+
+class TF1;
+class TH1F;
 
 class InvMassFitter : public TNamed {
  public:
 
   enum ETypeOfBkg{ kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5, kPol3=6};
-  enum ETypeOfSgn{ kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 };
+  enum ETypeOfSgn{ kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2, kDoubleCBAsymm=3, kDoubleCBSymm=4};
+  enum TemplAnchorMode{AnchorToFirst=1, AnchorToSgn=2};
   InvMassFitter();
   InvMassFitter(const TH1F* histoToFit, Double_t minvalue, Double_t maxvalue, Int_t fittypeb=kExpo, Int_t fittypes=kGaus);
   ~InvMassFitter();
@@ -99,21 +107,101 @@ class InvMassFitter : public TNamed {
     fFixRflOverSig=kTRUE;
   }
   void SetSmoothReflectionTemplate(Bool_t opt){fSmoothRfl=opt;}
-  void SetTemplates(std::vector<TF1> templates, std::vector<Double_t> initweights,
-                    std::vector<Double_t> minweights, std::vector<Double_t> maxweights) {
-    fTemplatesFuncts=templates;
-    fMassInitWeights=initweights;
-    fMassWeightsLowerLims=minweights;
-    fMassWeightsUpperLims=maxweights;
-    fTemplates=kTRUE;
-  }
-  void SetSuppressOutput(Bool_t suppress){
-    if (suppress) {
-      fFitOption+=",Q";
-      fSuppressOutput = kTRUE;
-    }
-  }
 
+  void SetTemplatesHisto(std::vector<const TH1*> histotempl, 
+                         std::vector<double> relweights, 
+                         int anchorMode) {
+    fTemplates = kTRUE;
+
+    // Match RooRealVar to histogram binning from first template
+    const TH1* refHist = histotempl.at(0);
+    Int_t nbins = refHist->GetNbinsX();
+    fMassVar.setBins(nbins);
+    fMassVar.setRange("fullRange", fMinMass, fMaxMass);
+    fMassVar.setMin(fMinMass);
+    fMassVar.setMax(fMaxMass);
+
+    // Loop over input histograms
+    for (size_t i = 0; i < histotempl.size(); ++i) {
+        const TH1* h = histotempl[i];
+
+        // Clone to avoid ownership issues
+        TH1D* histPdf = (TH1D*) h->Clone(Form("histPdf_AnchoredToSgn_%zu", i));
+        histPdf->SetDirectory(nullptr); // don't let ROOT manage it
+
+        // // Normalize (if needed)
+        // if (histPdf->Integral("width") > 0)
+        //     histPdf->Scale(1.0 / histPdf->Integral("width"));
+
+        // Build RooDataHist + RooHistPdf
+        auto data_hist = new RooDataHist(Form("templ_AnchoredToSgn_%zu", i),
+                                         "templ_AnchoredToSgn",
+                                         RooArgList(fMassVar), histPdf);
+        auto pdf = new RooHistPdf(Form("templ_AnchoredToSgn_pdf_%zu", i),
+                                  "templ_AnchoredToSgn_pdf",
+                                  RooArgSet(fMassVar), *data_hist);
+
+        // Store them
+        fHistoTemplates.push_back(pdf);
+        fRelWeights.push_back(relweights.at(i));
+    }
+    if (anchorMode == (int)TemplAnchorMode::AnchorToSgn) {
+      fAnchorTemplsMode = TemplAnchorMode::AnchorToSgn;
+    } else if (anchorMode == (int)TemplAnchorMode::AnchorToFirst) {
+      fAnchorTemplsMode = TemplAnchorMode::AnchorToFirst;
+    } else {
+      std::cerr << "WARNING: Unknown anchorMode, defaulting to AnchorToSgn" << std::endl;
+      fAnchorTemplsMode = TemplAnchorMode::AnchorToSgn;
+    }
+}
+
+
+  // void SetTemplatesHisto(std::vector<const TH1*> histotempl, std::vector<double> relweights, int anchorMode) {
+  //   fTemplates = kTRUE;
+
+  //   // Match RooRealVar to histogram binning
+  //   // Double_t xmin  = fMinMass; // histotempl->GetXaxis()->GetXmin();
+  //   // Double_t xmax  = fMaxMass; // histotempl->GetXaxis()->GetXmax();
+  //   Int_t    nbins = histotempl->GetNbinsX();
+  //   fMassVar.setBins(nbins);
+  //   fMassVar.setRange("fullRange", fMinMass, fMaxMass);
+  //   fMassVar.setMin(fMinMass);
+  //   fMassVar.setMax(fMaxMass);
+  //   // fMassVar.setRange("fullRange", xmin, xmax);
+  //   // fMassVar.setMin(xmin);
+  //   // fMassVar.setMax(xmax);
+
+  //   // Normalized histogram (unit area, width-weighted)
+  //   TH1D* histPdf = (TH1D*) histotempl->Clone("histPdf_AnchoredToSgn");
+  //   // histPdf->Scale(1.0 / histPdf->Integral("width"));
+  //   RooDataHist* data_hist = new RooDataHist("templ_AnchoredToSgn", 
+  //                                            "templ_AnchoredToSgn",
+  //                                            RooArgList(fMassVar), histPdf);
+  //   RooHistPdf* pdf = new RooHistPdf("templ_AnchoredToSgn_pdf", 
+  //                                    "templ_AnchoredToSgn_pdf",
+  //                                    RooArgSet(fMassVar), *data_hist);
+
+  //   for (const auto& hist : histotempl) {
+  //       fHistoTemplates.push_back(pdf);
+  //       fHistoTemplates.SetName("CorrBkgsTempls_AnchoredToSgn");
+  //       fHistoTemplates.SetTitle("CorrBkgsTempls_AnchoredToSgn");
+  //       fRelWeights.push_back(relweight);
+  //   }
+
+  //   fAnchorTemplsMode = TemplAnchorMode::AnchorToSgn;
+  //   // fAnchorTemplsMode = TemplAnchorMode::AnchorToFirst;
+  //   // if (relweighttosignal < 0.7) {
+  //   //   fRelWeights.push_back(relweighttosignal);
+  //   // }
+  //   std::cout << "WARNING: Vn parameter of templates will be the same as the signal!" << std::endl;
+  // }
+  void SetSuppressOutput(Bool_t suppress){
+    if (suppress) fFitOption+="Q";
+  }
+  void SetInitPars(std::vector<std::tuple<TString, double, double, double>>  initFuncPars) {
+    cout << "SetInitPars VnVsMassfitter" << endl;
+    fInitFuncPars = initFuncPars;
+  }
   void IncludeSecondGausPeak(Double_t mass, Bool_t fixm, Double_t width, Bool_t fixw){
     fSecondPeak=kTRUE; fSecMass=mass; fSecWidth=width;
     fFixSecMass=fixm;  fFixSecWidth=fixw;
@@ -128,6 +216,18 @@ class InvMassFitter : public TNamed {
   Double_t GetMeanUncertainty() const {return fMassErr;}
   Double_t GetSigma()const {return fSigmaSgn;}
   Double_t GetSigmaUncertainty()const { return fSigmaSgnErr;}
+  Double_t GetTemplOverSig()const{
+    cout << "GetTemplOverSig" << endl;
+    cout << "fTemplates: " << fTemplates << endl;
+    if(fTemplates) {
+      cout << "fTemplFunc->Eval(1.85): " << fTemplFunc->Eval(1.85) << endl;
+      Double_t integral = fTemplFunc->Integral(this->fMinMass,this->fMaxMass);
+      cout << "integral: " << integral << endl;
+      cout << "fSigFunc: " << fSigFunc->Integral(this->fMinMass,this->fMaxMass) << endl;
+      return integral/fSigFunc->Integral(this->fMinMass,this->fMaxMass);
+    }
+    else return 0;
+  }
   Double_t GetReflOverSig()const{
     if(fRflFunc) return fRflFunc->GetParameter(0);
     else return 0;
@@ -143,6 +243,8 @@ class InvMassFitter : public TNamed {
   TF1*     GetMassFunc(){return fTotFunc;}
   TF1*     GetSecondPeakFunc(){return fSecFunc;}
   TF1*     GetReflFunc(){return fRflFunc;}
+  TF1*     GetTemplFunc(){return fTemplFunc;}
+  TH1D*    GetPullDistribution();
   Double_t GetChiSquare() const{
     if(fTotFunc) return fTotFunc->GetChisquare();
     else return -1;
@@ -159,6 +261,8 @@ class InvMassFitter : public TNamed {
     TH1F* hout=(TH1F*)fHistoInvMass->Clone(Form("%scloned",fHistoInvMass->GetName()));
     return hout;
   }
+  Double_t DoubleSidedCBAsymm(double x, double mu, double width, double a1, double n1, double a2, double n2);
+  Double_t DoubleSidedCBSymm(double x, double mu, double width, double a, double n);
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t nSigma=3., Int_t option=0, Int_t pdgCode=0) const;
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t minMass, Double_t maxMass, Int_t option=0) const;
   Int_t    MassFitter(Bool_t draw=kTRUE);
@@ -264,9 +368,14 @@ class InvMassFitter : public TNamed {
   TF1*                  fTemplFunc;            /// fit function for templates
   Bool_t                fTemplates;            /// flag use/not use templates fit functions
   Int_t                 fNParsTempls;          /// fit parameters in templates fit function
-  std::vector<Double_t> fMassWeightsUpperLims;     /// upper limit of the templates' weights
-  std::vector<Double_t> fMassWeightsLowerLims;     /// lower limit of the templates' weights
-  std::vector<Double_t> fMassInitWeights;          /// init value of the templates' weights
+  std::vector<Double_t> fMassWeightsUpperLims; /// upper limit of the templates' weights
+  std::vector<Double_t> fMassWeightsLowerLims; /// lower limit of the templates' weights
+  std::vector<Double_t> fMassInitWeights;      /// init value of the templates' weights
+  TemplAnchorMode       fAnchorTemplsMode;     /// anchor mode of the templates
+  std::vector<Double_t> fRelWeights;           /// relative weights of templates
+  std::vector<std::tuple<TString, double, double, double>> fInitFuncPars;   /// Init pars for fit function
+  RooRealVar fMassVar;
+  std::vector<RooHistPdf*> fHistoTemplates;  /// vector to store RooHistPdf to be added as templates to the fit function
   Bool_t                fSuppressOutput;           /// flag to suppress outputs (for multitrial fits) 
 
   /// \cond CLASSIMP     
