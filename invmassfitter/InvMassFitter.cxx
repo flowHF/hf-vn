@@ -22,6 +22,7 @@
 #include <TStyle.h>
 #include <TPaveText.h>
 #include <TFitResult.h>
+#include "TMinuit.h"
 
 #include "InvMassFitter.h"
 
@@ -108,7 +109,8 @@ InvMassFitter::InvMassFitter() :
   fSecFunc(0x0),
   fTotFunc(0x0),
   fAcceptValidFit(kFALSE),
-  fMassVar("mass", "Mass", this->fMinMass, this->fMaxMass) 
+  fHistoPrefitSgn(0x0),
+  fPrefitFunc(0x0)
 {
   /// default constructor
 }
@@ -176,7 +178,8 @@ InvMassFitter::InvMassFitter(const TH1F *histoToFit, Double_t minvalue, Double_t
   fSecFunc(0x0),
   fTotFunc(0x0),
   fAcceptValidFit(kFALSE),
-  fMassVar("mass", "Mass", this->fMinMass, this->fMaxMass) 
+  fHistoPrefitSgn(0x0),
+  fPrefitFunc(0x0)
 {
   /// standard constructor
   fHistoInvMass=(TH1F*)histoToFit->Clone("fHistoInvMass");
@@ -198,6 +201,7 @@ InvMassFitter::~InvMassFitter() {
   delete fSecFunc;
   delete fTotFunc;
   delete fHistoTemplRfl;
+  delete fHistoPrefitSgn;
 
 }
 //__________________________________________________________________________
@@ -272,8 +276,33 @@ void InvMassFitter::SetNumberOfParams(){
 
   if(fSecondPeak) fNParsSec=3;
   else fNParsSec=0;
-
 }
+
+//__________________________________________________________________________
+Int_t InvMassFitter::PrefitSignal(Bool_t draw){
+  /// Main function to fit the invariant mass distribution
+  /// returns 0 if the fit fails
+  /// returns 1 if the fit succeeds
+  /// returns 2 if there is no signal and the fit is performed with only background
+  TVirtualFitter::SetDefaultFitter("Minuit");
+
+  Double_t integralHisto=fHistoPrefitSgn->Integral(fHistoPrefitSgn->FindBin(fMinMass),fHistoPrefitSgn->FindBin(fMaxMass),"width");
+
+  Int_t status=-1;
+  Bool_t isFitValid=kFALSE;
+  printf("\n--- Prefitting signal from MC ---\n");
+  fPrefitFunc = CreateSignalFitFunction("fsigprefit",integralHisto, 1.6, 2.3);
+  // This tells Minuit to use Strategy 2
+  Double_t arglist[10];
+  arglist[0] = 2; 
+  TVirtualFitter *fitter = TVirtualFitter::GetFitter();
+  if (fitter) fitter->ExecuteCommand("SET STR", arglist, 1);
+  TFitResultPtr resultptr=fHistoPrefitSgn->Fit("fsigprefit",Form("R,S,%s,+,0",fFitOption.Data()));
+  isFitValid = resultptr->IsValid();
+
+  return isFitValid;
+}
+
 //__________________________________________________________________________
 Int_t InvMassFitter::MassFitter(Bool_t draw){
   /// Main function to fit the invariant mass distribution
@@ -333,7 +362,7 @@ Int_t InvMassFitter::MassFitter(Bool_t draw){
     for(Int_t ipar=0; ipar<fNParsBkg; ipar++) fBkgFuncRefit->SetParameter(ipar,fBkgFunc->GetParameter(ipar));
   }
   fBkgFuncRefit->SetLineColor(2);
-  fSigFunc = CreateSignalFitFunction("fsigfit",estimSignal);
+  fSigFunc = CreateSignalFitFunction("fsigfit",estimSignal, fMinMass, fMaxMass);
   if(fSecondPeak){
     printf("   ---> Final fit includes a second inv. mass peak\n");
     Double_t estimSec=CheckForSignal(fSecMass,fSecWidth);
@@ -351,24 +380,6 @@ Int_t InvMassFitter::MassFitter(Bool_t draw){
   }
   fTotFunc = CreateTotalFitFunction("funcmass");
 
-  if (fInitFuncPars.size()>0) {
-    for (int iInitPar=0; iInitPar<fInitFuncPars.size(); iInitPar++) {
-      int parIdx = fTotFunc->GetParNumber(std::get<0>(fInitFuncPars[iInitPar]));
-      // else it is a parameter of the vn function
-      if (parIdx < fNParsBkg+fNParsRfl+fNParsTempls+fNParsSec+fNParsSig) {
-        if (std::get<2>(fInitFuncPars[iInitPar]) >= std::get<3>(fInitFuncPars[iInitPar])) {
-          cout << "[InvMassFitter] Fixing parameter " << std::get<0>(fInitFuncPars[iInitPar]) << " at function index " << parIdx << " to " << std::get<1>(fInitFuncPars[iInitPar]);
-          cout << " with limits " << std::get<2>(fInitFuncPars[iInitPar]) << " and " << std::get<3>(fInitFuncPars[iInitPar]) << endl;
-          fTotFunc->FixParameter(parIdx, std::get<1>(fInitFuncPars[iInitPar]));
-        } else {
-          cout << "[InvMassFitter] Setting parameter " << std::get<0>(fInitFuncPars[iInitPar]) << " at function index " << parIdx << " to " << std::get<1>(fInitFuncPars[iInitPar]);
-          cout << " with limits " << std::get<2>(fInitFuncPars[iInitPar]) << " and " << std::get<3>(fInitFuncPars[iInitPar]) << endl;
-          fTotFunc->SetParameter(parIdx, std::get<1>(fInitFuncPars[iInitPar]));
-          fTotFunc->SetParLimits(parIdx, std::get<2>(fInitFuncPars[iInitPar]), std::get<3>(fInitFuncPars[iInitPar]));
-        }
-      }
-    }
-  }
 
   if(doFinalFit){
     printf("\n--- Final fit with signal+background on the full range ---\n");
@@ -551,22 +562,17 @@ TF1* InvMassFitter::CreateReflectionFunction(TString fname){
 //______________________________________________________________________________
 TF1* InvMassFitter::CreateTemplatesFunction(TString fname){
   /// Creates a function for templates in the D+ inv. mass distribution
-  cout << "CIAO1" << endl;
   int templPars = 0;
   if (fAnchorTemplsMode == TemplAnchorMode::AnchorToSgn) {
     templPars = fNParsTempls+1;
   } else {
     templPars = fNParsTempls;
   }
-  cout << "CIAO2" << endl;
   TF1* functempl =  new TF1(fname.Data(),this,&InvMassFitter::FitFunction4Templ,fMinMass,fMaxMass,templPars,"InvMassFitter","FitFunction4Templ");
-  cout << "CIAO3" << endl;
   if(fAnchorTemplsMode != TemplAnchorMode::AnchorToSgn) {
-    cout << "CIAO4" << endl;
     if(fNParsTempls == 1 && fHistoTemplates.size()>1) {
       functempl->SetParName(0, "w_templates_anchored");
       if(this->fMassWeightsLowerLims[0] >= this->fMassWeightsUpperLims[0]) {
-        cout << "Fixing template parameter" << endl;
         functempl->FixParameter(0,this->fMassInitWeights[0]);
       } else {
         functempl->SetParameter(0,this->fMassInitWeights[0]);
@@ -574,12 +580,9 @@ TF1* InvMassFitter::CreateTemplatesFunction(TString fname){
       }
     } 
     else {
-      cout << "CIAO5" << endl;
       for(int iPar=0; iPar<functempl->GetNpar(); iPar++) {
-        cout << "CIAO6" << endl;
         functempl->SetParName(iPar, Form("w_%s",this->fTemplatesFuncts[iPar].GetName()));
         if(this->fMassWeightsLowerLims[iPar] >= this->fMassWeightsUpperLims[iPar]) {
-          cout << "Fixing template parameter" << endl;
           functempl->FixParameter(iPar,this->fMassInitWeights[iPar]);
         } else {
           cout << "Setting template parameter to " << this->fMassInitWeights[iPar];
@@ -590,7 +593,6 @@ TF1* InvMassFitter::CreateTemplatesFunction(TString fname){
       }
     }
   }
-  cout << "CIAO7" << endl;
   return functempl;
 }
 //______________________________________________________________________________
@@ -612,12 +614,12 @@ TF1* InvMassFitter::CreateBackgroundPlusReflectionFunction(TString fname){
   return fbr;
 }
 //______________________________________________________________________________
-TF1* InvMassFitter::CreateSignalFitFunction(TString fname, Double_t integsig){
+TF1* InvMassFitter::CreateSignalFitFunction(TString fname, Double_t integsig, Double_t minmass, Double_t maxmass){
   /// Creates the fit function for the signal peak
   ///
 
   SetNumberOfParams();
-  TF1* funcsig =  new TF1(fname.Data(),this,&InvMassFitter::FitFunction4Sgn,fMinMass,fMaxMass,fNParsSig,"InvMassFitter","FitFunction4Sgn");
+  TF1* funcsig =  new TF1(fname.Data(),this,&InvMassFitter::FitFunction4Sgn,minmass,maxmass,fNParsSig,"InvMassFitter","FitFunction4Sgn");
   if(fTypeOfFit4Sgn==kGaus){
     funcsig->SetParameter(0,integsig);
     if(fFixedRawYield>-0.1) funcsig->FixParameter(0,fFixedRawYield);
@@ -665,7 +667,6 @@ TF1* InvMassFitter::CreateSignalFitFunction(TString fname, Double_t integsig){
     else funcsig->SetParLimits(4,0.,20.);
     funcsig->SetParNames("SgnInt","Mean","Sigma1","Frac","RatioSigma12");
   }
-  // used for v2 fit but not for mc fit
   if (fTypeOfFit4Sgn==kDoubleCBSymm || fTypeOfFit4Sgn==kDoubleCBAsymm) {
     cout << "Setting par name for DoubleCBSymm" << endl;
     funcsig->SetParameter(0,integsig);
@@ -677,8 +678,34 @@ TF1* InvMassFitter::CreateSignalFitFunction(TString fname, Double_t integsig){
     funcsig->SetParLimits(2,0.004,0.05);
     if (fTypeOfFit4Sgn==kDoubleCBSymm) {
       funcsig->SetParNames("SgnInt","Mean","Sigma","Alpha","N");
+      funcsig->SetParameter(3,2.5);
+      funcsig->SetParameter(4,1.1);
+      funcsig->SetParLimits(3, 0.1, 10.0);
+      // N must be > 1.0. Setting it to 1.1 as a lower bound prevents division by zero
+      funcsig->SetParLimits(4, 1.1, 10.0);
+      if (fPrefitFunc) {
+        funcsig->FixParameter(3,fPrefitFunc->GetParameter(3));
+        funcsig->FixParameter(4,fPrefitFunc->GetParameter(4));
+      }
     } else {
       funcsig->SetParNames("SgnInt","Mean","Sigma","Alpha1","N1","Alpha2","N2");
+      funcsig->SetParameter(3, 1.5); // Alpha1
+      funcsig->SetParameter(4, 2.0); // N1
+      funcsig->SetParameter(5, 1.5); // Alpha2
+      funcsig->SetParameter(6, 2.0); // N2
+
+      funcsig->SetParLimits(3, 0.1, 10.0); 
+      funcsig->SetParLimits(5, 0.1, 10.0);
+      // N must be > 1.0. Setting it to 1.1 as a lower bound prevents division by zero
+      funcsig->SetParLimits(4, 1.1, 10.0);
+      funcsig->SetParLimits(6, 1.1, 10.0);
+
+      if (fPrefitFunc) {
+        funcsig->FixParameter(3,fPrefitFunc->GetParameter(3));
+        funcsig->FixParameter(4,fPrefitFunc->GetParameter(4));
+        funcsig->FixParameter(5,fPrefitFunc->GetParameter(5));
+        funcsig->FixParameter(6,fPrefitFunc->GetParameter(6));
+      }
     }
   }
   return funcsig;
@@ -738,56 +765,70 @@ TF1* InvMassFitter::CreateTotalFitFunction(TString fname){
 }
 
 //__________________________________________________________________________
-Double_t InvMassFitter::DoubleSidedCBAsymm(double x, double mu, double width, double a1, double n1, double a2, double n2) {
-    // Define the variable for the PDF (e.g., mass)
-    RooRealVar mass("mass", "Mass", this->fMinMass, this->fMaxMass);
-    mass.setVal(x);  // Set the mass value to x
+Double_t InvMassFitter::DoubleSidedCBAsymm(double x, double mu, double sigma, double a1, double n1, double a2, double n2) {
+  double t = (x - mu) / sigma;
+  double absAlphaL = std::abs(a1);
+  double absAlphaR = std::abs(a2);
 
-    // Define the parameters for the Crystal Ball PDF
-    RooRealVar mean("mean", "Mean", mu);  // Set mean to mu
-    RooRealVar sigma("sigma", "Sigma", width, 0.001, 5.0);  // Set sigma to width
-    RooRealVar alphaLeft("alphaLeft", "AlphaLeft", a1, 0.0001, 10);  // Left tail parameter
-    RooRealVar nLeft("nLeft", "nLeft", n1, 0.0001, 10);  // Left tail exponent
-    RooRealVar alphaRight("alphaRight", "AlphaRight", a2, 0.0001, 10);  // Right tail parameter
-    RooRealVar nRight("nRight", "nRight", n2, 0.0001, 10);  // Right tail exponent
+  // 1. Calculate the raw (unnormalized) value
+  double val = 0;
+  if (t < -absAlphaL) {
+      double a = std::pow(n1 / absAlphaL, n1) * std::exp(-0.5 * absAlphaL * absAlphaL);
+      double b = n1 / absAlphaL - absAlphaL;
+      val = a / std::pow(b - t, n1);
+  } 
+  else if (t > absAlphaR) {
+      double a = std::pow(n2 / absAlphaR, n2) * std::exp(-0.5 * absAlphaR * absAlphaR);
+      double b = n2 / absAlphaR - absAlphaR;
+      val = a / std::pow(b + t, n2);
+  } 
+  else {
+      val = std::exp(-0.5 * t * t);
+  }
 
-    // Create the RooCrystalBall PDF
-    RooCrystalBall cb("cb", "Double-Sided Crystal Ball PDF", mass, mean, sigma, alphaLeft, nLeft, alphaRight, nRight);
+  // 2. Calculate the Normalization Factor (The total integral)
+  // Gaussian core integral: sigma * sqrt(pi/2) * [erf(aL/sqrt2) + erf(aR/sqrt2)]
+  double term_gauss = sigma * std::sqrt(M_PI / 2.0) * (std::erf(absAlphaL / std::sqrt(2.0)) + std::erf(absAlphaR / std::sqrt(2.0)));
 
-    // Evaluate the PDF at the specified mass value and return the result
-    double pdf_value = cb.getVal(RooArgSet(mass));
-    
-    // // Print the evaluated PDF value for debugging purposes
-    // std::cout << "[DoubleSidedCBAsymm] PDF value at mass = " << x << " with mean = " << mu << " and width = " << width 
-    //           << " is: " << pdf_value << std::endl;
+  // Left tail integral: sigma * (n1/|a1|) * exp(-0.5*a1^2) / (n1 - 1)
+  double term_left = sigma * (n1 / absAlphaL) * (1.0 / (n1 - 1.0)) * std::exp(-0.5 * absAlphaL * absAlphaL);
 
-    return pdf_value;
+  // Right tail integral: sigma * (n2/|a2|) * exp(-0.5*a2^2) / (n2 - 1)
+  double term_right = sigma * (n2 / absAlphaR) * (1.0 / (n2 - 1.0)) * std::exp(-0.5 * absAlphaR * absAlphaR);
+
+  // std::cout << "term_gauss: " << term_gauss << ", term_left: " << term_left << ", term_right: " << term_right << ", val: " << val << std::endl;
+  return val / (term_gauss + term_left + term_right);
 }
 
 //__________________________________________________________________________
-Double_t InvMassFitter::DoubleSidedCBSymm(double x, double mu, double width, double a, double n) {
-    // Define the variable for the PDF (e.g., mass)
-    RooRealVar mass("mass", "Mass", this->fMinMass, this->fMaxMass);
-    mass.setVal(x);  // Set the mass value to x
+Double_t InvMassFitter::DoubleSidedCBSymm(double x, double mu, double sigma, double a, double n) {
+  // t is the distance from the mean in units of sigma
+  double t = (x - mu) / sigma;
+  double absAlpha = std::abs(a);
 
-    // Define the parameters for the Crystal Ball PDF
-    RooRealVar mean("mean", "Mean", mu);  // Set mean to mu
-    RooRealVar sigma("sigma", "Sigma", width, 0.001, 5.0);  // Set sigma to width
-    RooRealVar alphaLeftRight("alphaLeftRight", "AlphaLeftRight", a, 0.0001, 10);  // Left tail parameter
-    RooRealVar nLeftRight("nLeftRight", "nLeftRight", n, 0.0001, 10);  // Left tail exponent
+  // 1. Calculate the raw (unnormalized) value
+  double val = 0;
+  if (std::abs(t) <= absAlpha) {
+      // Gaussian Core
+      val = std::exp(-0.5 * t * t);
+  } else {
+      // Power-law Tails (Symmetric)
+      double a = std::pow(n / absAlpha, n) * std::exp(-0.5 * absAlpha * absAlpha);
+      double b = n / absAlpha - absAlpha;
+      val = a / std::pow(b + std::abs(t), n);
+  }
 
-    // Create the RooCrystalBall PDF
-    RooCrystalBall cb("cb", "Double-Sided Crystal Ball PDF", mass, mean, sigma, alphaLeftRight, nLeftRight, alphaLeftRight, nLeftRight);
+  // 2. Analytical Normalization Factor
+  // Gaussian core integral: sigma * sqrt(pi/2) * 2 * erf(alpha/sqrt2)
+  double term_gauss = sigma * std::sqrt(M_PI / 2.0) * (2.0 * std::erf(absAlpha / std::sqrt(2.0)));
 
-    // Evaluate the PDF at the specified mass value and return the result
-    double pdf_value = cb.getVal(RooArgSet(mass));
-    
-    // // Print the evaluated PDF value for debugging purposes
-    // std::cout << "[DoubleSidedCBSymm] PDF value at mass = " << x << " with mean = " << mu << " and width = " << width 
-    //           << " is: " << pdf_value << std::endl;
+  // Tails integral: 2 * [sigma * (n/|alpha|) * exp(-0.5*alpha^2) / (n - 1)]
+  // We multiply by 2 because the left and right tails are identical
+  double term_tails = 2.0 * sigma * (n / absAlpha) * (1.0 / (n - 1.0)) * std::exp(-0.5 * absAlpha * absAlpha);
 
-    return pdf_value;
+  return val / (term_gauss + term_tails);
 }
+
 //________________________________________________________________
 TH1D* InvMassFitter::GetPullDistribution(){
   if(!fTotFunc) {
@@ -1019,19 +1060,18 @@ Double_t InvMassFitter::FitFunction4SecPeak (Double_t *x, Double_t *par){
 }
 //_________________________________________________________________________
 Double_t InvMassFitter::FitFunction4Templ(Double_t *x, Double_t *par){
-  this->fMassVar.setVal(x[0]);  // Set the mass value to x
   Double_t totalTemplates{0.};
   switch(fAnchorTemplsMode) {
     case TemplAnchorMode::AnchorToFirst:
       // cout << "[InvMassFitter] FitFunction4Mass: fAnchorTemplsMode::AnchorToFirst" << endl;
       for (Int_t iTempl=0; iTempl<fHistoTemplates.size(); iTempl++) {
-        totalTemplates += par[0]*fRelWeights[iTempl]*fHistoTemplates[iTempl]->getVal(RooArgSet(this->fMassVar));
+        totalTemplates += par[0]*fRelWeights[iTempl]*fHistoTemplates[iTempl]->Interpolate(x[0]);
       }
       break;
     case TemplAnchorMode::AnchorToSgn:
       // cout << "[InvMassFitter] FitFunction4Mass: fAnchorTemplsMode::AnchorToSgn" << endl;
       for (Int_t iTempl=0; iTempl<fHistoTemplates.size(); iTempl++) {
-        totalTemplates += par[0]*fRelWeights[iTempl]*fHistoTemplates[iTempl]->getVal(RooArgSet(this->fMassVar));
+        totalTemplates += par[0]*fRelWeights[iTempl]*fHistoTemplates[iTempl]->Interpolate(x[0]);
       }
       break;
     default:

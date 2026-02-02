@@ -8,7 +8,7 @@
 #include <TVirtualPad.h>
 #include <TH1F.h>
 #include <TH1D.h>
-#include <TKDE.h>
+#include <TFile.h>
 #include "Fit/Fitter.h"
 #include "Fit/Chi2FCN.h"
 #include "Math/WrappedMultiTF1.h"
@@ -65,52 +65,31 @@ public:
     fReflections=kTRUE;
   }
 
-void SetTemplatesHisto(const std::vector<const TH1*>& histotempls,
-                       const std::vector<double>& relweights,
-                       int anchorMode)
-{
+  void SetTemplatesHisto(const std::vector<const TH1*>& histopdfs,
+                        const std::vector<double>& relweights,
+                        int anchorMode)
+  {
     fTemplates = kTRUE;
 
-    if (histotempls.size() != relweights.size()) {
+    if (histopdfs.size() != relweights.size()) {
       std::cerr << "ERROR: Number of templates and weights does not match!" << std::endl;
       return;
     }
 
-    for (size_t i = 0; i < histotempls.size(); ++i) {
-      if (!histotempls[i]) {
-          cerr << "ERROR: histotempls[" << i << "] is nullptr!" << endl;
+    for (size_t i = 0; i < histopdfs.size(); ++i) {
+      if (!histopdfs[i]) {
+          cerr << "ERROR: histopdfs[" << i << "] is nullptr!" << endl;
       }
     }
 
-    for (size_t i = 0; i < histotempls.size(); ++i) {
-      const TH1* hist = histotempls[i];
-      double weight = relweights[i];
+    for (size_t i = 0; i < histopdfs.size(); ++i) {
+      // Clone the histogram
+      TH1D* hNorm = (TH1D*)histopdfs[i]->Clone(Form("hTemplInternal_%zu", i));
+      hNorm->SetDirectory(nullptr); // Important: disconnect from global files
 
-      // Match RooRealVar to histogram binning
-      Double_t xmin  = hist->GetXaxis()->GetXmin();
-      Double_t xmax  = hist->GetXaxis()->GetXmax();
-      Int_t    nbins = hist->GetNbinsX();
-      fMassVar.setRange("fullRange", xmin, xmax);
-      fMassVar.setBins(nbins);
-      fMassVar.setMin(xmin);
-      fMassVar.setMax(xmax);
-
-      // Clone + normalize
-      TH1D* histPdf = (TH1D*) hist->Clone(Form("histPdf_%zu", i));
-      histPdf->SetDirectory(nullptr);
-      histPdf->Scale(1.0 / histPdf->Integral("width"));
-
-      auto data_hist = new RooDataHist(Form("templ_%zu", i),
-      Form("templ_%zu", i),
-      RooArgList(fMassVar), histPdf);
-
-      auto pdf = new RooHistPdf(Form("CorrBkgsTempls_%zu", i),
-      Form("CorrBkgsTempls_%zu", i),
-      RooArgSet(fMassVar), *data_hist);
-      
-      // Store
-      fHistoTemplates.push_back(pdf);
-      fRelWeights.push_back(weight);
+      // Store in a vector of TH1*
+      fHistoTemplates.push_back(hNorm);
+      fRelWeights.push_back(relweights[i]);
     }
 
     // Set anchoring mode
@@ -125,48 +104,17 @@ void SetTemplatesHisto(const std::vector<const TH1*>& histotempls,
 
     std::cout << "WARNING: Vn parameter of templates will be the same as the signal!" << std::endl;
 
-    // Pass templates to fitter (adapt this if it expects RooHistPdf vector instead of TH1*)
-    fMassFitter->SetTemplatesHisto(histotempls, relweights, anchorMode);
-}
+    // Pass templates to fitter
+    fMassFitter->SetTemplatesHisto(histopdfs, relweights, anchorMode);
+  }
 
+  void SetHistoPrefitSgn(TH1F* h, bool fixtoPrefit) {
+    fHistoSgnPrefit=(TH1F*)h->Clone("fHistoSgnPrefit");
+    fHistoSgnPrefit->SetDirectory(0);
+    fFixSgnFromMCPrefit = fixtoPrefit;
+    std::cout << "Histo for signal prefit set!" << std::endl;
+  }
 
-  // void SetTemplatesHisto(const TH1* histotempl, int anchorMode) {
-  //   fTemplates = kTRUE;
-
-  //   // Match RooRealVar to histogram binning
-  //   Double_t xmin  = histotempl->GetXaxis()->GetXmin();
-  //   Double_t xmax  = histotempl->GetXaxis()->GetXmax();
-  //   Int_t    nbins = histotempl->GetNbinsX();
-  //   fMassVar.setRange("fullRange", xmin, xmax);
-  //   fMassVar.setBins(nbins);
-  //   fMassVar.setMin(xmin);
-  //   fMassVar.setMax(xmax);
-
-  //   // Normalized histogram (unit area, width-weighted)
-  //   TH1D* histPdf = (TH1D*) histotempl->Clone("histPdf_AnchoredToSgn");
-  //   // histPdf->Scale(1.0 / histPdf->Integral("width"));
-  //   RooDataHist* data_hist = new RooDataHist("templ_AnchoredToSgn", 
-  //                                            "templ_AnchoredToSgn",
-  //                                            RooArgList(fMassVar), histPdf);
-  //   RooHistPdf* pdf = new RooHistPdf("templ_AnchoredToSgn_pdf", 
-  //                                    "templ_AnchoredToSgn_pdf",
-  //                                    RooArgSet(fMassVar), *data_hist);
-
-  //   fHistoTemplates.push_back(pdf);
-  //   fHistoTemplates[0]->SetName("CorrBkgsTempls_AnchoredToSgn");
-  //   fHistoTemplates[0]->SetTitle("CorrBkgsTempls_AnchoredToSgn");
-
-  //   fAnchorTemplsMode = TemplAnchorMode::AnchorToSgn;
-  //   // fAnchorTemplsMode = TemplAnchorMode::AnchorToFirst;
-  //   // if (relweightsignal < 0.7) {
-  //   //   fRelWeights.push_back(relweightsignal);
-  //   //   fAnchorTemplsMode = TemplAnchorMode::AnchorToSgn;
-  //   // }
-  //   std::cout << "WARNING: Vn parameter of templates will be the same as the signal!" << std::endl;
-
-  //   // Pass templates to fitter
-  //   fMassFitter->SetTemplatesHisto(histotempl, anchorMode);
-  // }
   void SetInitialReflOverS(Double_t rovers){fRflOverSig=rovers;}
   void SetFixReflOverS(Double_t rovers){
     SetInitialReflOverS(rovers);
@@ -178,14 +126,15 @@ void SetTemplatesHisto(const std::vector<const TH1*>& histotempls,
     fVnRflMin=min;
     fVnRflMax=max;
   }
-  void IncludeSecondGausPeak(Double_t mass, Bool_t fixm, Double_t width, Bool_t fixw, Bool_t doVn, Bool_t fixtosgn){
-    fSecondPeak=kTRUE; fSecMass=mass; fSecWidth=width;
+  void IncludeSecondGausPeak(Double_t mass, Bool_t fixm, Double_t width, Bool_t fixw, Double_t fracw, Bool_t fixfracw, Bool_t doVn, Bool_t fixtosgn){
+    fSecondPeak=kTRUE; fSecMass=mass; fSecWidth=width; fSecWidthFrac=fracw;
     fFixSecMass=fixm;  fFixSecWidth=fixw;
+    fFixFracSecWidth=fixfracw;
     fDoSecondPeakVn=doVn;
     fFixVnSecPeakToSgn=fixtosgn;
   }
   void ExcludeSecondGausPeak() {
-    fSecondPeak=kFALSE; fSecMass=-999.; fSecWidth=9999.;
+    fSecondPeak=kFALSE; fSecMass=-999.; fSecWidth=9999.; fSecWidthFrac=9999.;
     fFixSecMass=kFALSE;  fFixSecWidth=kFALSE;
     fDoSecondPeakVn=kFALSE;
     fFixVnSecPeakToSgn=kFALSE;
@@ -199,8 +148,8 @@ void SetTemplatesHisto(const std::vector<const TH1*>& histotempls,
   void SetSuppressOutput(Bool_t suppress) {fSuppressOutput=suppress;}
 
   // Double-sided crystal ball functions
-  Double_t DoubleSidedCBAsymmForVn(double x, double mu, double width, double a1, double n1, double a2, double n2);
-  Double_t DoubleSidedCBSymmForVn(double x, double mu, double width, double a, double n);
+  Double_t DoubleSidedCBAsymmForVn(double x, double mu, double sigma, double a1, double n1, double a2, double n2);
+  Double_t DoubleSidedCBSymmForVn(double x, double mu, double sigma, double a, double n);
 
   TH1D *GetPullDistribution();
 
@@ -432,14 +381,15 @@ private:
   Int_t                 fMeanFixed;                     /// flag to fix peak position
   Int_t                 fSigma2GausFixed;               /// flag to fix second peak width in case of k2Gaus
   Int_t                 fFrac2GausFixed;                /// flag to fix fraction of second gaussian in case of k2Gaus
-  std::vector<Double_t> fMassBkgInitPars;               /// init values of the templates' weights
   Int_t                 fPolDegreeBkg;                  /// degree of polynomial expansion for back fit (option 6 for back)
   Int_t                 fPolDegreeVnBkg;                /// degree of polynomial expansion for vn back fit (option 6 for back)
   Bool_t                fReflections;                   /// flag use/not use reflections
   Int_t                 fNParsRfl;                      /// fit parameters in reflection fit function
   Double_t              fRflOverSig;                    /// reflection/signal
   Bool_t                fFixRflOverSig;                 /// switch for fix refl/signal
+  Bool_t                fFixSgnFromMCPrefit;            /// switch for fix signal shape from MC prefit
   TH1F*                 fHistoTemplRfl;                 /// histogram with reflection template
+  TH1F*                 fHistoSgnPrefit;                /// histogram with reflection template
   TH1F*                 fHistoTemplRflInit;             /// initial histogram with reflection template
   TF1*                  fMassRflFunc;                   /// fit function for reflections
   TF1*                  fMassBkgRflFunc;                /// mass bkg fit function plus reflections (final, after simultaneus fit)
@@ -458,8 +408,10 @@ private:
   Int_t                 fNParsSec;                      /// number of parameters in second peak fit function
   Double_t              fSecMass;                       /// position of the 2nd peak
   Double_t              fSecWidth;                      /// width of the 2nd peak
+  Double_t              fSecWidthFrac;                  /// fraction of the 2nd peak width wrt the signal peak width
   Bool_t                fFixSecMass;                    /// flag to fix the position of the 2nd peak
   Bool_t                fFixSecWidth;                   /// flag to fix the width of the 2nd peak
+  Bool_t                fFixFracSecWidth;               /// flag to fix the fraction of the 2nd peak width wrt the signal peak width
   Double_t              fVnSecPeak;                     /// vn of second peak from fit
   Bool_t                fDoSecondPeakVn;                /// flag to introduce second peak vn in the vn vs. mass fit
   Bool_t                fFixVnSecPeakToSgn;             /// flag to fix the vn of the second peak to the one of signal
@@ -467,16 +419,15 @@ private:
   Int_t                 fHarmonic;                      /// harmonic number for drawing
   Bool_t                fTemplates;                     /// flag use/not use templates
   Int_t                 fNParsTempls;                   /// fit parameters to include templates
-  std::vector<TF1 *>    fVnCompsDraw;                   /// vector to store TKDE to be added as templates to the fit function 
-  std::vector<TF1 *>    fMassTemplatesDraw;          /// vector to store TKDE to be added as templates to the fit function 
+  std::vector<TF1 *>    fVnCompsDraw;                   /// vector to store TH1 to be added as templates to the fit function 
+  std::vector<TF1 *>    fMassTemplatesDraw;             /// vector to store TH1 to be added as templates to the fit function 
   std::vector<Double_t> fRelWeights;                    /// relative weights of templates 
   std::vector<Double_t> fMassWeightsUpperLims;          /// upper limit of the templates' weights
   std::vector<Double_t> fMassWeightsLowerLims;          /// lower limit of the templates' weights
   std::vector<Double_t> fMassInitWeights;               /// init values of the templates' weights
   TemplAnchorMode       fAnchorTemplsMode;              /// init values of the templates' weights
   std::vector<std::tuple<TString, double, double, double>> fInitFuncPars;  /// init values of total fit function
-  RooRealVar fMassVar;
-  std::vector<RooHistPdf*> fHistoTemplates;             /// vector to store TKDE to be added as templates to the fit function
+  std::vector<TH1*> fHistoTemplates;                    /// vector to store TH1 to be added as templates to the fit function
   Bool_t                fSuppressOutput;                /// flag to suppress outputs (for multitrial fits)
 
     /// \cond CLASSDEF

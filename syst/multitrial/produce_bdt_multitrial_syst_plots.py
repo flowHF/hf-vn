@@ -141,6 +141,11 @@ def produce_multitrial_syst_bdt_plots(default_cfg, results_dir):
             bkg_vals = []
             bkg_strs = []
 
+            # Check if the directory exists
+            if not os.path.isdir(f"{pt_trial_dir}/trials_cutset_{i_cutset}/"):
+                logger(f"Directory {pt_trial_dir}/trials_cutset_{i_cutset}/ does not exist. Skipping cutset {cutset_suffix}.", "WARNING")
+                continue
+
             for folder in os.listdir(f"{pt_trial_dir}/trials_cutset_{i_cutset}/"):
                 m = re.search(r"bkg_([0-9]*\.?[0-9]+)", folder)
                 if m:

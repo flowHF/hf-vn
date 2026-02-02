@@ -3,13 +3,6 @@
 
 #include <TNamed.h>
 
-#include <RooRealVar.h>
-#include <RooHistPdf.h>
-#include <RooDataHist.h>
-#include <RooHistPdf.h>
-#include <RooCrystalBall.h>
-
-
 class TF1;
 class TH1F;
 
@@ -29,6 +22,11 @@ class InvMassFitter : public TNamed {
     if (fHistoInvMass) delete fHistoInvMass;
     fHistoInvMass=(TH1F*)histoToFit->Clone("fHistoInvMass");
     fHistoInvMass->SetDirectory(0);
+  }
+  void     SetHistogramPrefitSgn(const TH1F* histoToFit){
+    if (fHistoPrefitSgn) delete fHistoPrefitSgn;
+    fHistoPrefitSgn=(TH1F*)histoToFit->Clone("fHistoPrefitSgn");
+    fHistoPrefitSgn->SetDirectory(0);
   }
   void     SetRangeFit(Double_t minvalue, Double_t maxvalue){
     fMinMass=minvalue; fMaxMass=maxvalue;
@@ -108,42 +106,33 @@ class InvMassFitter : public TNamed {
   }
   void SetSmoothReflectionTemplate(Bool_t opt){fSmoothRfl=opt;}
 
-  void SetTemplatesHisto(std::vector<const TH1*> histotempl, 
-                         std::vector<double> relweights, 
+  void SetTemplatesHisto(std::vector<const TH1*> histopdfs, 
+                         std::vector<double> relweights,
                          int anchorMode) {
     fTemplates = kTRUE;
 
     // Match RooRealVar to histogram binning from first template
-    const TH1* refHist = histotempl.at(0);
+    const TH1* refHist = histopdfs.at(0);
     Int_t nbins = refHist->GetNbinsX();
-    fMassVar.setBins(nbins);
-    fMassVar.setRange("fullRange", fMinMass, fMaxMass);
-    fMassVar.setMin(fMinMass);
-    fMassVar.setMax(fMaxMass);
 
     // Loop over input histograms
-    for (size_t i = 0; i < histotempl.size(); ++i) {
-        const TH1* h = histotempl[i];
+    for (size_t i = 0; i < histopdfs.size(); ++i) {
+      const TH1* h = histopdfs[i];
+      if (!h) {
+          std::cerr << "ERROR: Template histogram at index " << i << " is null!" << std::endl;
+          continue;
+      }
 
-        // Clone to avoid ownership issues
-        TH1D* histPdf = (TH1D*) h->Clone(Form("histPdf_AnchoredToSgn_%zu", i));
-        histPdf->SetDirectory(nullptr); // don't let ROOT manage it
+      // Clone to avoid ownership issues and disconnect from global directory
+      // Using a unique name prevents dictionary collisions in ROOT
+      TH1D* histPdf = (TH1D*)h->Clone(Form("hTemplInternal_%zu_%p", i, (void*)this));
+      histPdf->SetDirectory(nullptr); 
 
-        // // Normalize (if needed)
-        // if (histPdf->Integral("width") > 0)
-        //     histPdf->Scale(1.0 / histPdf->Integral("width"));
+      // Store in the internal vector
+      fHistoTemplates.push_back(histPdf);
 
-        // Build RooDataHist + RooHistPdf
-        auto data_hist = new RooDataHist(Form("templ_AnchoredToSgn_%zu", i),
-                                         "templ_AnchoredToSgn",
-                                         RooArgList(fMassVar), histPdf);
-        auto pdf = new RooHistPdf(Form("templ_AnchoredToSgn_pdf_%zu", i),
-                                  "templ_AnchoredToSgn_pdf",
-                                  RooArgSet(fMassVar), *data_hist);
-
-        // Store them
-        fHistoTemplates.push_back(pdf);
-        fRelWeights.push_back(relweights.at(i));
+      // Store weights
+      fRelWeights.push_back(relweights.at(i));
     }
     if (anchorMode == (int)TemplAnchorMode::AnchorToSgn) {
       fAnchorTemplsMode = TemplAnchorMode::AnchorToSgn;
@@ -155,46 +144,6 @@ class InvMassFitter : public TNamed {
     }
 }
 
-
-  // void SetTemplatesHisto(std::vector<const TH1*> histotempl, std::vector<double> relweights, int anchorMode) {
-  //   fTemplates = kTRUE;
-
-  //   // Match RooRealVar to histogram binning
-  //   // Double_t xmin  = fMinMass; // histotempl->GetXaxis()->GetXmin();
-  //   // Double_t xmax  = fMaxMass; // histotempl->GetXaxis()->GetXmax();
-  //   Int_t    nbins = histotempl->GetNbinsX();
-  //   fMassVar.setBins(nbins);
-  //   fMassVar.setRange("fullRange", fMinMass, fMaxMass);
-  //   fMassVar.setMin(fMinMass);
-  //   fMassVar.setMax(fMaxMass);
-  //   // fMassVar.setRange("fullRange", xmin, xmax);
-  //   // fMassVar.setMin(xmin);
-  //   // fMassVar.setMax(xmax);
-
-  //   // Normalized histogram (unit area, width-weighted)
-  //   TH1D* histPdf = (TH1D*) histotempl->Clone("histPdf_AnchoredToSgn");
-  //   // histPdf->Scale(1.0 / histPdf->Integral("width"));
-  //   RooDataHist* data_hist = new RooDataHist("templ_AnchoredToSgn", 
-  //                                            "templ_AnchoredToSgn",
-  //                                            RooArgList(fMassVar), histPdf);
-  //   RooHistPdf* pdf = new RooHistPdf("templ_AnchoredToSgn_pdf", 
-  //                                    "templ_AnchoredToSgn_pdf",
-  //                                    RooArgSet(fMassVar), *data_hist);
-
-  //   for (const auto& hist : histotempl) {
-  //       fHistoTemplates.push_back(pdf);
-  //       fHistoTemplates.SetName("CorrBkgsTempls_AnchoredToSgn");
-  //       fHistoTemplates.SetTitle("CorrBkgsTempls_AnchoredToSgn");
-  //       fRelWeights.push_back(relweight);
-  //   }
-
-  //   fAnchorTemplsMode = TemplAnchorMode::AnchorToSgn;
-  //   // fAnchorTemplsMode = TemplAnchorMode::AnchorToFirst;
-  //   // if (relweighttosignal < 0.7) {
-  //   //   fRelWeights.push_back(relweighttosignal);
-  //   // }
-  //   std::cout << "WARNING: Vn parameter of templates will be the same as the signal!" << std::endl;
-  // }
   void SetSuppressOutput(Bool_t suppress){
     if (suppress) fFitOption+="Q";
   }
@@ -266,6 +215,7 @@ class InvMassFitter : public TNamed {
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t nSigma=3., Int_t option=0, Int_t pdgCode=0) const;
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t minMass, Double_t maxMass, Int_t option=0) const;
   Int_t    MassFitter(Bool_t draw=kTRUE);
+  Int_t    PrefitSignal(Bool_t draw=kTRUE);
   Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
   Double_t FitFunction4Bkg (Double_t* x, Double_t* par);
   Double_t FitFunction4Refl(Double_t *x,Double_t *par);
@@ -298,7 +248,7 @@ class InvMassFitter : public TNamed {
   void  SetNumberOfParams();
   Double_t CheckForSignal(Double_t mean, Double_t sigma);
   TF1*	   CreateBackgroundFitFunction(TString fname, Double_t integral);
-  TF1*	   CreateSignalFitFunction(TString fname, Double_t integral);
+  TF1*	   CreateSignalFitFunction(TString fname, Double_t integral, Double_t minmass, Double_t maxmass);
   TF1*	   CreateSecondPeakFunction(TString fname, Double_t integral);
   TF1*	   CreateReflectionFunction(TString fname);
   TF1*	   CreateTemplatesFunction(TString fname);
@@ -308,6 +258,7 @@ class InvMassFitter : public TNamed {
   Double_t BackFitFuncPolHelper(Double_t *x,Double_t *par);
 
   TH1F*                 fHistoInvMass;         /// histogram to fit
+  TH1F*                 fHistoPrefitSgn;       /// histogram for signal prefit
   Double_t              fMinMass;              /// lower mass limit
   Double_t              fMaxMass;              /// upper mass limit
   Int_t                 fTypeOfFit4Bkg;        /// background fit func
@@ -355,6 +306,7 @@ class InvMassFitter : public TNamed {
   Double_t              fRawYieldHelp;         /// internal variable for fit with reflections
   TF1*                  fRflFunc;              /// fit function for reflections
   TF1*                  fBkRFunc;              /// fit function for background and reflections
+  TF1*                  fPrefitFunc;           /// fit function for background and reflections
   Bool_t                fSecondPeak;           /// switch off/on second peak (for D+->KKpi in Ds)
   Int_t                 fNParsSec;             /// fit parameters in 2nd peak fit function
   Double_t              fSecMass;              /// position of the 2nd peak
@@ -374,8 +326,7 @@ class InvMassFitter : public TNamed {
   TemplAnchorMode       fAnchorTemplsMode;     /// anchor mode of the templates
   std::vector<Double_t> fRelWeights;           /// relative weights of templates
   std::vector<std::tuple<TString, double, double, double>> fInitFuncPars;   /// Init pars for fit function
-  RooRealVar fMassVar;
-  std::vector<RooHistPdf*> fHistoTemplates;  /// vector to store RooHistPdf to be added as templates to the fit function
+  std::vector<TH1*> fHistoTemplates;           /// vector to store TH1 to be added as templates to the fit function
   Bool_t                fSuppressOutput;           /// flag to suppress outputs (for multitrial fits) 
 
   /// \cond CLASSIMP     

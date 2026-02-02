@@ -302,6 +302,7 @@ if __name__ == "__main__":
 
     if operations.get("proj_data"):
         reso_hist.Write("hResolution", write_opt_data)
+        outfile.cd()
         resolution = reso_hist.GetBinContent(1)
 
     with alive_bar(len(cutSetCfg['Pt']['min']), title='Processing pT bins') as bar:
