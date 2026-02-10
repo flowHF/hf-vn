@@ -16,6 +16,7 @@ test*
 *_dict.cxx
 *.d
 *tmp*
+*.h
 
 # jupyter notebook
 *.ipynb

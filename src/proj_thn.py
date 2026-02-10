@@ -301,6 +301,7 @@ if __name__ == "__main__":
         sPtWeightsD, sPtWeightsB, Bspeciesweights = get_pt_weights(config["projections"]) if config['projections'].get('PtWeightsFile') else (None, None, None)
 
     if operations.get("proj_data"):
+        outfile.cd()
         reso_hist.Write("hResolution", write_opt_data)
         resolution = reso_hist.GetBinContent(1)
 

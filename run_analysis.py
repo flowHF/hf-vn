@@ -87,11 +87,12 @@ def get_vn(flow_config, outdir, nworkers, mCutSets, extraction_type):
 		def run_fit(i):
 			"""Run simultaneous fit for a given cutset index."""
 			iCutSets = f"{i:02d}"
+			cutset_cfg = f"{outdir}/cutsets/cutset_{iCutSets}.yml"
 			print(f"\033[32mProcessing cutset {iCutSets}...\033[0m")
 
 			proj_cutset = f"{outdir}/projs/proj_{iCutSets}.root"
 			cmd = (
-				f"python3 {paths['GetVnVsMass']} {flow_config} {proj_cutset} -b"
+				f"python3 {paths['GetVnVsMass']} {flow_config} {cutset_cfg} {proj_cutset} -b"
 			)
 			logger(f"{cmd}", level="COMMAND")
 			os.system(cmd)

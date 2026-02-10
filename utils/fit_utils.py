@@ -350,7 +350,7 @@ def RebinHisto(h_orig, reb, show_print, first_use = 0):
     the bin width is kept as reb*original width
     and the range of rebinned histogram is adapted
     '''
-    
+
     n_bin_orig = h_orig.GetNbinsX()
     first_bin_orig = 1
     last_bin_orig = n_bin_orig
@@ -386,5 +386,5 @@ def RebinHisto(h_orig, reb, show_print, first_use = 0):
             
         hRebin.SetBinContent(iBin, sum)
         hRebin.SetBinError(iBin, TMath.Sqrt(sume2))
-    
+
     return hRebin

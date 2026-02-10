@@ -73,7 +73,7 @@ def minimise_chi2(config, ptmins, ptmaxs, hRawYields, hEffPrompt, hEffFD, inputP
                 continue
 
             # if skip_cuts is defined check if the cut number is present for that pt
-            if iPt < len(skip_cuts_pts) and iCut in skip_cuts_pts[iPt]:
+            if systematics is not None and iPt < len(skip_cuts_pts) and iCut in skip_cuts_pts[iPt]:
                 logger(f'Skipping cut set {iCut} for pt {ptMin:.1f}-{ptMax:.1f}', level='WARNING')
                 continue
 
