@@ -70,7 +70,7 @@ doCompareUnc = inputCfg['options']['errcomp']['enable']
 compareRelUnc = inputCfg['options']['errcomp']['relative']
 
 wCanv = inputCfg['options']['canvas']['width']
-hCanv = inputCfg['options']['canvas']['heigth']
+hCanv = inputCfg['options']['canvas']['height']
 xLimits = inputCfg['options']['canvas']['xlimits']
 yLimits = inputCfg['options']['canvas']['ylimits']
 yLimitsRatio = inputCfg['options']['canvas']['ylimitsratio']
@@ -124,7 +124,6 @@ for iFile, (inFileName, objName, objType, scale, lambdaParam, normalize, color, 
         hToCompare[iFile].SetStats(0)
     else:
         hToCompare[iFile].SetName(f'g{iFile}')
-    print(f"color: {color}")
     SetObjectStyle(hToCompare[iFile],
                    color=GetROOTColor(color),
                    markerstyle=GetROOTMarker(marker),
