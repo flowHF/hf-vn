@@ -18,7 +18,28 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_dir, '..', 'utils'))
 from utils import logger, get_centrality_bins, make_dir_root_file
 from corr_bkgs_brs import final_states
+from fit_utils import RebinHisto
 from ROOT import RooRealVar, RooDataSet, RooArgSet, RooKeysPdf, TFile, TH3F, TH1F
+
+def get_rebinned_mass_sel_histo(histo, mass_min, mass_max, rebin):
+    '''
+    Get rebinned mass histogram and selection string
+    '''
+    n_bins = int((mass_max - mass_min)*1000)
+    # n_bins = int((mass_max - mass_min)*1000)+1
+    new_histo = TH1F("histo_temp", "histo_temp", n_bins, mass_min, mass_max)
+    for i_bin_new in range(1, new_histo.GetNbinsX()+1):
+        bin_center = new_histo.GetBinCenter(i_bin_new)
+        for i_bin_orig in range(1, histo.GetNbinsX()+1):
+            if bin_center > histo.GetBinLowEdge(i_bin_orig) and bin_center < histo.GetBinLowEdge(i_bin_orig+1):
+                new_histo.SetBinContent(i_bin_new, histo.GetBinContent(i_bin_orig))
+                break
+
+    new_histo.SetDirectory(0)
+    integral = new_histo.Integral("width")
+    new_histo.Scale(1.0 / integral)
+    RebinHisto(new_histo, rebin, True)
+    return new_histo
 
 def get_corr_bkg(corr_bkg_file, corr_bkg_chn, sel_string, pt_label, templ_type, output_type,
                  corr_abundances=False, sgn_d_meson='Dplus', get_smoothed=True, **kwargs):

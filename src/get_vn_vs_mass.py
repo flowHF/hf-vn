@@ -9,6 +9,7 @@ import os
 import itertools
 import ctypes
 import subprocess
+import sys
 from ROOT import TLatex, TFile, TCanvas, TLegend, TH1D, TH1F, TGraphAsymmErrors # pylint: disable=import-error,no-name-in-module
 from ROOT import gROOT, gPad, gInterpreter, kBlack, kRed, kBlue, kMagenta, kAzure, kOrange, kGreen, kFullCircle, kFullSquare, kOpenCircle # pylint: disable=import-error,no-name-in-module
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -27,7 +28,6 @@ if not os.path.exists(lib):
         "rootcling", "-f",
         os.path.join(src_dir, "vnfitter_dict.cxx"),
         "-c",
-        os.path.join(src_dir, "InvMassFitter.h"),
         os.path.join(src_dir, "VnVsMassFitter.h"),
         os.path.join(src_dir, "LinkDefVnFitter.h"),
     ])
@@ -35,7 +35,6 @@ if not os.path.exists(lib):
     cmd = [
         "g++", "-shared", "-fPIC",
         *subprocess.check_output(["root-config", "--cflags", "--libs"]).decode().split(),
-        os.path.join(src_dir, "InvMassFitter.cxx"),
         os.path.join(src_dir, "VnVsMassFitter.cxx"),
         os.path.join(src_dir, "vnfitter_dict.cxx"),
         "-o", lib,
@@ -48,15 +47,33 @@ if not os.path.exists(lib):
 if not hasattr(gSystem, "_vnfitter_loaded"):
     script_dir = os.path.dirname(os.path.realpath(__file__))
     gSystem.CompileMacro(f"{script_dir}/../invmassfitter/VnVsMassFitter.cxx", "kO")
-    gSystem.CompileMacro(f"{script_dir}/../invmassfitter/InvMassFitter.cxx", "kO")
     gSystem._vnfitter_loaded = True
 
-from ROOT import InvMassFitter, VnVsMassFitter
+from ROOT import VnVsMassFitter
 os.sys.path.append(os.path.join(script_dir, '..', 'utils'))
 from StyleFormatter import SetGlobalStyle, SetObjectStyle
 from fit_utils import RebinHisto
-from utils import logger, get_centrality_bins, get_vnfitter_results, get_refl_histo, get_particle_info
-from correlated_bkgs import get_corr_bkg
+from utils import logger, get_centrality_bins, get_vnfitter_results, get_refl_histo, get_particle_info, make_dir_root_file
+from correlated_bkgs import get_corr_bkg, get_rebinned_mass_sel_histo
+
+def get_fit_config(cfg_fit, cfg_cutset, config_entry):
+    if not config_entry in cfg_fit:
+        logger(f'Config entry {config_entry} not found in fit configuration.', level='WARNING')
+        return [None] * len(cfg_cutset['Pt']['min'])
+
+    if isinstance(cfg_fit[config_entry], list):
+        if isinstance(cfg_fit[config_entry][0], list):
+            # List indicates pt- and cutset-dependent settings
+            if isinstance(cfg_fit[config_entry][cfg_cutset['icutset']], list):
+                setting = cfg_fit[config_entry][cfg_cutset['icutset']]
+            else:
+                setting = [cfg_fit[config_entry][cfg_cutset['icutset']]] * len(cfg_cutset['Pt']['min'])
+        else:
+            # List indicates pt-dependent settings
+            setting = cfg_fit[config_entry]
+    else:
+        setting = [cfg_fit[config_entry]] * len(cfg_cutset['Pt']['min'])
+    return setting
 
 def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMultitrial):
     #______________________________________________________
@@ -87,40 +104,26 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
     ptTit = '#it{p}_{T} (GeV/#it{c})'
     particleName = config['Dmeson']
     harmonic = config.get('harmonic', 2) # default is v2
-    
+
     # Read fit configuration
     configfit = config['v2extraction']
-    fixSigma = configfit.get('FixSigma', 0)
-    fixSigmaFromFile = configfit.get('FixSigmaFromFile', '')
-    fixMean = configfit.get('FixMean', 0)
-    inclSecPeak = configfit.get('InclSecPeak', 0)
-    rebins = configfit.get('Rebin', 1)
+    fixSigma = get_fit_config(configfit, cfg_cutset, 'FixSigma')
+    fixSigmaFromFile = get_fit_config(configfit, cfg_cutset, 'FixSigmaFromFile')
+    fixMean = get_fit_config(configfit, cfg_cutset, 'FixMean')
+    inclSecPeak = get_fit_config(configfit, cfg_cutset, 'InclSecPeak')
+    rebins = get_fit_config(configfit, cfg_cutset, 'Rebin')
     useRefl = configfit.get('enableRef', False)
     reflFile = configfit.get('ReflFile', '')
     reflFuncStr = configfit.get('ReflFunc', '2Gaus')
 
-    if not isinstance(rebins, list):
-        rebins = [rebins] * len(ptmins)
     massFitRanges = configfit['MassFitRanges']
     massFitLows = [mass[0] for mass in massFitRanges]
     massFitHighs = [mass[1] for mass in massFitRanges]
-    if not isinstance(fixSigma, list):
-        fixSigma = [fixSigma for _ in ptmins]
-    if not isinstance(fixMean, list):
-        fixMean = [fixMean for _ in ptmins]
-    SgnFuncStr = configfit['SgnFunc']
-    if not isinstance(SgnFuncStr, list):
-        SgnFuncStr = [SgnFuncStr] * nPtBins
-    BkgFuncStr = configfit['BkgFunc']
-    if not isinstance(BkgFuncStr, list):
-        BkgFuncStr = [BkgFuncStr] * nPtBins
-    BkgFuncVnStr = configfit['BkgFuncVn']
-    if not isinstance(BkgFuncVnStr, list):
-        BkgFuncVnStr = [BkgFuncVnStr] * nPtBins
+    SgnFuncStr = get_fit_config(configfit, cfg_cutset, 'SgnFunc')
+    BkgFuncStr = get_fit_config(configfit, cfg_cutset, 'BkgFunc')
+    BkgFuncVnStr = get_fit_config(configfit, cfg_cutset, 'BkgFuncVn')
     if not isinstance(reflFuncStr, list):
         reflFuncStr = [reflFuncStr] * nPtBins
-    if not isinstance(inclSecPeak, list):
-        inclSecPeak = [inclSecPeak] * nPtBins
 
     # Sanity check of fit configuration
     if 1 in inclSecPeak and not configfit.get('SigmaSecPeak'):
@@ -129,10 +132,10 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
     # Create canvas to contain all fit plots
     nCols = 4
     if nPtBins <= 8:
-        cSimFitFull = TCanvas('cSimFitFull', 'cSimFitFull', 1200, 1200)  
+        cSimFitFull = TCanvas('cSimFitFull', 'cSimFitFull', 1200, 1200)
         cSimFitFull.Divide(nCols, nCols)
     if nPtBins > 8 and nPtBins <= 16:
-        cSimFitFull = TCanvas('cSimFitFull', 'cSimFitFull', 1600, 1200)  
+        cSimFitFull = TCanvas('cSimFitFull', 'cSimFitFull', 1600, 1200)
         cSimFitFull.Divide(nCols, 2*nCols)
     else:
         logger('More than 16 pt bins not supported for full fit canvas. Skip creating it.', level='WARNING')
@@ -142,11 +145,11 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
     for iPt, (bkgStr, sgnStr, bkgVnStr) in enumerate(zip(BkgFuncStr, SgnFuncStr, BkgFuncVnStr)):
         degPol.append(-1)
         if bkgStr == 'kExpo':
-            BkgFunc.append(InvMassFitter.kExpo)
+            BkgFunc.append(VnVsMassFitter.kExpo)
         elif bkgStr == 'kLin':
-            BkgFunc.append(InvMassFitter.kLin)
+            BkgFunc.append(VnVsMassFitter.kLin)
         elif bkgStr == 'kPol2':
-            BkgFunc.append(InvMassFitter.kPol2)
+            BkgFunc.append(VnVsMassFitter.kPol2)
         elif bkgStr == 'kPol3':
             BkgFunc.append(6)
             degPol[-1] = 3
@@ -156,39 +159,39 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
             if len(ptmins) > 1 and inclSecPeak[iPt] == 1:
                 logger('kPol4 background function is not supported for second peak fit. Use kPol2 instead.', level='ERROR')
         elif bkgStr == 'kPow':
-            BkgFunc.append(InvMassFitter.kPow)
+            BkgFunc.append(VnVsMassFitter.kPow)
         elif bkgStr == 'kPowEx':
-            BkgFunc.append(InvMassFitter.kPowEx)
+            BkgFunc.append(VnVsMassFitter.kPowEx)
         else:
             logger(f'ERROR: only kExpo, kLin, kPol2, kPol3, kPol4, kPow, and kPowEx background functions supported. Exit.', level='ERROR')
         if bkgVnStr == 'kExpo':
-            BkgFuncVn.append(InvMassFitter.kExpo)
+            BkgFuncVn.append(VnVsMassFitter.kExpo)
             hVnBkgCoeffs[iPt].append(TH1F("hVnBkgCoeff0", "hVnBkgCoeff0", nPtBins, ptBinsArr))
             hVnBkgCoeffs[iPt].append(TH1F("hVnBkgCoeff1", "hVnBkgCoeff1", nPtBins, ptBinsArr))
         elif bkgVnStr == 'kConst':
-            BkgFuncVn.append(InvMassFitter.kNoBk)
+            BkgFuncVn.append(VnVsMassFitter.kNoBk)
             hVnBkgCoeffs[iPt].append(TH1F("hVnBkgCoeff0", "hVnBkgCoeff0", nPtBins, ptBinsArr))
         elif bkgVnStr == 'kLin':
-            BkgFuncVn.append(InvMassFitter.kLin)
+            BkgFuncVn.append(VnVsMassFitter.kLin)
             hVnBkgCoeffs[iPt].append(TH1F("hVnBkgCoeff0", "hVnBkgCoeff0", nPtBins, ptBinsArr))
             hVnBkgCoeffs[iPt].append(TH1F("hVnBkgCoeff1", "hVnBkgCoeff1", nPtBins, ptBinsArr))
         elif bkgVnStr == 'kPol2':
-            BkgFuncVn.append(InvMassFitter.kPol2)
+            BkgFuncVn.append(VnVsMassFitter.kPol2)
             hVnBkgCoeffs[iPt].append(TH1F("hVnBkgCoeff0", "hVnBkgCoeff0", nPtBins, ptBinsArr))
             hVnBkgCoeffs[iPt].append(TH1F("hVnBkgCoeff1", "hVnBkgCoeff1", nPtBins, ptBinsArr))
             hVnBkgCoeffs[iPt].append(TH1F("hVnBkgCoeff2", "hVnBkgCoeff2", nPtBins, ptBinsArr))
         else:
             logger('Only kExpo, kLin, and kPol2 background functions supported for vn. Exit.', level='ERROR')
         if sgnStr == 'kGaus':
-            SgnFunc.append(InvMassFitter.kGaus)
+            SgnFunc.append(VnVsMassFitter.kGaus)
         elif sgnStr == 'k2Gaus':
-            SgnFunc.append(InvMassFitter.k2Gaus)
+            SgnFunc.append(VnVsMassFitter.k2Gaus)
         elif sgnStr == 'kDoubleCBAsymm':
-            SgnFunc.append(InvMassFitter.kDoubleCBAsymm)
+            SgnFunc.append(VnVsMassFitter.kDoubleCBAsymm)
         elif sgnStr == 'kDoubleCBSymm':
-            SgnFunc.append(InvMassFitter.kDoubleCBSymm)
+            SgnFunc.append(VnVsMassFitter.kDoubleCBSymm)
         elif sgnStr == 'k2GausSigmaRatioPar':
-            SgnFunc.append(InvMassFitter.k2GausSigmaRatioPar)
+            SgnFunc.append(VnVsMassFitter.k2GausSigmaRatioPar)
         else:
             print('ERROR: only kGaus, k2Gaus, kDoubleCBAsymm, kDoubleCBSymm and k2GausSigmaRatioPar signal functions supported! Exit!')
             sys.exit()
@@ -204,11 +207,11 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
     hRefl, hMass, hMassForFit, hVn, hVnForFit, fTotFuncMass,\
     fTotFuncVn, fSgnFuncMass, fBkgFuncMass, fMassBkgRflFunc,\
     fMassSecPeakFunc, fBkgFuncVn, fVnSecPeakFunc, fVnCompFuncts,\
-    hMCSgn, hMCRefl, hPulls, hPullsPrefit = ([] for _ in range(18))
+    hMCSgn, hMCRefl, hPulls, hParsMCPrefit, hParsSignalFunc, hParsSimFit = ([] for _ in range(20))
 
     useTemplates = True if config.get('corr_bkgs') else False
-    fMassTemplFuncts = [[None]*nPtBins] if useTemplates else []
-    fMassTemplTotFuncts = [None]*nPtBins if useTemplates and (particleName == 'Dplus' or particleName == 'Ds') else []
+    fMassTemplFuncts = [None]*nPtBins if useTemplates else []
+    fMassTemplTotFuncts = [None]*nPtBins if useTemplates else []
 
     for iPt, (ptMin, ptMax) in enumerate(zip(ptmins, ptmaxs)):
         hMass.append(infile.Get(f'pt_{ptMin*10:.0f}_{ptMax*10:.0f}/hMassData'))
@@ -295,23 +298,18 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
     gVnUnc.SetName('gVnUnc')
     gVnUncSecPeak = TGraphAsymmErrors(1)
     gVnUncSecPeak.SetName('gVnUncSecPeak')
-    # gVnTempls = [TGraphAsymmErrors(1) for _ in range(len(corrBkgsTemplates))] if useTemplates else []
-    # gVnTemplsUncs = [TGraphAsymmErrors(1) for _ in range(len(corrBkgsTemplates))] if useTemplates else []
     SetObjectStyle(gVnSimFit, color=kBlack, markerstyle=kFullCircle)
     SetObjectStyle(gVnSimFitSecPeak, color=kRed, markerstyle=kOpenCircle)
     SetObjectStyle(gVnUnc, color=kBlack, markerstyle=kFullCircle)
     SetObjectStyle(gVnUncSecPeak, color=kRed, markerstyle=kOpenCircle)
-    # for gvnTempl, gvnTemplUnc in zip(gVnTempls, gVnTemplsUncs):
-    #     SetObjectStyle(gvnTempl, color=kBlack, markerstyle=kFullCircle)
-    #     SetObjectStyle(gvnTemplUnc, color=kRed, markerstyle=kOpenCircle)
+    hTemplFracs = {}
 
     # Create canvases
-    cSimFit, cInvMassPrefits = [], []
+    cSimFit = []
     for i in range(nPtBins):
         ptLow = ptmins[i]
         ptHigh = ptmaxs[i]
         cSimFit.append(TCanvas(f'cSimFit_pt{ptLow}_{ptHigh}', f'cSimFit_pt{ptLow}_{ptHigh}', 400, 900))
-        cInvMassPrefits.append(TCanvas(f'cMassPrefit_Pt{ptLow}_{ptHigh}', f'cMassPrefit_Pt{ptLow}_{ptHigh}', 400, 900))
         cSimFit[-1].Divide(1, 2)
     latex = TLatex()
     latex.SetNDC()
@@ -321,9 +319,26 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
 
     #_____________________________________________________
     # Vn estimation with Scalar Product
-    vnFitter = []
+    vnFitter, vnRes = [], []
     for iPt, (hM, hV, ptMin, ptMax, reb, sgnEnum, bkgEnum, bkgVnEnum, secPeak, massMin, massMax) in enumerate(
             zip(hMass, hVn, ptmins, ptmaxs, rebins, SgnFunc, BkgFunc, BkgFuncVn, inclSecPeak, massFitLows, massFitHighs)):
+        pt_dir = f"pt_{ptMin*10:.0f}_{ptMax*10:.0f}"
+        # hMassForFit.append(RebinHisto(hM, reb, not isMultitrial).Clone(f"MassForFit{iPt}"))
+        # hMassForFit[iPt].SetDirectory(0)
+        # print(f"typeof hMassForFit[{iPt}]: {type(hMassForFit[iPt])}")
+
+        # hVnForFit.append(hV.Clone(f"VnForFit{iPt}"))
+        # hVnForFit[iPt].SetDirectory(0)
+        # print(f"typeof hVnForFit[{iPt}]: {type(hVnForFit[iPt])}")
+        # # quit()
+        # # hMassForFit.append(TH1F())
+        # # hVnForFit.append(TH1F())
+        # # RebinHisto(hM, reb, not isMultitrial).Copy(hMassForFit[iPt]) #to cast TH1D to TH1F
+        # # hMassForFit[iPt].SetDirectory(0)
+
+        # # hV.Copy(hVnForFit[iPt])
+        # # hVnForFit[iPt].SetDirectory(0)
+        # hVnForFit[iPt].SetTitle(f';{massAxisTit};#it{{v}}_{{{harmonic}}} (SP)')
         iCanv = iPt
         hMassForFit.append(TH1F())
         hVnForFit.append(TH1F())
@@ -347,7 +362,8 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
 
         if not isMultitrial:
             logger(f'Processing pt {ptMin} - {ptMax} GeV/c', level='INFO')
-        vnFitter.append(VnVsMassFitter(hMassForFit[iPt], hVnForFit[iPt],
+        fitName = f'VnVsMassFit_pt_{ptMin}_{ptMax}_cutset_{cfg_cutset["icutset"]}'
+        vnFitter.append(VnVsMassFitter(fitName, hMassForFit[iPt], hVnForFit[iPt],
                                        massMin, massMax, bkgEnum, sgnEnum, bkgVnEnum))
         vnFitter[iPt].SetHarmonic(harmonic)
         vnFitter[iPt].SetSuppressOutput(isMultitrial)
@@ -380,7 +396,14 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
             vnFitter[iPt].SetNSigmaForVnSB(configfit['NSigma4SB'][iPt])
         # Second peak
         if secPeak:
-            vnFitter[iPt].IncludeSecondGausPeak(massSecPeak, False, configfit['SigmaSecPeak'][iPt], False, 1, configfit.get('FixVnSecPeakToSgn', False))
+            logger(f"Including second peak with frac width {configfit['FracSecPeak'][iPt]} and {configfit['FixFracSecPeak'][iPt]}", level='INFO')
+            massMinSecPeak = configfit['MassRangeSecPeak'][0] if configfit.get('MassRangeSecPeak') else 1.8
+            massMaxSecPeak = configfit['MassRangeSecPeak'][1] if configfit.get('MassRangeSecPeak') else 1.9
+            print(f"Will fix Vn of second peak to signal: {configfit.get('FixVnSecPeakToSgn', False)}")
+            vnFitter[iPt].IncludeSecondGausPeak(massSecPeak, False, configfit['SigmaSecPeak'][iPt], False, \
+                                                massMinSecPeak, massMaxSecPeak, configfit['MinCountsSecPeak'],
+                                                configfit['FracSecPeak'][iPt], configfit['FixFracSecPeak'][iPt], \
+                                                True, configfit.get('FixVnSecPeakToSgn', False))
             if fixSigma[iPt]:
                 vnFitter[iPt].SetInitialGaussianSigma2Gaus(configfit['SigmaSecPeak'][iPt], 2)
         vnFitter[iPt].FixFrac2GausFromMassFit()
@@ -392,50 +415,48 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
             vnFitter[iPt].SetTemplateReflections(hMCRefl[iPt], reflFuncStr[iPt], massMin, massMax)
             vnFitter[iPt].SetFixReflOverS(SoverR)
             vnFitter[iPt].SetReflVnOption(0)
-        # TODO: add correlated bkgs
-        if configfit.get('InitBkg'):
-            if configfit['InitBkg'][iPt] != []:
-                vnFitter[iPt].SetBkgPars(list(itertools.chain(*configfit['InitBkg'][iPt])))
 
         # Check if to use correlated bkgs templates
+        useTemplatesPtBin = False
+        hTemplFracs[pt_dir] = None
         cfg_corr_bkgs = config.get('corr_bkgs', None)
         if cfg_corr_bkgs:
             for cocktail in cfg_corr_bkgs['cocktails']:
                 if [ptMin, ptMax] in cocktail['pt_ranges']:
                     useTemplatesPtBin = True
                     cocktail_cfg = cocktail
+                    hTemplFracs[pt_dir] = TH1D('hTemplFracs', f';{ptTit};Templ / Sgn', len(cocktail_cfg['channels']), 0, len(cocktail_cfg['channels']))
                     break
 
         if useTemplatesPtBin:
-            pt_dir = f"pt_{ptMin*10:.0f}_{ptMax*10:.0f}"
-            corr_bkg_file = TFile.Open(f"{config['outdir']}/corrbkgs/templs_{pt_dir}.root", 'r')
+            if isMultitrial:
+                corr_bkg_file_path = f"{config['outdir'].split('syst')[0]}/../corrbkgs/templs_{pt_dir}.root"
+            else:
+                corr_bkg_file_path = f"{config['outdir']}/corrbkgs/templs_{pt_dir}.root"
+            logger(f"Retrieving correlated bkg templates from {corr_bkg_file_path} for pt {ptMin} - {ptMax} GeV/c ...", "INFO")
+            corr_bkg_file = TFile.Open(corr_bkg_file_path, 'r')
             sel_string = f"fMlScore0 < {cfg_cutset['ScoreBkg']['max'][iPt]} && fMlScore1 > {cfg_cutset['ScoreFD']['min'][iPt]}" \
-                         f" && fMlScore1 < {cfg_cutset['ScoreFD']['max'][iPt]}"
-            sgn_hist, sgn_frac = get_corr_bkg(corr_bkg_file, cfg_corr_bkgs['sgn_chn'], sel_string, pt_dir, "raw", "hist", verbose=True)
+                         f" && fMlScore1 < {cfg_cutset['ScoreFD']['max'][iPt]} && fM > {massMin} && fM < {massMax}"
+            sgn_hist, sgn_frac = get_corr_bkg(corr_bkg_file, cfg_corr_bkgs['sgn_chn'], sel_string, pt_dir, "raw", "hist")
             templates = {}
-            for chn in cocktail_cfg['channels']:
+            for i_chn, chn in enumerate(cocktail_cfg['channels']):
                 templates[chn] = {}
-                print(f"Getting correlated bkg template for channel {chn} .....")
+                logger(f"Getting correlated bkg template for channel {chn} ...", "INFO")
                 histo, frac = get_corr_bkg(corr_bkg_file, chn, sel_string, pt_dir, "raw", "hist",
                                                          config['Dmeson'], configfit.get('CorrectAbundances', False),
                                                          verbose=True)
                 histo.SetDirectory(0)
-                templates[chn]['histo'] = histo
-                templates[chn]['frac'] = frac
-            
-            # Normalize fractions with respect to sgn chn
-            print(f"templates: {templates}")
-            for templ_name, templ_dict in templates.items():
-                templ_dict['frac'] /= sgn_frac
+                # Restrict histogram to fit range and rebin (reb)
+                histo_rebin_mass_range = get_rebinned_mass_sel_histo(histo, massMin, massMax, reb)
+                templates[chn]['histo'] = histo_rebin_mass_range
+                templates[chn]['frac'] = frac / sgn_frac
+                logger(f"Setting channel {chn} frac to: {frac} / sgn_frac {sgn_frac} = {frac / sgn_frac}", "INFO")
+                hTemplFracs[pt_dir].GetXaxis().SetBinLabel(i_chn+1, chn)
+                hTemplFracs[pt_dir].SetBinContent(i_chn+1, frac / sgn_frac)
 
-            print(f"Using correlated bkgs templates for pt {ptMin} - {ptMax} GeV/c:")
-            print(f"templates: {templates}")
-
-            print(f"Setting template parameters .....")
             vnFitter[iPt].SetTemplatesHisto([templ['histo'] for templ in templates.values()],
                                             [templ['frac'] for templ in templates.values()],
                                             cfg_corr_bkgs.get('anchor_mode', 2))
-            print("Histo templates set!")
             corr_bkg_file.Close()
 
         # Initial fit parameters
@@ -445,45 +466,53 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
             initPars = []
 
         # Retrieve histogram to fix signal
-        if configfit.get("FixSgnFromMC") or configfit.get("InitSgnFromMC"):
-            parFile = TFile.Open(configfit['FixSgnFromMC'], 'r')
-            sgnParsFromHisto = []
-            for key in parFile.GetListOfKeys():
-                # pick histograms containing pt-dependent parameters
-                if "hist_" in key.GetName():
-                    parHist = key.ReadObj()
-                    parValue = parHist.GetBinContent(iPt+1)
-                    parName = convert_flarefly_par_name(key.GetName().replace("hist_", ""))
-                    if configfit.get("FixSgnFromMC") and parName is not None:
-                        lowLim = 0 if parName not in ["Mean", "Sigma"] else parValue-(0.3*parValue)
-                        upLim = -1 if parName not in ["Mean", "Sigma"] else parValue+(0.3*parValue)
-                        sgnParsFromHisto.append([parName, parValue, lowLim, upLim])
-                    elif configfit.get("InitSgnFromMC") and parName is not None: 
-                        lowLim = 0 if parName not in ["Mean", "Sigma"] else parValue-(configfit["InitSgnFromMC"]*parValue)
-                        upLim = -1 if parName not in ["Mean", "Sigma"] else parValue+(configfit["InitSgnFromMC"]*parValue)
-                        sgnParsFromHisto.append([parName, parValue, lowLim, upLim])
-                    else:
-                        logger(f'Parameter name {parName} not recognized for signal fit. Skip it.', level='WARNING')
-            initPars.extend(sgnParsFromHisto)
+        if configfit.get("InitFromMC") or configfit.get("FixFromMC"):
+            if isMultitrial:
+                corr_bkg_file_path = f"{config['outdir'].split('syst')[0]}/../corrbkgs/templs_{pt_dir}.root"
+            else:
+                corr_bkg_file_path = f"{config['outdir']}/corrbkgs/templs_{pt_dir}.root"
+            corr_bkg_file = TFile.Open(corr_bkg_file_path, 'r')
+            prefitHisto = corr_bkg_file.Get(f"{pt_dir}/{configfit['SgnFuncLabel']}/raw/hMassSmooth")
+            prefitHisto.SetDirectory(0)
+            vnFitter[iPt].SetHistoPrefitSgn(prefitHisto, configfit.get("FixFromMC", False))
+            corr_bkg_file.Close()
 
-        print(f"\ninit pars: {initPars}\n")
-        # Collect fit results
+        if configfit.get('FixSgnFromFile'):
+            do_init = True
+            if isinstance(configfit['FixSgnFromFile'], list) and not configfit['FixSgnFromFile'][iPt]:
+                do_init = False  # do not init for this pt bin
+            if do_init:
+                file_path = get_fit_config(configfit, cfg_cutset, 'FixSgnFromFile')
+                file_path = file_path[iPt] if isinstance(file_path, list) else file_path
+                logger(f"Trying to fix signal parameters from file {file_path} for pt {ptMin} - {ptMax} GeV/c ...", "INFO")
+                # quit()
+                try:
+                    fixParsFile = TFile.Open(file_path, 'r')
+                    fixParsHisto = fixParsFile.Get(f'{pt_dir}/hist_signal_func')
+                    fixParsHisto.SetDirectory(0)
+                    for iBin in range(1, fixParsHisto.GetNbinsX()+1):
+                        if iBin == 1:
+                            continue  # skip integral
+                        binLabel = fixParsHisto.GetXaxis().GetBinLabel(iBin)
+                        binContent = fixParsHisto.GetBinContent(iBin)
+                        vnFitter[iPt].SetInitPar(binLabel, binContent, binContent, binContent)
+                        # logger(f"Setting initial parameter {binLabel} to {binContent} from file {configfit['FixSgnFromFile']}", "INFO")
+                    fixParsFile.Close()
+                except Exception as e:
+                    logger(f"Exception {e} caught when trying to fix signal parameters from file {file_path}.", level='ERROR')
+        # vnFitter[iPt].SetInitPars(initPars)
 
         # if configfit.get('InitFitPars') and configfit['InitFitPars'][iPt] != []:
-            # vnFitter[iPt].SetInitPars(configfit['InitFitPars'][iPt])
-        vnFitter[iPt].SetInitPars(initPars)
+        #     vnFitter[iPt].SetInitPars(configfit['InitFitPars'][iPt])
+        # vnFitter[iPt].SetInitPars(initPars)
 
-        isfitGood = vnFitter[iPt].SimultaneousFit(False)
-        print(f"Fit status for pt {ptMin} - {ptMax} GeV/c: {isfitGood}")
+        isFitGood = vnFitter[iPt].SimultaneousFit()
+        print(f"Fit status for pt {ptMin} - {ptMax} GeV/c: {isFitGood}")
 
-        # Try recovering fit if it failed for disappearing second peak
-        if not isfitGood and secPeak:
-            logger(f'Fit failed in pt bin {iPt+1}/{nPtBins}: {ptMin} - {ptMax} GeV/c. Try recovering by disabling second peak fit.', level='WARNING')
-            vnFitter[iPt].ExcludeSecondGausPeak()
-            isfitGood = vnFitter[iPt].SimultaneousFit(False)
+        if isFitGood == 2:  # Second peak was excluded due to low counts, but fit was successful
             secPeak = False
+            isFitGood = 1
 
-        print(f"Fit status for pt {ptMin} - {ptMax} GeV/c after recovery: {isfitGood}")
         # Quality selection for systematics multitrial
         if isMultitrial:
             try:
@@ -502,77 +531,100 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
             except Exception as e:
                 print(f'[{inFileName}] Exception {e} caught during significance calculation. Rejecting trial.')
                 return
-        print("Fit completed.")
-        if isfitGood:
-            print("Getting fit results ...")
-            vnResults = get_vnfitter_results(vnFitter[iPt], secPeak, useRefl, useTemplatesPtBin)
-            print(f"vnResults: {vnResults}")
-            hSigmaSimFit.SetBinContent(iPt+1, vnResults['sigma'])
-            hSigmaSimFit.SetBinError(iPt+1, vnResults['sigmaUnc'])
-            hMeanSimFit.SetBinContent(iPt+1, vnResults['mean'])
-            hMeanSimFit.SetBinError(iPt+1, vnResults['meanUnc'])
-            hRedChi2SimFit.SetBinContent(iPt+1, vnResults['chi2'])
+
+        # isFitGood = True
+        vnRes.append(None)
+        hParsMCPrefit.append(None)
+        hParsSignalFunc.append(None)
+        hParsSimFit.append(None)
+        fTotFuncMass.append(None)
+        fTotFuncVn.append(None)
+        fSgnFuncMass.append(None)
+        fBkgFuncMass.append(None)
+        fBkgFuncVn.append(None)
+        if isFitGood:
+            secPeakMode = None
+            if secPeak:
+                secPeakMode = 'VnFree'
+                if configfit.get('FixVnSecPeakToSgn', False):
+                    secPeakMode = 'VnFixedToSgn'
+                if configfit.get('FixFracSecPeak', [False]*nPtBins)[iPt]:
+                    secPeakMode += 'FixedSigmaFrac'
+            vnRes[iPt] = get_vnfitter_results(vnFitter[iPt], useRefl, useTemplatesPtBin, secPeakMode, \
+                                              configfit['FracSecPeak'][iPt] if configfit.get('FracSecPeak') else 1)
+
+            # print(f"\nlen(vnRes) = {len(vnRes)}, iPt: {iPt}")
+            # print(f"vnRes = {vnRes}\n")
+            hSigmaSimFit.SetBinContent(iPt+1, vnRes[iPt]['sigma'])
+            hSigmaSimFit.SetBinError(iPt+1, vnRes[iPt]['sigmaUnc'])
+            hMeanSimFit.SetBinContent(iPt+1, vnRes[iPt]['mean'])
+            hMeanSimFit.SetBinError(iPt+1, vnRes[iPt]['meanUnc'])
+            hRedChi2SimFit.SetBinContent(iPt+1, vnRes[iPt]['chi2'])
             hRedChi2SimFit.SetBinError(iPt+1, 1.e-20)
-            hProbSimFit.SetBinContent(iPt+1, vnResults['prob'])
+            hProbSimFit.SetBinContent(iPt+1, vnRes[iPt]['prob'])
             hProbSimFit.SetBinError(iPt+1, 1.e-20)
-            hRawYieldsSimFit.SetBinContent(iPt+1, vnResults['ry'])
-            hRawYieldsSimFit.SetBinError(iPt+1, vnResults['ryUnc'])
-            hRawYieldsTrueSimFit.SetBinContent(iPt+1, vnResults['ryTrue'])
-            hRawYieldsTrueSimFit.SetBinError(iPt+1, vnResults['ryTrueUnc'])
-            hRawYieldsSignificanceSimFit.SetBinContent(iPt+1, vnResults['signif'])
-            hRawYieldsSignificanceSimFit.SetBinError(iPt+1, vnResults['signifUnc'])
-            hVnSimFit.SetBinContent(iPt+1, vnResults['vn'])
-            hVnSimFit.SetBinError(iPt+1, vnResults['vnUnc'])
-            gVnSimFit.SetPoint(iPt, (ptMin+ptMax)/2, vnResults['vn'])
-            gVnSimFit.SetPointError(iPt, (ptMax-ptMin)/2, (ptMax-ptMin)/2, vnResults['vnUnc'], vnResults['vnUnc'])
-            gVnUnc.SetPoint(iPt, (ptMin+ptMax)/2, vnResults['vnUnc'])
+            hRawYieldsSimFit.SetBinContent(iPt+1, vnRes[iPt]['ry'])
+            hRawYieldsSimFit.SetBinError(iPt+1, vnRes[iPt]['ryUnc'])
+            hRawYieldsTrueSimFit.SetBinContent(iPt+1, vnRes[iPt]['ryTrue'])
+            hRawYieldsTrueSimFit.SetBinError(iPt+1, vnRes[iPt]['ryTrueUnc'])
+            hRawYieldsSignificanceSimFit.SetBinContent(iPt+1, vnRes[iPt]['signif'])
+            hRawYieldsSignificanceSimFit.SetBinError(iPt+1, vnRes[iPt]['signifUnc'])
+            hVnSimFit.SetBinContent(iPt+1, vnRes[iPt]['vn'])
+            hVnSimFit.SetBinError(iPt+1, vnRes[iPt]['vnUnc'])
+            gVnSimFit.SetPoint(iPt, (ptMin+ptMax)/2, vnRes[iPt]['vn'])
+            gVnSimFit.SetPointError(iPt, (ptMax-ptMin)/2, (ptMax-ptMin)/2, vnRes[iPt]['vnUnc'], vnRes[iPt]['vnUnc'])
+            gVnUnc.SetPoint(iPt, (ptMin+ptMax)/2, vnRes[iPt]['vnUnc'])
             gVnUnc.SetPointError(iPt, (ptMax-ptMin)/2, (ptMax-ptMin)/2, 1.e-20, 1.e-20)
-            hPulls.append(vnResults['pulls'])
+            hPulls.append(vnRes[iPt]['pulls'])
 
-            print("Appending total mass function ...")
-            fTotFuncMass.append(vnResults['fTotFuncMass'])
-            fTotFuncVn.append(vnResults['fTotFuncVn'])
-            fSgnFuncMass.append(vnResults['fSgnFuncMass'])
-            fBkgFuncMass.append(vnResults['fBkgFuncMass'])
-            fBkgFuncVn.append(vnResults['fBkgFuncVn'])
+            # Save histogram parameters
+            hParsMCPrefit[iPt] = vnRes[iPt]['hParsMCPrefit']
+            hParsSignalFunc[iPt] = vnRes[iPt]['hParsSignalFunc']
+            hParsSimFit[iPt] = vnRes[iPt]['hParsSimFit']
+            fTotFuncMass[iPt] = vnRes[iPt]['fTotFuncMass']
+            fTotFuncVn[iPt] = vnRes[iPt]['fTotFuncVn']
+            fSgnFuncMass[iPt] = vnRes[iPt]['fSgnFuncMass']
+            fBkgFuncMass[iPt] = vnRes[iPt]['fBkgFuncMass']
+            fBkgFuncVn[iPt] = vnRes[iPt]['fBkgFuncVn']
 
-            print(f"fTotFuncMass: {fTotFuncMass}")
-            print(f"iPt: {iPt}")
             SetObjectStyle(fTotFuncMass[iPt], color=kAzure+4, linewidth=3)
             SetObjectStyle(fSgnFuncMass[iPt], fillcolor=kAzure+4, fillstyle=1000, linewidth=0, fillalpha=0.3)
             SetObjectStyle(fBkgFuncMass[iPt], color=kOrange+1, linestyle=9, linewidth=2)
             SetObjectStyle(fBkgFuncVn[iPt], color=kOrange+1, linestyle=7, linewidth=2)
             SetObjectStyle(fTotFuncVn[iPt], color=kAzure+4, linewidth=3)
 
+            for bkgHisto, bkgParVal, bkgParErr in zip(hVnBkgCoeffs[iPt], vnRes[iPt]['bkgPars'], vnRes[iPt]['bkgParsUncs']):
+                bkgHisto.SetBinContent(iPt+1, bkgParVal)
+                bkgHisto.SetBinError(iPt+1, bkgParErr)
+
             if secPeak:
-                hMeanSecPeakFitMass.SetBinContent(iPt+1, vnResults['secPeakMeanMass'])
-                hMeanSecPeakFitMass.SetBinError(iPt+1, vnResults['secPeakMeanMassUnc'])
-                hSigmaSecPeakFitMass.SetBinContent(iPt+1, vnResults['secPeakSigmaMass'])
-                hSigmaSecPeakFitMass.SetBinError(iPt+1, vnResults['secPeakSigmaMassUnc'])
-                hMeanSecPeakFitVn.SetBinContent(iPt+1, vnResults['secPeakMeanVn'])
-                hMeanSecPeakFitVn.SetBinError(iPt+1, vnResults['secPeakMeanVnUnc'])
-                hSigmaSecPeakFitVn.SetBinContent(iPt+1, vnResults['secPeakSigmaVn'])
-                hSigmaSecPeakFitVn.SetBinError(iPt+1, vnResults['secPeakSigmaVnUnc'])
-                gVnSimFitSecPeak.SetPoint(iPt, (ptMin+ptMax)/2, vnResults['vnSecPeak'])
+                hMeanSecPeakFitMass.SetBinContent(iPt+1, vnRes[iPt]['secPeakMeanMass'])
+                hMeanSecPeakFitMass.SetBinError(iPt+1, vnRes[iPt]['secPeakMeanMassUnc'])
+                hSigmaSecPeakFitMass.SetBinContent(iPt+1, vnRes[iPt]['secPeakSigmaMass'])
+                hSigmaSecPeakFitMass.SetBinError(iPt+1, vnRes[iPt]['secPeakSigmaMassUnc'])
+                hMeanSecPeakFitVn.SetBinContent(iPt+1, vnRes[iPt]['secPeakMeanVn'])
+                hMeanSecPeakFitVn.SetBinError(iPt+1, vnRes[iPt]['secPeakMeanVnUnc'])
+                hSigmaSecPeakFitVn.SetBinContent(iPt+1, vnRes[iPt]['secPeakSigmaVn'])
+                hSigmaSecPeakFitVn.SetBinError(iPt+1, vnRes[iPt]['secPeakSigmaVnUnc'])
+                gVnSimFitSecPeak.SetPoint(iPt, (ptMin+ptMax)/2, vnRes[iPt]['vnSecPeak'])
                 gVnSimFitSecPeak.SetPointError(iPt, (ptMax-ptMin)/2, (ptMax-ptMin)/2,
-                                               vnResults['vnSecPeakUnc'],
-                                               vnResults['vnSecPeakUnc'])
-                gVnUncSecPeak.SetPoint(iPt, (ptMin+ptMax)/2, vnResults['vnSecPeakUnc'])
+                                               vnRes[iPt]['vnSecPeakUnc'],
+                                               vnRes[iPt]['vnSecPeakUnc'])
+                gVnUncSecPeak.SetPoint(iPt, (ptMin+ptMax)/2, vnRes[iPt]['vnSecPeakUnc'])
                 gVnUncSecPeak.SetPointError(iPt, (ptMax-ptMin)/2, (ptMax-ptMin)/2, 1.e-20, 1.e-20)
-                fMassSecPeakFunc.append(vnResults['fMassSecPeakFunc'])
-                fVnSecPeakFunc.append(vnResults['fVnSecPeakFunct'])
-                SetObjectStyle(fMassSecPeakFunc[-1], fillcolor=kGreen+1, fillstyle=1000, linewidth=0, fillalpha=0.3)   
+                fMassSecPeakFunc.append(vnRes[iPt]['fMassSecPeakFunc'])
+                fVnSecPeakFunc.append(vnRes[iPt]['fVnSecPeakFunct'])
+                SetObjectStyle(fMassSecPeakFunc[-1], fillcolor=kGreen+1, fillstyle=1000, linewidth=0, fillalpha=0.3)
 
             if useRefl:
-                hRefl.append(vnResults['fMassRflFunc'])
-                fMassBkgRflFunc.append(vnResults['fMassBkgRflFunc'])
+                hRefl.append(vnRes[iPt]['fMassRflFunc'])
+                fMassBkgRflFunc.append(vnRes[iPt]['fMassBkgRflFunc'])
                 SetObjectStyle(hRefl[iPt], fillcolor=kGreen+1, fillstyle=1000, linewidth=0, fillalpha=0.3)
                 SetObjectStyle(fMassBkgRflFunc[iPt], color=kRed+1, linestyle=7, linewidth=2)
 
             if configfit.get('DrawVnComps'):
-                fVnCompFuncts.append(vnResults['fVnCompsFuncts'])
+                fVnCompFuncts.append(vnRes[iPt]['fVnCompsFuncts'])
 
-            print("Drawing fit results ...")
             # Draw upper pad
             cSimFit[iPt].cd(1)
             hMassForFit[iPt].GetYaxis().SetRangeUser(0.2*hMassForFit[iPt].GetMinimum(),
@@ -590,68 +642,52 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
                 hRefl[iPt].Draw('same')
                 latex.DrawLatex(0.18, 0.20, f'RoverS = {SoverR:.2f}')
 
-            latex.DrawLatex(0.18, 0.80, f'#mu = {vnResults["mean"]:.3f} #pm {vnResults["meanUnc"]:.3f} GeV/c^{2}')
-            latex.DrawLatex(0.18, 0.75, f'#sigma = {vnResults["sigma"]:.3f} #pm {vnResults["sigmaUnc"]:.3f} GeV/c^{2}')
-            latex.DrawLatex(0.18, 0.70, f'S = {vnResults["ry"]:.0f} #pm {vnResults["ryUnc"]:.0f}')
-            latex.DrawLatex(0.18, 0.65, f'S/B (3#sigma) = {vnResults["ry"]/vnResults["bkg"]:.2f}')
-            latex.DrawLatex(0.18, 0.60, f'Signif. (3#sigma) = {round(vnResults["signif"], 2)}')
+            latex.DrawLatex(0.18, 0.80, f'#mu = {vnRes[iPt]["mean"]:.3f} #pm {vnRes[iPt]["meanUnc"]:.3f} GeV/c^{2}')
+            latex.DrawLatex(0.18, 0.75, f'#sigma = {vnRes[iPt]["sigma"]:.3f} #pm {vnRes[iPt]["sigmaUnc"]:.3f} GeV/c^{2}')
+            latex.DrawLatex(0.18, 0.70, f'S = {vnRes[iPt]["ry"]:.0f} #pm {vnRes[iPt]["ryUnc"]:.0f}')
+            latex.DrawLatex(0.18, 0.65, f'S/B (3#sigma) = {vnRes[iPt]["ry"]/vnRes[iPt]["bkg"]:.2f}')
+            latex.DrawLatex(0.18, 0.60, f'Signif. (3#sigma) = {round(vnRes[iPt]["signif"], 2)}')
 
             if secPeak:
                 latex.DrawLatex(0.18, 0.55,
-                                f'#mu ({secPeakLabel}) = {vnResults["secPeakMeanMass"]:.3f} #pm {vnResults["secPeakMeanMassUnc"]:.3f} GeV/c^{2}')
+                                f'#mu ({secPeakLabel}) = {vnRes[iPt]["secPeakMeanMass"]:.3f} #pm {vnRes[iPt]["secPeakMeanMassUnc"]:.3f} GeV/c^{2}')
                 latex.DrawLatex(0.18, 0.50,
-                                f'#sigma ({secPeakLabel}) = {vnResults["secPeakSigmaMass"]:.3f} #pm {vnResults["secPeakSigmaMassUnc"]:.3f} GeV/c^{2}')
+                                f'#sigma ({secPeakLabel}) = {vnRes[iPt]["secPeakSigmaMass"]:.3f} #pm {vnRes[iPt]["secPeakSigmaMassUnc"]:.3f} GeV/c^{2}')
 
-            print("Drawing templates ...")
             if useTemplatesPtBin:
-                fMassTemplFuncts[iPt] = vnResults['fMassTemplFuncts']
-                fMassTemplTotFuncts[iPt] = vnResults['fMassTemplTotFunc']
-                # REVIEW: I would suggest to use the append here
-
-                print(f"Filling TemplOverSgn: {vnFitter[iPt].GetTemplOverSig()}")
+                fMassTemplFuncts[iPt] = vnRes[iPt]['fMassTemplFuncts']
+                fMassTemplTotFuncts[iPt] = vnRes[iPt]['fMassTemplTotFunc']
                 hTemplOverSgn.SetBinContent(iPt+1, vnFitter[iPt].GetTemplOverSig())
-                print(f"vnResults['vnTemplates']: {vnResults['vnTemplates']}")
-                # for iTempl, (templVn, templVnUnc) in enumerate(zip(vnResults["vnTemplates"], vnResults["vnTemplatesUncs"])):
-                #     gVnTempls[iTempl].SetPoint(iPt, (ptMin+ptMax)/2, templVn)
-                #     gVnTempls[iTempl].SetPointError(iPt, (ptMax-ptMin)/2, (ptMax-ptMin)/2, 1.e-20, 1.e-20)
-                #     gVnTemplsUncs[iTempl].SetPoint(iPt, (ptMin+ptMax)/2, templVnUnc)
-                #     gVnTemplsUncs[iTempl].SetPointError(iPt, (ptMax-ptMin)/2, (ptMax-ptMin)/2, 1.e-20, 1.e-20)
-
                 SetObjectStyle(fMassTemplTotFuncts[iPt], color=kRed, linewidth=2)
                 fMassTemplTotFuncts[iPt].Draw('same')
-                cSimFit[iCanv].Modified()
-                cSimFit[iCanv].Update()
+                cSimFit[iPt].Modified()
+                cSimFit[iPt].Update()
                 if configfit.get("DrawSingleTempls"):
                     for iMassTemplFunct, massTemplFunct in enumerate(fMassTemplFuncts[iPt]):
                         SetObjectStyle(massTemplFunct, color=kMagenta+2+iMassTemplFunct*2, linewidth=3)
                         massTemplFunct.Draw('same')
-                        cSimFit[iCanv].Modified()
-                        cSimFit[iCanv].Update()
+                        cSimFit[iPt].Modified()
+                        cSimFit[iPt].Update()
             # Draw lower pad
             cSimFit[iPt].cd(2)
             hVnForFit[iPt].GetXaxis().SetRangeUser(massMin, massMax)
-            hVnForFit[iPt].GetYaxis().SetTitle(f'#it{{v}}_{{{harmonic}}} (SP)')
             hVnForFit[iPt].GetYaxis().SetDecimals()
-            hVnForFit[iPt].GetYaxis().SetRangeUser(0.5*hVnForFit[iPt].GetMinimum(),
-                                                    1.5*hVnForFit[iPt].GetMaximum())
+            # delta_max_min considering uncertainties associated to points
+            bin_contents = [hVnForFit[iPt].GetBinContent(bi) for bi in range(1, hVnForFit[iPt].GetNbinsX()+1)]
+            bin_errors = [hVnForFit[iPt].GetBinError(bi) for bi in range(1, hVnForFit[iPt].GetNbinsX()+1)]
+            bin_values_with_unc = [bc + be for bc, be in zip(bin_contents, bin_errors)] + [bc - be for bc, be in zip(bin_contents, bin_errors)]
+            delta_max_min = max(bin_values_with_unc) - min(bin_values_with_unc)
+            hVnForFit[iPt].GetYaxis().SetRangeUser(min(bin_values_with_unc) - 0.4*delta_max_min, max(bin_values_with_unc) + 0.4*delta_max_min)
             hVnForFit[iPt].Draw('E')
             fBkgFuncVn[iPt].Draw('same')
             fTotFuncVn[iPt].Draw('same')
-            
-            latex.DrawLatex(0.18, 0.18, f'#chi^{{2}}/ndf = {vnResults["chi2"]:.2f}')
+
+            latex.DrawLatex(0.18, 0.18, f'#chi^{{2}}/ndf = {vnRes[iPt]["chi2"]:.2f}')
             latex.DrawLatex(0.18, 0.80,
-                            f'#it{{v}}{harmonic}({partTitle}) = {vnResults["vn"]:.3f} #pm {vnResults["vnUnc"]:.3f}')
-                
+                            f'#it{{v}}{harmonic}({partTitle}) = {vnRes[iPt]["vn"]:.3f} #pm {vnRes[iPt]["vnUnc"]:.3f}')
             if secPeak:
-                latex.DrawLatex(0.18, 0.75,
-                                f'#it{{v}}{harmonic}({secPeakLabel}) = {vnResults["vnSecPeak"]:.3f} #pm {vnResults["vnSecPeakUnc"]:.3f}')
-            
-            if useTemplatesPtBin:
-                # for iVnTempl, (vnCoeff, vnCoeffUnc) in enumerate(zip(vnResults["vnTemplates"], vnResults["vnTemplatesUncs"])):
-                #     latex.DrawLatex(0.18, 0.70-iVnTempl*0.05,
-                #                 f'#it{{v}}{harmonic}(Templ{iVnTempl}) = {vnCoeff:.3f} #pm {vnCoeffUnc:.3f}')
-                    cSimFit[iCanv].Modified()
-                    cSimFit[iCanv].Update()
+                latex.DrawLatex(0.18, 0.75, f'#it{{v}}{harmonic}({secPeakLabel}) = {vnRes[iPt]["vnSecPeak"]:.3f} #pm {vnRes[iPt]["vnSecPeakUnc"]:.3f}')
+
             if configfit.get('DrawVnComps'):
                 legVnCompn = TLegend(0.72, 0.15, 0.9, 0.35)
                 legVnCompn.SetBorderSize(0)
@@ -674,44 +710,14 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
                         legVnCompn.AddEntry(fVnCompFuncts[iPt][f'vnTempl{iTempl}'], f"Templ{iTempl} #it{{v}}{harmonic}", 'l')
                 for _, vnCompFunct in fVnCompFuncts[iPt].items():
                     vnCompFunct.Draw('same')
-                    cSimFit[iCanv].Modified()
-                    cSimFit[iCanv].Update()
+                    cSimFit[iPt].Modified()
+                    cSimFit[iPt].Update()
                 legVnCompn.Draw()
 
-            cSimFit[iCanv].Modified()
-            cSimFit[iCanv].Update()
+            cSimFit[iPt].Modified()
+            cSimFit[iPt].Update()
 
-        invMassPrefit = vnFitter[iPt].GetMassPrefitObject()
-        hPullsPrefit.append(invMassPrefit.GetPullDistribution())
-        histoMassPrefit = invMassPrefit.GetHistoClone()
-        totFuncMassPrefit = invMassPrefit.GetMassFunc()
-        bkgFuncMassPrefit = invMassPrefit.GetBackgroundRecalcFunc()
-        sgnFuncMassPrefit = invMassPrefit.GetSignalFunc()
-        cInvMassPrefits[iPt] = TCanvas(f"cMass_{ptMin*10:.0f}_{ptMax*10:.0f}", f"Mass Fit {ptMin}-{ptMax} GeV/c", 800, 600)
-        histoMassPrefit.SetStats(0)
-        histoMassPrefit.Draw("E")
-        bkgFuncMassPrefit.SetLineColor(kGreen+2)
-        bkgFuncMassPrefit.SetLineWidth(2)
-        bkgFuncMassPrefit.SetLineWidth(3)
-        bkgFuncMassPrefit.Draw("same")
-        sgnFuncMassPrefit.SetLineColor(kBlue)
-        sgnFuncMassPrefit.SetLineWidth(2)
-        sgnFuncMassPrefit.SetLineWidth(3)
-        sgnFuncMassPrefit.Draw("same")
-        if useTemplatesPtBin:
-            templFuncMassPrefit = invMassPrefit.GetTemplFunc()
-            print(f"invMassPrefit.GetTemplOverSig(): {invMassPrefit.GetTemplOverSig()}")
-            print(f"vnFitter[iPt].GetTemplOverSig(): {vnFitter[iPt].GetTemplOverSig()}")
-            templFuncMassPrefit.SetLineColor(kMagenta)
-            templFuncMassPrefit.SetLineWidth(2)
-            templFuncMassPrefit.SetLineWidth(3)
-            templFuncMassPrefit.Draw("same")
-
-        totFuncMassPrefit.SetLineColor(kRed)
-        totFuncMassPrefit.SetLineWidth(2)
-        totFuncMassPrefit.SetLineWidth(3)
-        totFuncMassPrefit.Draw("same")
-
+    print("Drawing Vn vs pT ...")
     canvVn.cd().SetLogx()
     hframe = canvVn.DrawFrame(0.5, -0.5, gVnSimFit.GetXaxis().GetXmax()+0.5, 0.5,
                               f';#it{{p}}_{{T}} (GeV/c); v_{{{harmonic}}} (SP)')
@@ -752,29 +758,60 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
         else:
             cSimFit[iPt].SaveAs(f'{outFileName}.pdf{suffix_pdf}')
     cSimFitFull.SaveAs(f'{outFileName}_AllFits.pdf')
-    cSimFitFull.SaveAs(f'{outFileName}_AllFits.png') 
+    cSimFitFull.SaveAs(f'{outFileName}_AllFits.png')
     outFile = TFile(f'{outFileName}.root', 'recreate')
 
-    for canv in cSimFit:
-        canv.Write()
-    for ih, hist in enumerate(hMass):
-        hist.Write(f'hist_mass_pt{ptmins[ih]*10:.0f}_{ptmaxs[ih]*10:.0f}')
-    for ih, hist in enumerate(hVn):
-        hist.Write(f'hist_vn_pt{ptmins[ih]*10:.0f}_{ptmaxs[ih]*10:.0f}')
-    for hist in hPulls:
-        hist.Write('hist_pulls')
-    # for hist in hPullsPrefit:
-    #     hist.Write('hist_pulls_prefit')
+    for iPt, (ptMin, ptMax) in enumerate(zip(ptmins, ptmaxs)):
+        make_dir_root_file(f'pt_{int(ptMin*10)}_{int(ptMax*10)}', outFile)
+    outFile.cd()
+
+    for canv, (pt_min, pt_max) in zip(cSimFit, zip(ptmins, ptmaxs)):
+        if canv:
+            outFile.cd(f'pt_{int(pt_min*10)}_{int(pt_max*10)}')
+            canv.Write()
+    for hist, pt_min, pt_max in zip(hParsMCPrefit, ptmins, ptmaxs):
+        if hist:
+            outFile.cd(f"pt_{int(pt_min*10)}_{int(pt_max*10)}")
+            hist.Write('hist_mc_prefit')
+    for hist, pt_min, pt_max in zip(hParsSignalFunc, ptmins, ptmaxs):
+        if hist:
+            outFile.cd(f"pt_{int(pt_min*10)}_{int(pt_max*10)}")
+            hist.Write('hist_signal_func')
+    for hist, pt_min, pt_max in zip(hParsSimFit, ptmins, ptmaxs):
+        if hist:
+            outFile.cd(f"pt_{int(pt_min*10)}_{int(pt_max*10)}")
+            hist.Write('hist_sim_fit')
+    for hist, pt_min, pt_max in zip(hMass, ptmins, ptmaxs):
+        if hist:
+            outFile.cd(f"pt_{int(pt_min*10)}_{int(pt_max*10)}")
+            hist.Write('hist_mass')
+    for hist, pt_min, pt_max in zip(hVn, ptmins, ptmaxs):
+        if hist:
+            outFile.cd(f"pt_{int(pt_min*10)}_{int(pt_max*10)}")
+            hist.Write('hist_vn')
+    for hist, pt_min, pt_max in zip(hPulls, ptmins, ptmaxs):
+        if hist:
+            outFile.cd(f"pt_{int(pt_min*10)}_{int(pt_max*10)}")
+            hist.Write('hist_pulls')
     for ipt, (ptmin, ptmax) in enumerate(zip(ptmins, ptmaxs)):
         try:
-            fTotFuncMass[ipt].Write(f'fTotFuncMass_pt{ptmin*10:.0f}_{ptmax*10:.0f}')
-            fTotFuncVn[ipt].Write(f'fTotFuncVn_pt{ptmin*10:.0f}_{ptmax*10:.0f}')
-            fSgnFuncMass[ipt].Write(f'fSgnFuncMass_pt{ptmin*10:.0f}_{ptmax*10:.0f}')
-            fBkgFuncMass[ipt].Write(f'fBkgFuncMass_pt{ptmin*10:.0f}_{ptmax*10:.0f}')
-            fBkgFuncVn[ipt].Write(f'fBkgFuncVn_pt{ptmin*10:.0f}_{ptmax*10:.0f}')
+            outFile.cd(f'pt_{int(ptmin*10)}_{int(ptmax*10)}')
+            fTotFuncMass[ipt].Write('fTotFuncMass')
+            fTotFuncVn[ipt].Write('fTotFuncVn')
+            fSgnFuncMass[ipt].Write('fSgnFuncMass')
+            fBkgFuncMass[ipt].Write('fBkgFuncMass')
+            fBkgFuncVn[ipt].Write('fBkgFuncVn')
+            for bkgHisto in hVnBkgCoeffs[ipt]:
+                bkgHisto.Write(f'{bkgHisto.GetName()}')
         except:
             logger(f'Fit function for pt {ptmin*10:.0f}-{ptmax*10:.0f} not available. Skipping.', level='WARNING')
 
+    for pt_dir, hTemplFrac in hTemplFracs.items():
+        if hTemplFrac:
+            outFile.cd(pt_dir)
+            hTemplFrac.Write('hTemplFracs')
+
+    outFile.cd()
     hSigmaSimFit.Write()
     hMeanSimFit.Write()
     hMeanSecPeakFitMass.Write()
@@ -798,10 +835,6 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
     if secPeak:
         gVnSimFitSecPeak.Write()
         gVnUncSecPeak.Write()
-    # if useTemplates:
-    #     for gvnTempl, gvnTemplUnc in zip(gVnTempls, gVnTemplsUncs):
-    #         gvnTempl.Write('gvnTempl')
-    #         gvnTemplUnc.Write('gvnTemplUnc')
 
     outFile.Close()
 
@@ -816,6 +849,9 @@ if __name__ == "__main__":
     parser.add_argument('--batch', '-b', help='suppress video output', action='store_true')
     parser.add_argument('--multitrial', help='suppress redundant prints', action='store_true')
     args = parser.parse_args()
+
+    print(f"Processing cutset file {args.cutset_file_name}")
+    # quit()
 
     get_vn_vs_mass(
         args.fitConfigFileName,

@@ -72,14 +72,14 @@ config = {
         'filename_pattern': 'raw_yields_00.root',
         'histo_name': 'hVnBkgCoeff0',
         'has_uncertainty': True,
-        'has_pt_suffix': True,
+        'inside_pt_subdir': True,
         'y_label': '#it{v}_{n} bkg coeff 0',
     },
     'vn_bkg_coeff_1': {
         'filename_pattern': 'raw_yields_00.root',
         'histo_name': 'hVnBkgCoeff1',
         'has_uncertainty': True,
-        'has_pt_suffix': True,
+        'inside_pt_subdir': True,
         'y_label': '#it{v}_{n} bkg coeff 1',
     },
 }
@@ -191,8 +191,9 @@ def produce_multitrial_syst_bdt_plots(default_cfg, results_dir):
                         bin_edges
                     )
 
-                histo_name = f"{setting['histo_name']}_pt{pt_min_times_10}_{pt_max_times_10}" if setting.get('has_pt_suffix', False) else setting['histo_name']
+                histo_name = f"pt_{pt_min_times_10}_{pt_max_times_10}/{setting['histo_name']}" if setting.get('inside_pt_subdir', False) else setting['histo_name']
                 hist = ry_cutset_file.Get(histo_name) if 'raw_yields' in setting['filename_pattern'] else eff_cutset_file.Get(histo_name)
+                print(f"ry_cutset_file.GetName(): {ry_cutset_file.GetName()}, trying to get histo {histo_name} for variable {variable}...")
                 vals[cutset_suffix][variable] = {}
                 ref_val = hist.GetBinContent(pt_bin_ref)
                 ref_unc = hist.GetBinError(pt_bin_ref) if setting.get('has_uncertainty', False) else 0.0

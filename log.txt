@@ -1,0 +1,3611 @@
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_0] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_0] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      2793.85
+NDf                       =           67
+Edm                       =  5.59879e-06
+NCalls                    =           58
+BkgNorm                   =        275.8   +/-   1.47905      	 (limited)
+BkgExpLambda              =     -2.63322   +/-   0.0281906    	 (limited)
+--- [VnVsMassFit_pt_5.0_6.0_cutset_0] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      474.128
+NDf                       =           96
+Edm                       =  1.72813e-08
+NCalls                    =          240
+BkgNorm                   =      197.203   +/-   1.74241      	 (limited)
+BkgExpLambda              =     -2.71094   +/-   0.0500158    	 (limited)
+SgnNorm                   =      456.313   +/-   1.63121      	 (limited)
+Mean                      =      1.86082                      	 (fixed)
+Sigma                     =    0.0166271                      	 (fixed)
+Alpha1                    =      1.48511                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      1.57382                      	 (fixed)
+N2                        =           12                      	 (fixed)
+SecPeakNorm               =      41.4287   +/-   1.01375      	 (limited)
+SecPeakMean               =      2.02825   +/-   0.000755542  	 (limited)
+SecPeakSigma              =     0.037128   +/-   0.000841465  	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 275.8 to 275.8
+Setting prefit parameter 1 from -2.63322 to -2.63322
+Counts in second peak region: 8871, background counts: 3410.94, net counts: 5460.06
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_0] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      17.2144
+NDf                       =           17
+Edm                       =  1.42978e-08
+NCalls                    =           51
+ConstVnBkg                =     0.175776   +/-   0.00477219   	 (limited)
+SlopeVnBkg                =      0.16598   +/-   0.0291324    	 (limited)
+Setting mass par 0 from 197.203 to 197.203
+Setting mass par 1 from -2.71094 to -2.71094
+Setting mass par 2 from 456.313 to 456.313
+Setting mass par 3 from 1.86082 to 1.86082
+Setting mass par 4 from 0.0166271 to 0.0166271
+Setting mass par 5 from 1.48511 to 1.48511
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 1.57382 to 1.57382
+Setting mass par 8 from 12 to 12
+Setting mass par 9 from 41.4287 to 41.4287
+Setting mass par 10 from 2.02825 to 2.02825
+Setting mass par 11 from 0.037128 to 0.037128
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_0] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_0] Configuring fitter ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_0] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_0] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_0] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 197.203 [0, 768.345]
+Par 1 (BkgExpLambda): -2.71094 [-100, 100]
+Par 2 (SgnNorm): 456.313 [0, 768.345]
+Par 3 (Mean): 1.86082 [0, 0]
+Par 4 (Sigma): 0.0166271 [0, 0]
+Par 5 (Alpha1): 1.48511 [1.18809, 1.78213]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 1.57382 [1.25906, 1.88859]
+Par 8 (N2): 12 [9.6, 14.4]
+Par 9 (SecPeakNorm): 41.4287 [0, 1e+06]
+Par 10 (SecPeakMean): 2.02825 [1.99, 2.04]
+Par 11 (SecPeakSigma): 0.037128 [0.005, 0.05]
+Par 12 (ConstVnBkg): 0.175776 [0, 1]
+Par 13 (SlopeVnBkg): 0.16598 [-1, 1]
+Par 14 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      524.192
+NDf                       =          128
+Edm                       =  1.49383e-07
+NCalls                    =          274
+BkgNorm                   =      197.311   +/-   1.74346      	 (limited)
+BkgExpLambda              =     -2.70891   +/-   0.0500325    	 (limited)
+SgnNorm                   =      456.291   +/-   1.63121      	 (limited)
+Mean                      =      1.86082                      	 (fixed)
+Sigma                     =    0.0166271                      	 (fixed)
+Alpha1                    =      1.48511                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      1.57382                      	 (fixed)
+N2                        =           12                      	 (fixed)
+SecPeakNorm               =       41.345   +/-   1.01536      	 (limited)
+SecPeakMean               =      2.02835   +/-   0.00075877   	 (limited)
+SecPeakSigma              =    0.0371736   +/-   0.000846806  	 (limited)
+ConstVnBkg                =     0.191663   +/-   0.00683594   	 (limited)
+SlopeVnBkg                =     0.219599   +/-   0.0385578    	 (limited)
+v2Sgn                     =     0.135652   +/-   0.00323302   	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.135652
+The vn of templates is equal to the one of signal: 0.135652
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_0] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_0] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      1930.47
+NDf                       =           62
+Edm                       =  1.63637e-07
+NCalls                    =           66
+BkgNorm                   =      182.122   +/-   1.26443      	 (limited)
+BkgExpLambda              =      -2.3846   +/-   0.0343751    	 (limited)
+--- [VnVsMassFit_pt_6.0_7.0_cutset_0] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      386.997
+NDf                       =           96
+Edm                       =   1.0406e-05
+NCalls                    =          258
+BkgNorm                   =       124.09   +/-   1.69163      	 (limited)
+BkgExpLambda              =     -2.42704   +/-   0.0696436    	 (limited)
+SgnNorm                   =      279.677   +/-   1.29475      	 (limited)
+Mean                      =       1.8609                      	 (fixed)
+Sigma                     =    0.0190055                      	 (fixed)
+Alpha1                    =      1.35589                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      6.13369                      	 (fixed)
+N2                        =      5.64753                      	 (fixed)
+SecPeakNorm               =      32.8226   +/-   1.12185      	 (limited)
+SecPeakMean               =      2.02092   +/-   0.00100475   	 (limited)
+SecPeakSigma              =    0.0449437   +/-   0.00150387   	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 182.122 to 182.122
+Setting prefit parameter 1 from -2.3846 to -2.3846
+Counts in second peak region: 6126, background counts: 2232.33, net counts: 3893.67
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_0] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      11.5913
+NDf                       =           14
+Edm                       =  1.47067e-07
+NCalls                    =           51
+ConstVnBkg                =     0.138419   +/-   0.00604198   	 (limited)
+SlopeVnBkg                =     0.065834   +/-   0.036476     	 (limited)
+Setting mass par 0 from 124.09 to 124.09
+Setting mass par 1 from -2.42704 to -2.42704
+Setting mass par 2 from 279.677 to 279.677
+Setting mass par 3 from 1.8609 to 1.8609
+Setting mass par 4 from 0.0190055 to 0.0190055
+Setting mass par 5 from 1.35589 to 1.35589
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 6.13369 to 6.13369
+Setting mass par 8 from 5.64753 to 5.64753
+Setting mass par 9 from 32.8226 to 32.8226
+Setting mass par 10 from 2.02092 to 2.02092
+Setting mass par 11 from 0.0449437 to 0.0449437
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_0] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_0] Configuring fitter ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_0] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_0] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_0] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 124.09 [0, 487.53]
+Par 1 (BkgExpLambda): -2.42704 [-100, 100]
+Par 2 (SgnNorm): 279.677 [0, 487.53]
+Par 3 (Mean): 1.8609 [0, 0]
+Par 4 (Sigma): 0.0190055 [0, 0]
+Par 5 (Alpha1): 1.35589 [1.08471, 1.62706]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 6.13369 [4.90695, 7.36042]
+Par 8 (N2): 5.64753 [4.51803, 6.77704]
+Par 9 (SecPeakNorm): 32.8226 [0, 1e+06]
+Par 10 (SecPeakMean): 2.02092 [1.99, 2.04]
+Par 11 (SecPeakSigma): 0.0449437 [0.005, 0.05]
+Par 12 (ConstVnBkg): 0.138419 [0, 1]
+Par 13 (SlopeVnBkg): 0.065834 [-1, 1]
+Par 14 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      422.547
+NDf                       =          128
+Edm                       =  9.01355e-07
+NCalls                    =          275
+BkgNorm                   =      124.146   +/-   1.69275      	 (limited)
+BkgExpLambda              =     -2.42532   +/-   0.0696391    	 (limited)
+SgnNorm                   =      279.665   +/-   1.29479      	 (limited)
+Mean                      =       1.8609                      	 (fixed)
+Sigma                     =    0.0190055                      	 (fixed)
+Alpha1                    =      1.35589                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      6.13369                      	 (fixed)
+N2                        =      5.64753                      	 (fixed)
+SecPeakNorm               =      32.7801   +/-   1.12315      	 (limited)
+SecPeakMean               =      2.02094   +/-   0.00100609   	 (limited)
+SecPeakSigma              =    0.0449409   +/-   0.00150852   	 (limited)
+ConstVnBkg                =      0.14278   +/-   0.00883083   	 (limited)
+SlopeVnBkg                =    0.0720581   +/-   0.0492749    	 (limited)
+v2Sgn                     =     0.120744   +/-   0.00415224   	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.120744
+The vn of templates is equal to the one of signal: 0.120744
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_0] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_0] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      1378.31
+NDf                       =           65
+Edm                       =  3.56564e-08
+NCalls                    =           54
+BkgNorm                   =      120.129   +/-   0.995424     	 (limited)
+BkgExpLambda              =     -2.35739   +/-   0.0415541    	 (limited)
+--- [VnVsMassFit_pt_7.0_8.0_cutset_0] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =        808.2
+NDf                       =           96
+Edm                       =   1.7283e-06
+NCalls                    =          437
+BkgNorm                   =      26.3449   +/-   1.33544      	 (limited)
+BkgExpLambda              =     -9.63264   +/-   0.663615     	 (limited)
+SgnNorm                   =      228.116   +/-   1.44728      	 (limited)
+Mean                      =      1.86095                      	 (fixed)
+Sigma                     =    0.0173949                      	 (fixed)
+Alpha1                    =     0.898234                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =        1.209                      	 (fixed)
+N2                        =      1.51104                      	 (fixed)
+SecPeakNorm               =      26.7282   +/-   0.562417     	 (limited)
+SecPeakMean               =      2.04164   +/-   0.00115273   	 (limited)
+SecPeakSigma              =         0.05   +/-   0.000440611  	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 120.129 to 120.129
+Setting prefit parameter 1 from -2.35739 to -2.35739
+Counts in second peak region: 4145, background counts: 117.625, net counts: 4027.38
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_0] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      6.42029
+NDf                       =           15
+Edm                       =  5.15656e-06
+NCalls                    =           47
+ConstVnBkg                =     0.121681   +/-   0.00735375   	 (limited)
+SlopeVnBkg                =    0.0743037   +/-   0.0453822    	 (limited)
+Setting mass par 0 from 26.3449 to 26.3449
+Setting mass par 1 from -9.63264 to -9.63264
+Setting mass par 2 from 228.116 to 228.116
+Setting mass par 3 from 1.86095 to 1.86095
+Setting mass par 4 from 0.0173949 to 0.0173949
+Setting mass par 5 from 0.898234 to 0.898234
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 1.209 to 1.209
+Setting mass par 8 from 1.51104 to 1.51104
+Setting mass par 9 from 26.7282 to 26.7282
+Setting mass par 10 from 2.04164 to 2.04164
+Setting mass par 11 from 0.05 to 0.05
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_0] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_0] Configuring fitter ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_0] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_0] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_0] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 26.3449 [0, 309.22]
+Par 1 (BkgExpLambda): -9.63264 [-100, 100]
+Par 2 (SgnNorm): 228.116 [0, 309.22]
+Par 3 (Mean): 1.86095 [0, 0]
+Par 4 (Sigma): 0.0173949 [0, 0]
+Par 5 (Alpha1): 0.898234 [0.718587, 1.07788]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 1.209 [0.967203, 1.4508]
+Par 8 (N2): 1.51104 [1.20884, 1.81325]
+Par 9 (SecPeakNorm): 26.7282 [0, 1e+06]
+Par 10 (SecPeakMean): 2.015 [1.99, 2.04]
+Par 11 (SecPeakSigma): 0.05 [0.005, 0.05]
+Par 12 (ConstVnBkg): 0.121681 [0, 1]
+Par 13 (SlopeVnBkg): 0.0743037 [-1, 1]
+Par 14 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      840.434
+NDf                       =          128
+Edm                       =  5.84544e-06
+NCalls                    =          642
+BkgNorm                   =      26.5156   +/-   1.31628      	 (limited)
+BkgExpLambda              =     -9.54191   +/-   0.643116     	 (limited)
+SgnNorm                   =      227.834   +/-   1.44209      	 (limited)
+Mean                      =      1.86095                      	 (fixed)
+Sigma                     =    0.0173949                      	 (fixed)
+Alpha1                    =     0.898234                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =        1.209                      	 (fixed)
+N2                        =      1.51104                      	 (fixed)
+SecPeakNorm               =      26.8427   +/-   0.544403     	 (limited)
+SecPeakMean               =         2.04   +/-   0.000377196  	 (limited)
+SecPeakSigma              =         0.05   +/-   0.000897918  	 (limited)
+ConstVnBkg                =     0.316597   +/-   0.0232912    	 (limited)
+SlopeVnBkg                =            1   +/-   1.32333      	 (limited)
+v2Sgn                     =     0.109244   +/-   0.00438516   	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.109244
+The vn of templates is equal to the one of signal: 0.109244
+[Parameter summary]
+---> fNParsMassSgn: 3
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 5
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 8
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 8
+[Parameter summary]
+---> fNParsMassSgn: 3
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 8
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 11
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+Loading cutset configuration from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/cutsets/cutset_00.yml
+[33m[WARNING] Config entry FixSigmaFromFile not found in fit configuration.[0m
+[33m[WARNING] More than 16 pt bins not supported for full fit canvas. Skip creating it.[0m
+Rebin from 600 bins to 120 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 5.0 - 6.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for pt 5.0 - 6.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for correlated bkg source DsToPiKK from folder pt_50_60/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.0 && fMlScore1 < 0.25 && fM > 1.68 && fM < 2.19': 251 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 68.39749733511363 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 102 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 68.39749733511363 / sgn_frac 1058.6000050451073 = 0.06461127622250407[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for correlated bkg source DplusToPiKK from folder pt_50_60/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.0 && fMlScore1 < 0.25 && fM > 1.68 && fM < 2.19': 1348 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 39.54133230870545 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 102 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 39.54133230870545 / sgn_frac 1058.6000050451073 = 0.03735247696982637[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 5.0 - 6.0 GeV/c ...[0m
+Fit status for pt 5.0 - 6.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.1356523956797772 +/- 0.0032330217850903703, iPar: 14
+Rebin from 600 bins to 120 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 6.0 - 7.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for pt 6.0 - 7.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for correlated bkg source DsToPiKK from folder pt_60_70/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.0 && fMlScore1 < 0.25 && fM > 1.68 && fM < 2.19': 202 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 55.04499785535041 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 102 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 55.04499785535041 / sgn_frac 678.7100032346164 = 0.08110238186120039[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for correlated bkg source DplusToPiKK from folder pt_60_70/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.0 && fMlScore1 < 0.25 && fM > 1.68 && fM < 2.19': 877 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 25.72533266671712 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 102 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 25.72533266671712 / sgn_frac 678.7100032346164 = 0.03790327613283223[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 6.0 - 7.0 GeV/c ...[0m
+Fit status for pt 6.0 - 7.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.1207443480071074 +/- 0.0041522416988245825, iPar: 14
+Rebin from 600 bins to 120 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 7.0 - 8.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for pt 7.0 - 8.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for correlated bkg source DsToPiKK from folder pt_70_80/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.0 && fMlScore1 < 0.25 && fM > 1.68 && fM < 2.19': 156 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 42.50999834373596 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 102 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 42.50999834373596 / sgn_frac 421.0950020068671 = 0.10095108738204096[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for correlated bkg source DplusToPiKK from folder pt_70_80/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.0 && fMlScore1 < 0.25 && fM > 1.68 && fM < 2.19': 585 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 17.15999955533582 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 102 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 17.15999955533582 / sgn_frac 421.0950020068671 = 0.040750898190560755[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 7.0 - 8.0 GeV/c ...[0m
+Fit status for pt 7.0 - 8.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.10924445821880424 +/- 0.0043851590616832276, iPar: 14
+Rebin from 600 bins to 120 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 8.0 - 10.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for pt 8.0 - 10.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_0] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_0] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      6226.33
+NDf                       =           70
+Edm                       =  4.41731e-06
+NCalls                    =           59
+BkgNorm                   =      623.399   +/-   2.14943      	 (limited)
+BkgExpLambda              =     -2.10729   +/-   0.0177758    	 (limited)
+--- [VnVsMassFit_pt_8.0_10.0_cutset_0] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      1057.46
+NDf                       =           94
+Edm                       =  1.33517e-06
+NCalls                    =          376
+BkgNorm                   =      457.258   +/-   3.12221      	 (limited)
+BkgExpLambda              =     -2.31086   +/-   0.0335428    	 (limited)
+SgnNorm                   =      446.374   +/-   1.8856       	 (limited)
+Mean                      =        1.859   +/-   0.000108379  	 (limited)
+Sigma                     =    0.0241634   +/-   0.000113506  	 (limited)
+SecPeakNorm               =      110.897   +/-   2.07803      	 (limited)
+SecPeakMean               =      2.01116   +/-   0.000629347  	 (limited)
+SecPeakSigma              =    0.0472716   +/-   0.000844307  	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 623.399 to 623.399
+Setting prefit parameter 1 from -2.10729 to -2.10729
+Counts in second peak region: 20757, background counts: 8355.36, net counts: 12401.6
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_0] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      34.0802
+NDf                       =           18
+Edm                       =  2.00327e-07
+NCalls                    =           44
+ConstVnBkg                =     0.166528   +/-   0.00308791   	 (limited)
+SlopeVnBkg                =    0.0515659   +/-   0.0195497    	 (limited)
+Setting mass par 0 from 457.258 to 457.258
+Setting mass par 1 from -2.31086 to -2.31086
+Setting mass par 2 from 446.374 to 446.374
+Setting mass par 3 from 1.859 to 1.859
+Setting mass par 4 from 0.0241634 to 0.0241634
+Setting mass par 5 from 110.897 to 110.897
+Setting mass par 6 from 2.01116 to 2.01116
+Setting mass par 7 from 0.0472716 to 0.0472716
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_0] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_0] Configuring fitter ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_0] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_0] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_0] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 457.258 [0, 1141.68]
+Par 1 (BkgExpLambda): -2.31086 [-100, 100]
+Par 2 (SgnNorm): 446.374 [0, 1141.68]
+Par 3 (Mean): 1.859 [1.8, 2]
+Par 4 (Sigma): 0.0241634 [0, 0.2]
+Par 5 (SecPeakNorm): 110.897 [0, 1e+06]
+Par 6 (SecPeakMean): 2.01116 [1.99, 2.04]
+Par 7 (SecPeakSigma): 0.0472716 [0.005, 0.05]
+Par 8 (ConstVnBkg): 0.166528 [0, 1]
+Par 9 (SlopeVnBkg): 0.0515659 [-1, 1]
+Par 10 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =       1158.7
+NDf                       =          126
+Edm                       =  1.08411e-05
+NCalls                    =          343
+BkgNorm                   =      457.839   +/-   3.11598      	 (limited)
+BkgExpLambda              =     -2.30437   +/-   0.0334162    	 (limited)
+SgnNorm                   =      446.305   +/-   1.88455      	 (limited)
+Mean                      =      1.85899   +/-   0.000108356  	 (limited)
+Sigma                     =    0.0241627   +/-   0.000113394  	 (limited)
+SecPeakNorm               =      110.391   +/-   2.07528      	 (limited)
+SecPeakMean               =      2.01115   +/-   0.00063321   	 (limited)
+SecPeakSigma              =    0.0473729   +/-   0.000849615  	 (limited)
+ConstVnBkg                =      0.19216   +/-   0.0047425    	 (limited)
+SlopeVnBkg                =    0.0918621   +/-   0.0247618    	 (limited)
+v2Sgn                     =    0.0891603   +/-   0.00354461   	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.0891603
+The vn of templates is equal to the one of signal: 0.0891603
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for correlated bkg source DsToPiKK from folder pt_80_100/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.0 && fMlScore1 < 0.3 && fM > 1.68 && fM < 2.19': 406 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 110.63499568946666 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 102 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 110.63499568946666 / sgn_frac 1016.3900048439417 = 0.1088509284449858[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for correlated bkg source DplusToPiKK from folder pt_80_100/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.0 && fMlScore1 < 0.3 && fM > 1.68 && fM < 2.19': 1734 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 50.86399868196977 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 102 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 50.86399868196977 / sgn_frac 1016.3900048439417 = 0.05004378087108355[0m
+Fit status for pt 8.0 - 10.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.08916029675480801 +/- 0.0035446080043690445, iPar: 10
+Drawing Vn vs pT ...
+[32m[INFO] Saving output histos to /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_00.root[0m
+[33m[WARNING] Created directory pt_50_60 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_00.root[0m
+[33m[WARNING] Created directory pt_60_70 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_00.root[0m
+[33m[WARNING] Created directory pt_70_80 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_00.root[0m
+[33m[WARNING] Created directory pt_80_100 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_00.root[0m
+[33m[WARNING] Created directory pt_100_120 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_00.root[0m
+[33m[WARNING] Created directory pt_120_160 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_00.root[0m
+[33m[WARNING] Created directory pt_160_240 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_00.root[0m
+[33m[WARNING] Fit function for pt 100-120 not available. Skipping.[0m
+[33m[WARNING] Fit function for pt 120-160 not available. Skipping.[0m
+[33m[WARNING] Fit function for pt 160-240 not available. Skipping.[0m
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_1] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_1] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      761.795
+NDf                       =           56
+Edm                       =   8.8569e-08
+NCalls                    =           72
+BkgNorm                   =       234.89   +/-   1.48286      	 (limited)
+BkgExpLambda              =     -3.07565   +/-   0.0349448    	 (limited)
+--- [VnVsMassFit_pt_5.0_6.0_cutset_1] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      374.266
+NDf                       =           79
+Edm                       =   7.8187e-07
+NCalls                    =          255
+BkgNorm                   =      185.846   +/-   1.83854      	 (limited)
+BkgExpLambda              =     -3.02182   +/-   0.0581117    	 (limited)
+SgnNorm                   =      351.184   +/-   1.58254      	 (limited)
+Mean                      =      1.86082                      	 (fixed)
+Sigma                     =    0.0166271                      	 (fixed)
+Alpha1                    =      1.48511                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      1.57382                      	 (fixed)
+N2                        =           12                      	 (fixed)
+SecPeakNorm               =      18.8089   +/-   1.03205      	 (limited)
+SecPeakMean               =      2.02888   +/-   0.00160986   	 (limited)
+SecPeakSigma              =     0.038752   +/-   0.00187244   	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 234.89 to 234.89
+Setting prefit parameter 1 from -3.07565 to -3.07565
+Counts in second peak region: 4756, background counts: 2561.35, net counts: 2194.65
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_1] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      22.1437
+NDf                       =           17
+Edm                       =  1.97528e-07
+NCalls                    =           50
+ConstVnBkg                =     0.160155   +/-   0.00597046   	 (limited)
+SlopeVnBkg                =    0.0998476   +/-   0.0350262    	 (limited)
+Setting mass par 0 from 185.846 to 185.846
+Setting mass par 1 from -3.02182 to -3.02182
+Setting mass par 2 from 351.184 to 351.184
+Setting mass par 3 from 1.86082 to 1.86082
+Setting mass par 4 from 0.0166271 to 0.0166271
+Setting mass par 5 from 1.48511 to 1.48511
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 1.57382 to 1.57382
+Setting mass par 8 from 12 to 12
+Setting mass par 9 from 18.8089 to 18.8089
+Setting mass par 10 from 2.02888 to 2.02888
+Setting mass par 11 from 0.038752 to 0.038752
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_1] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_1] Configuring fitter ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_1] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_1] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_1] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 185.846 [0, 620.082]
+Par 1 (BkgExpLambda): -3.02182 [-100, 100]
+Par 2 (SgnNorm): 351.184 [0, 620.082]
+Par 3 (Mean): 1.86082 [0, 0]
+Par 4 (Sigma): 0.0166271 [0, 0]
+Par 5 (Alpha1): 1.48511 [1.18809, 1.78213]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 1.57382 [1.25906, 1.88859]
+Par 8 (N2): 12 [9.6, 14.4]
+Par 9 (SecPeakNorm): 18.8089 [0, 1e+06]
+Par 10 (SecPeakMean): 2.02888 [1.99, 2.04]
+Par 11 (SecPeakSigma): 0.038752 [0.005, 0.05]
+Par 12 (ConstVnBkg): 0.160155 [0, 1]
+Par 13 (SlopeVnBkg): 0.0998476 [-1, 1]
+Par 14 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      409.993
+NDf                       =          111
+Edm                       =  2.13797e-10
+NCalls                    =          228
+BkgNorm                   =      185.964   +/-   1.83603      	 (limited)
+BkgExpLambda              =     -3.01766   +/-   0.0579536    	 (limited)
+SgnNorm                   =      351.161   +/-   1.58241      	 (limited)
+Mean                      =      1.86082                      	 (fixed)
+Sigma                     =    0.0166271                      	 (fixed)
+Alpha1                    =      1.48511                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      1.57382                      	 (fixed)
+N2                        =           12                      	 (fixed)
+SecPeakNorm               =       18.717   +/-   1.03004      	 (limited)
+SecPeakMean               =      2.02881   +/-   0.00161613   	 (limited)
+SecPeakSigma              =    0.0387306   +/-   0.00187732   	 (limited)
+ConstVnBkg                =     0.168694   +/-   0.00737872   	 (limited)
+SlopeVnBkg                =    0.0989899   +/-   0.0427503    	 (limited)
+v2Sgn                     =     0.125722   +/-   0.00409833   	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.125722
+The vn of templates is equal to the one of signal: 0.125722
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_1] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_1] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      414.217
+NDf                       =           52
+Edm                       =  6.04954e-06
+NCalls                    =           63
+BkgNorm                   =      162.099   +/-   1.28927      	 (limited)
+BkgExpLambda              =     -2.89429   +/-   0.0423304    	 (limited)
+--- [VnVsMassFit_pt_6.0_7.0_cutset_1] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      253.402
+NDf                       =           79
+Edm                       =  7.66599e-06
+NCalls                    =          330
+BkgNorm                   =      124.966   +/-   1.44641      	 (limited)
+BkgExpLambda              =     -2.73848   +/-   0.0647092    	 (limited)
+SgnNorm                   =      218.896   +/-   1.26178      	 (limited)
+Mean                      =       1.8609                      	 (fixed)
+Sigma                     =    0.0190055                      	 (fixed)
+Alpha1                    =      1.35589                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      6.13369                      	 (fixed)
+N2                        =      5.64753                      	 (fixed)
+SecPeakNorm               =      14.7758   +/-   0.761886     	 (limited)
+SecPeakMean               =      2.01445   +/-   0.00252917   	 (limited)
+SecPeakSigma              =         0.05   +/-   0.00310523   	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 162.099 to 162.099
+Setting prefit parameter 1 from -2.89429 to -2.89429
+Counts in second peak region: 3299, background counts: 1794.23, net counts: 1504.77
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_1] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      11.9589
+NDf                       =           14
+Edm                       =  1.00783e-06
+NCalls                    =           47
+ConstVnBkg                =     0.130479   +/-   0.00748091   	 (limited)
+SlopeVnBkg                =    0.0348457   +/-   0.0426503    	 (limited)
+Setting mass par 0 from 124.966 to 124.966
+Setting mass par 1 from -2.73848 to -2.73848
+Setting mass par 2 from 218.896 to 218.896
+Setting mass par 3 from 1.8609 to 1.8609
+Setting mass par 4 from 0.0190055 to 0.0190055
+Setting mass par 5 from 1.35589 to 1.35589
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 6.13369 to 6.13369
+Setting mass par 8 from 5.64753 to 5.64753
+Setting mass par 9 from 14.7758 to 14.7758
+Setting mass par 10 from 2.01445 to 2.01445
+Setting mass par 11 from 0.05 to 0.05
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_1] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_1] Configuring fitter ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_1] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_1] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_1] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 124.966 [0, 403.668]
+Par 1 (BkgExpLambda): -2.73848 [-100, 100]
+Par 2 (SgnNorm): 218.896 [0, 403.668]
+Par 3 (Mean): 1.8609 [0, 0]
+Par 4 (Sigma): 0.0190055 [0, 0]
+Par 5 (Alpha1): 1.35589 [1.08471, 1.62706]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 6.13369 [4.90695, 7.36042]
+Par 8 (N2): 5.64753 [4.51803, 6.77704]
+Par 9 (SecPeakNorm): 14.7758 [0, 1e+06]
+Par 10 (SecPeakMean): 2.01445 [1.99, 2.04]
+Par 11 (SecPeakSigma): 0.05 [0.005, 0.05]
+Par 12 (ConstVnBkg): 0.130479 [0, 1]
+Par 13 (SlopeVnBkg): 0.0348457 [-1, 1]
+Par 14 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =       280.25
+NDf                       =          111
+Edm                       =  9.09218e-06
+NCalls                    =          157
+BkgNorm                   =      124.994   +/-   1.42588      	 (limited)
+BkgExpLambda              =     -2.73732   +/-   0.0612662    	 (limited)
+SgnNorm                   =      218.891   +/-   1.19859      	 (limited)
+Mean                      =       1.8609                      	 (fixed)
+Sigma                     =    0.0190055                      	 (fixed)
+Alpha1                    =      1.35589                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      6.13369                      	 (fixed)
+N2                        =      5.64753                      	 (fixed)
+SecPeakNorm               =      14.7557   +/-   0.762529     	 (limited)
+SecPeakMean               =       2.0144   +/-   0.00245769   	 (limited)
+SecPeakSigma              =         0.05   +/-   0.00233119   	 (limited)
+ConstVnBkg                =     0.130292   +/-   0.00882414   	 (limited)
+SlopeVnBkg                =    0.0179584   +/-   0.0510487    	 (limited)
+v2Sgn                     =     0.114923   +/-   0.0052016    	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.114923
+The vn of templates is equal to the one of signal: 0.114923
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_1] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_1] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      327.638
+NDf                       =           54
+Edm                       =   1.7128e-07
+NCalls                    =           65
+BkgNorm                   =      111.063   +/-   1.04235      	 (limited)
+BkgExpLambda              =      -2.9073   +/-   0.0505416    	 (limited)
+--- [VnVsMassFit_pt_7.0_8.0_cutset_1] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      419.146
+NDf                       =           79
+Edm                       =   8.2343e-07
+NCalls                    =          310
+BkgNorm                   =      39.8912   +/-   1.94619      	 (limited)
+BkgExpLambda              =     -7.20896   +/-   0.522456     	 (limited)
+SgnNorm                   =      194.372   +/-   1.71389      	 (limited)
+Mean                      =      1.86095                      	 (fixed)
+Sigma                     =    0.0173949                      	 (fixed)
+Alpha1                    =     0.898234                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =        1.209                      	 (fixed)
+N2                        =      1.51104                      	 (fixed)
+SecPeakNorm               =       14.537   +/-   0.710656     	 (limited)
+SecPeakMean               =         2.05   +/-   0.000365129  	 (limited)
+SecPeakSigma              =         0.05   +/-   0.000172356  	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 111.063 to 111.063
+Setting prefit parameter 1 from -2.9073 to -2.9073
+Counts in second peak region: 2292, background counts: 256.323, net counts: 2035.68
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_1] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      18.9019
+NDf                       =           15
+Edm                       =  6.70385e-07
+NCalls                    =           39
+ConstVnBkg                =     0.102566   +/-   0.00885074   	 (limited)
+SlopeVnBkg                =    0.0345482   +/-   0.051534     	 (limited)
+Setting mass par 0 from 39.8912 to 39.8912
+Setting mass par 1 from -7.20896 to -7.20896
+Setting mass par 2 from 194.372 to 194.372
+Setting mass par 3 from 1.86095 to 1.86095
+Setting mass par 4 from 0.0173949 to 0.0173949
+Setting mass par 5 from 0.898234 to 0.898234
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 1.209 to 1.209
+Setting mass par 8 from 1.51104 to 1.51104
+Setting mass par 9 from 14.537 to 14.537
+Setting mass par 10 from 2.05 to 2.05
+Setting mass par 11 from 0.05 to 0.05
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_1] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_1] Configuring fitter ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_1] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_1] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_1] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 39.8912 [0, 271.836]
+Par 1 (BkgExpLambda): -7.20896 [-100, 100]
+Par 2 (SgnNorm): 194.372 [0, 271.836]
+Par 3 (Mean): 1.86095 [0, 0]
+Par 4 (Sigma): 0.0173949 [0, 0]
+Par 5 (Alpha1): 0.898234 [0.718587, 1.07788]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 1.209 [0.967203, 1.4508]
+Par 8 (N2): 1.51104 [1.20884, 1.81325]
+Par 9 (SecPeakNorm): 14.537 [0, 1e+06]
+Par 10 (SecPeakMean): 2.015 [1.99, 2.04]
+Par 11 (SecPeakSigma): 0.05 [0.005, 0.05]
+Par 12 (ConstVnBkg): 0.102566 [0, 1]
+Par 13 (SlopeVnBkg): 0.0345482 [-1, 1]
+Par 14 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =       503.91
+NDf                       =          111
+Edm                       =  6.46672e-07
+NCalls                    =          330
+BkgNorm                   =      40.1826   +/-   2.41205      	 (limited)
+BkgExpLambda              =     -7.10121   +/-   0.663172     	 (limited)
+SgnNorm                   =       193.79   +/-   1.87798      	 (limited)
+Mean                      =      1.86095                      	 (fixed)
+Sigma                     =    0.0173949                      	 (fixed)
+Alpha1                    =     0.898234                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =        1.209                      	 (fixed)
+N2                        =      1.51104                      	 (fixed)
+SecPeakNorm               =      14.5524   +/-   0.888954     	 (limited)
+SecPeakMean               =         2.04   +/-   0.000142838  	 (limited)
+SecPeakSigma              =         0.05   +/-   0.000248687  	 (limited)
+ConstVnBkg                =     0.148188   +/-   0.0564308    	 (limited)
+SlopeVnBkg                =     0.214049   +/-   0.255664     	 (limited)
+v2Sgn                     =    0.0932758   +/-   0.00670471   	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.0932758
+The vn of templates is equal to the one of signal: 0.0932758
+[Parameter summary]
+---> fNParsMassSgn: 3
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 5
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 8
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 8
+[Parameter summary]
+---> fNParsMassSgn: 3
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 8
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 11
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+Loading cutset configuration from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/cutsets/cutset_01.yml
+[33m[WARNING] Config entry FixSigmaFromFile not found in fit configuration.[0m
+[33m[WARNING] More than 16 pt bins not supported for full fit canvas. Skip creating it.[0m
+Rebin from 600 bins to 100 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 5.0 - 6.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for pt 5.0 - 6.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for correlated bkg source DsToPiKK from folder pt_50_60/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.25 && fMlScore1 < 0.45 && fM > 1.68 && fM < 2.19': 209 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 56.952497781030864 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 85 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 56.952497781030864 / sgn_frac 838.1700039945755 = 0.06794862320245888[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for correlated bkg source DplusToPiKK from folder pt_50_60/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.25 && fMlScore1 < 0.45 && fM > 1.68 && fM < 2.19': 1094 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 32.09066583510665 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 85 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 32.09066583510665 / sgn_frac 838.1700039945755 = 0.03828658348803703[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 5.0 - 6.0 GeV/c ...[0m
+Fit status for pt 5.0 - 6.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.1257221595003743 +/- 0.004098328074675951, iPar: 14
+Rebin from 600 bins to 100 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 6.0 - 7.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for pt 6.0 - 7.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for correlated bkg source DsToPiKK from folder pt_60_70/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.25 && fMlScore1 < 0.45 && fM > 1.68 && fM < 2.19': 174 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 47.41499815262857 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 85 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 47.41499815262857 / sgn_frac 581.5600027716159 = 0.08153070693764489[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for correlated bkg source DplusToPiKK from folder pt_60_70/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.25 && fMlScore1 < 0.45 && fM > 1.68 && fM < 2.19': 839 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 24.61066602893462 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 85 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 24.61066602893462 / sgn_frac 581.5600027716159 = 0.042318360808247434[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 6.0 - 7.0 GeV/c ...[0m
+Fit status for pt 6.0 - 7.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.1149230977254856 +/- 0.005201595850778368, iPar: 14
+Rebin from 600 bins to 100 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 7.0 - 8.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for pt 7.0 - 8.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for correlated bkg source DsToPiKK from folder pt_70_80/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.25 && fMlScore1 < 0.45 && fM > 1.68 && fM < 2.19': 114 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 31.0649987896532 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 85 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 31.0649987896532 / sgn_frac 371.5150017705772 = 0.08361707775353003[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for correlated bkg source DplusToPiKK from folder pt_70_80/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.25 && fMlScore1 < 0.45 && fM > 1.68 && fM < 2.19': 536 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 15.722666259247863 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 85 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 15.722666259247863 / sgn_frac 371.5150017705772 = 0.04232040747834223[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 7.0 - 8.0 GeV/c ...[0m
+Fit status for pt 7.0 - 8.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.0932757578668935 +/- 0.00670471149380978, iPar: 14
+Rebin from 600 bins to 100 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 8.0 - 10.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for pt 8.0 - 10.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_1] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_1] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      390.844
+NDf                       =           58
+Edm                       =  2.94958e-06
+NCalls                    =           59
+BkgNorm                   =      145.419   +/-   1.13623      	 (limited)
+BkgExpLambda              =     -2.63526   +/-   0.0430435    	 (limited)
+--- [VnVsMassFit_pt_8.0_10.0_cutset_1] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      231.994
+NDf                       =           77
+Edm                       =  9.85741e-06
+NCalls                    =          449
+BkgNorm                   =      119.546   +/-   1.48444      	 (limited)
+BkgExpLambda              =     -2.56578   +/-   0.0621423    	 (limited)
+SgnNorm                   =      108.157   +/-   1.04197      	 (limited)
+Mean                      =      1.85876   +/-   0.000249812  	 (limited)
+Sigma                     =    0.0248691   +/-   0.000267498  	 (limited)
+SecPeakNorm               =      11.9255   +/-   0.719044     	 (limited)
+SecPeakMean               =      2.00103   +/-   0.00362306   	 (limited)
+SecPeakSigma              =         0.05   +/-   0.000620659  	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 145.419 to 145.419
+Setting prefit parameter 1 from -2.63526 to -2.63526
+Counts in second peak region: 2871, background counts: 1758.43, net counts: 1112.57
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_1] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      22.6332
+NDf                       =           18
+Edm                       =   4.2269e-07
+NCalls                    =           45
+ConstVnBkg                =     0.114612   +/-   0.00743485   	 (limited)
+SlopeVnBkg                =    0.0652215   +/-   0.0444693    	 (limited)
+Setting mass par 0 from 119.546 to 119.546
+Setting mass par 1 from -2.56578 to -2.56578
+Setting mass par 2 from 108.157 to 108.157
+Setting mass par 3 from 1.85876 to 1.85876
+Setting mass par 4 from 0.0248691 to 0.0248691
+Setting mass par 5 from 11.9255 to 11.9255
+Setting mass par 6 from 2.00103 to 2.00103
+Setting mass par 7 from 0.05 to 0.05
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_1] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_1] Configuring fitter ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_1] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_1] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_1] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 119.546 [0, 271.47]
+Par 1 (BkgExpLambda): -2.56578 [-100, 100]
+Par 2 (SgnNorm): 108.157 [0, 271.47]
+Par 3 (Mean): 1.85876 [1.8, 2]
+Par 4 (Sigma): 0.0248691 [0, 0.2]
+Par 5 (SecPeakNorm): 11.9255 [0, 1e+06]
+Par 6 (SecPeakMean): 2.00103 [1.99, 2.04]
+Par 7 (SecPeakSigma): 0.05 [0.005, 0.05]
+Par 8 (ConstVnBkg): 0.114612 [0, 1]
+Par 9 (SlopeVnBkg): 0.0652215 [-1, 1]
+Par 10 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      267.585
+NDf                       =          109
+Edm                       =  1.91972e-06
+NCalls                    =          191
+BkgNorm                   =      119.706   +/-   1.48142      	 (limited)
+BkgExpLambda              =     -2.56067   +/-   0.0561281    	 (limited)
+SgnNorm                   =      108.114   +/-   1.01257      	 (limited)
+Mean                      =      1.85877   +/-   0.000237393  	 (limited)
+Sigma                     =    0.0248583   +/-   0.000251215  	 (limited)
+SecPeakNorm               =      11.8154   +/-   0.676882     	 (limited)
+SecPeakMean               =      2.00091   +/-   0.00341645   	 (limited)
+SecPeakSigma              =         0.05   +/-   0.000589614  	 (limited)
+ConstVnBkg                =     0.121957   +/-   0.00921424   	 (limited)
+SlopeVnBkg                =    0.0492832   +/-   0.0513753    	 (limited)
+v2Sgn                     =    0.0676944   +/-   0.00811811   	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.0676944
+The vn of templates is equal to the one of signal: 0.0676944
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for correlated bkg source DsToPiKK from folder pt_80_100/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.3 && fMlScore1 < 0.5 && fM > 1.68 && fM < 2.19': 98 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 26.704998959526435 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 85 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 26.704998959526435 / sgn_frac 264.3150012596803 = 0.10103474578535065[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for correlated bkg source DplusToPiKK from folder pt_80_100/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.3 && fMlScore1 < 0.5 && fM > 1.68 && fM < 2.19': 438 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 12.847999667071948 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 85 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 12.847999667071948 / sgn_frac 264.3150012596803 = 0.048608666196926276[0m
+Fit status for pt 8.0 - 10.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.06769435642808075 +/- 0.008118109056690966, iPar: 10
+Drawing Vn vs pT ...
+[32m[INFO] Saving output histos to /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_01.root[0m
+[33m[WARNING] Created directory pt_50_60 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_01.root[0m
+[33m[WARNING] Created directory pt_60_70 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_01.root[0m
+[33m[WARNING] Created directory pt_70_80 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_01.root[0m
+[33m[WARNING] Created directory pt_80_100 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_01.root[0m
+[33m[WARNING] Created directory pt_100_120 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_01.root[0m
+[33m[WARNING] Created directory pt_120_160 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_01.root[0m
+[33m[WARNING] Created directory pt_160_240 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_01.root[0m
+[33m[WARNING] Fit function for pt 100-120 not available. Skipping.[0m
+[33m[WARNING] Fit function for pt 120-160 not available. Skipping.[0m
+[33m[WARNING] Fit function for pt 160-240 not available. Skipping.[0m
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_2] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_2] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      149.293
+NDf                       =           41
+Edm                       =  5.79368e-08
+NCalls                    =           67
+BkgNorm                   =      180.678   +/-   1.52787      	 (limited)
+BkgExpLambda              =     -3.17262   +/-   0.0475387    	 (limited)
+--- [VnVsMassFit_pt_5.0_6.0_cutset_2] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      251.708
+NDf                       =           58
+Edm                       =  1.49522e-08
+NCalls                    =          271
+BkgNorm                   =      165.397   +/-   1.68117      	 (limited)
+BkgExpLambda              =     -3.08317   +/-   0.0606182    	 (limited)
+SgnNorm                   =      139.577   +/-   1.2032       	 (limited)
+Mean                      =      1.86082                      	 (fixed)
+Sigma                     =    0.0166271                      	 (fixed)
+Alpha1                    =      1.48511                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      1.57382                      	 (fixed)
+N2                        =           12                      	 (fixed)
+SecPeakNorm               =      5.41392   +/-   0.794172     	 (limited)
+SecPeakMean               =        2.032   +/-   0.00411739   	 (limited)
+SecPeakSigma              =    0.0324467   +/-   0.00402078   	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 180.678 to 180.678
+Setting prefit parameter 1 from -3.17262 to -3.17262
+Counts in second peak region: 2515, background counts: 1694.21, net counts: 820.786
+PrefitMass: Second peak will be removed due to low counts in the specified region (820.79 < 1000)
+Mass prefit indicated to remove second peak, restarting the chain ...
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_2] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      149.293
+NDf                       =           41
+Edm                       =  1.64847e-10
+NCalls                    =           26
+BkgNorm                   =      180.678   +/-   1.52787      	 (limited)
+BkgExpLambda              =     -3.17261   +/-   0.0475385    	 (limited)
+--- [VnVsMassFit_pt_5.0_6.0_cutset_2] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      330.049
+NDf                       =           61
+Edm                       =   1.4794e-07
+NCalls                    =           78
+BkgNorm                   =      171.487   +/-   1.39439      	 (limited)
+BkgExpLambda              =     -2.88227   +/-   0.0478278    	 (limited)
+SgnNorm                   =      138.408   +/-   1.19039      	 (limited)
+Mean                      =      1.86082                      	 (fixed)
+Sigma                     =    0.0166271                      	 (fixed)
+Alpha1                    =      1.48511                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      1.57382                      	 (fixed)
+N2                        =           12                      	 (fixed)
+PrefitMass fit done
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_2] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      30.0481
+NDf                       =           17
+Edm                       =  7.13126e-09
+NCalls                    =           54
+ConstVnBkg                =     0.152448   +/-   0.00805347   	 (limited)
+SlopeVnBkg                =     0.116421   +/-   0.0463687    	 (limited)
+Setting mass par 0 from 171.487 to 171.487
+Setting mass par 1 from -2.88227 to -2.88227
+Setting mass par 2 from 138.408 to 138.408
+Setting mass par 3 from 1.86082 to 1.86082
+Setting mass par 4 from 0.0166271 to 0.0166271
+Setting mass par 5 from 1.48511 to 1.48511
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 1.57382 to 1.57382
+Setting mass par 8 from 12 to 12
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_2] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_2] Configuring fitter ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_2] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_2] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_2] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 171.487 [0, 352.4]
+Par 1 (BkgExpLambda): -2.88227 [-100, 100]
+Par 2 (SgnNorm): 138.408 [0, 352.4]
+Par 3 (Mean): 1.86082 [0, 0]
+Par 4 (Sigma): 0.0166271 [0, 0]
+Par 5 (Alpha1): 1.48511 [1.18809, 1.78213]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 1.57382 [1.25906, 1.88859]
+Par 8 (N2): 12 [9.6, 14.4]
+Par 9 (ConstVnBkg): 0.152448 [0, 1]
+Par 10 (SlopeVnBkg): 0.116421 [-1, 1]
+Par 11 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      378.974
+NDf                       =           93
+Edm                       =  1.63226e-06
+NCalls                    =          118
+BkgNorm                   =      171.484   +/-   1.39436      	 (limited)
+BkgExpLambda              =     -2.88231   +/-   0.0478292    	 (limited)
+SgnNorm                   =      138.411   +/-   1.19034      	 (limited)
+Mean                      =      1.86082                      	 (fixed)
+Sigma                     =    0.0166271                      	 (fixed)
+Alpha1                    =      1.48511                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      1.57382                      	 (fixed)
+N2                        =           12                      	 (fixed)
+ConstVnBkg                =     0.157142   +/-   0.00772484   	 (limited)
+SlopeVnBkg                =    0.0871583   +/-   0.0483842    	 (limited)
+v2Sgn                     =     0.119278   +/-   0.00787956   	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.119278
+The vn of templates is equal to the one of signal: 0.119278
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_2] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_2] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      106.057
+NDf                       =           39
+Edm                       =  1.30964e-06
+NCalls                    =           65
+BkgNorm                   =      119.294   +/-   1.28094      	 (limited)
+BkgExpLambda              =     -2.99014   +/-   0.0583068    	 (limited)
+--- [VnVsMassFit_pt_6.0_7.0_cutset_2] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      175.351
+NDf                       =           58
+Edm                       =   7.1927e-06
+NCalls                    =          331
+BkgNorm                   =      107.812   +/-   1.43035      	 (limited)
+BkgExpLambda              =      -2.9274   +/-   0.0756308    	 (limited)
+SgnNorm                   =      76.5517   +/-   0.920952     	 (limited)
+Mean                      =       1.8609                      	 (fixed)
+Sigma                     =    0.0190055                      	 (fixed)
+Alpha1                    =      1.35589                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      6.13369                      	 (fixed)
+N2                        =      5.64753                      	 (fixed)
+SecPeakNorm               =      5.20547   +/-   0.726397     	 (limited)
+SecPeakMean               =      2.01462   +/-   0.00744303   	 (limited)
+SecPeakSigma              =         0.05   +/-   0.00312813   	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 119.294 to 119.294
+Setting prefit parameter 1 from -2.99014 to -2.99014
+Counts in second peak region: 1738, background counts: 1129.9, net counts: 608.098
+PrefitMass: Second peak will be removed due to low counts in the specified region (608.10 < 1000)
+Mass prefit indicated to remove second peak, restarting the chain ...
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_2] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      106.057
+NDf                       =           39
+Edm                       =  3.11846e-09
+NCalls                    =           27
+BkgNorm                   =      119.293   +/-   1.28094      	 (limited)
+BkgExpLambda              =     -2.99011   +/-   0.0583074    	 (limited)
+--- [VnVsMassFit_pt_6.0_7.0_cutset_2] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      227.323
+NDf                       =           61
+Edm                       =   7.6204e-08
+NCalls                    =           75
+BkgNorm                   =      113.909   +/-   1.14915      	 (limited)
+BkgExpLambda              =     -2.67824   +/-   0.0578419    	 (limited)
+SgnNorm                   =      75.4029   +/-   0.907363     	 (limited)
+Mean                      =       1.8609                      	 (fixed)
+Sigma                     =    0.0190055                      	 (fixed)
+Alpha1                    =      1.35589                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      6.13369                      	 (fixed)
+N2                        =      5.64753                      	 (fixed)
+PrefitMass fit done
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_2] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      12.0625
+NDf                       =           14
+Edm                       =  2.32102e-08
+NCalls                    =           52
+ConstVnBkg                =     0.125369   +/-   0.0102716    	 (limited)
+SlopeVnBkg                =    0.0879894   +/-   0.0575404    	 (limited)
+Setting mass par 0 from 113.909 to 113.909
+Setting mass par 1 from -2.67824 to -2.67824
+Setting mass par 2 from 75.4029 to 75.4029
+Setting mass par 3 from 1.8609 to 1.8609
+Setting mass par 4 from 0.0190055 to 0.0190055
+Setting mass par 5 from 1.35589 to 1.35589
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 6.13369 to 6.13369
+Setting mass par 8 from 5.64753 to 5.64753
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_2] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_2] Configuring fitter ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_2] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_2] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_2] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 113.909 [0, 216.92]
+Par 1 (BkgExpLambda): -2.67824 [-100, 100]
+Par 2 (SgnNorm): 75.4029 [0, 216.92]
+Par 3 (Mean): 1.8609 [0, 0]
+Par 4 (Sigma): 0.0190055 [0, 0]
+Par 5 (Alpha1): 1.35589 [1.08471, 1.62706]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 6.13369 [4.90695, 7.36042]
+Par 8 (N2): 5.64753 [4.51803, 6.77704]
+Par 9 (ConstVnBkg): 0.125369 [0, 1]
+Par 10 (SlopeVnBkg): 0.0879894 [-1, 1]
+Par 11 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      249.975
+NDf                       =           93
+Edm                       =  3.57259e-06
+NCalls                    =          120
+BkgNorm                   =      113.911   +/-   1.14916      	 (limited)
+BkgExpLambda              =     -2.67826   +/-   0.0578412    	 (limited)
+SgnNorm                   =      75.4027   +/-   0.907363     	 (limited)
+Mean                      =       1.8609                      	 (fixed)
+Sigma                     =    0.0190055                      	 (fixed)
+Alpha1                    =      1.35589                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      6.13369                      	 (fixed)
+N2                        =      5.64753                      	 (fixed)
+ConstVnBkg                =     0.122769   +/-   0.00935798   	 (limited)
+SlopeVnBkg                =    0.0761153   +/-   0.0595368    	 (limited)
+v2Sgn                     =     0.111545   +/-   0.0108945    	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.111545
+The vn of templates is equal to the one of signal: 0.111545
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_2] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_2] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      89.2587
+NDf                       =           41
+Edm                       =  8.59454e-06
+NCalls                    =           57
+BkgNorm                   =      80.7743   +/-   1.02058      	 (limited)
+BkgExpLambda              =     -2.78365   +/-   0.0704418    	 (limited)
+--- [VnVsMassFit_pt_7.0_8.0_cutset_2] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      141.814
+NDf                       =           58
+Edm                       =   3.6422e-06
+NCalls                    =          314
+BkgNorm                   =      61.5424   +/-   1.58818      	 (limited)
+BkgExpLambda              =     -3.06611   +/-   0.171829     	 (limited)
+SgnNorm                   =      62.9964   +/-   1.02437      	 (limited)
+Mean                      =      1.86095                      	 (fixed)
+Sigma                     =    0.0173949                      	 (fixed)
+Alpha1                    =     0.898234                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =        1.209                      	 (fixed)
+N2                        =      1.51104                      	 (fixed)
+SecPeakNorm               =      2.43669   +/-   0.853648     	 (limited)
+SecPeakMean               =      2.04875   +/-   0.0485194    	 (limited)
+SecPeakSigma              =    0.0379544   +/-   0.0112578    	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 80.7743 to 80.7743
+Setting prefit parameter 1 from -2.78365 to -2.78365
+Counts in second peak region: 1175, background counts: 631.994, net counts: 543.006
+PrefitMass: Second peak will be removed due to low counts in the specified region (543.01 < 1000)
+Mass prefit indicated to remove second peak, restarting the chain ...
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_2] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      89.2587
+NDf                       =           41
+Edm                       =  3.59328e-08
+NCalls                    =           27
+BkgNorm                   =      80.7733   +/-   1.02058      	 (limited)
+BkgExpLambda              =     -2.78345   +/-   0.0704418    	 (limited)
+--- [VnVsMassFit_pt_7.0_8.0_cutset_2] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      167.647
+NDf                       =           61
+Edm                       =  1.66625e-10
+NCalls                    =           85
+BkgNorm                   =      64.7061   +/-   1.04035      	 (limited)
+BkgExpLambda              =     -2.75746   +/-   0.0878936    	 (limited)
+SgnNorm                   =       62.126   +/-   0.964848     	 (limited)
+Mean                      =      1.86095                      	 (fixed)
+Sigma                     =    0.0173949                      	 (fixed)
+Alpha1                    =     0.898234                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =        1.209                      	 (fixed)
+N2                        =      1.51104                      	 (fixed)
+PrefitMass fit done
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_2] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      11.6456
+NDf                       =           15
+Edm                       =  3.93705e-07
+NCalls                    =           43
+ConstVnBkg                =    0.0980557   +/-   0.0121094    	 (limited)
+SlopeVnBkg                =   -0.0828549   +/-   0.0697199    	 (limited)
+Setting mass par 0 from 64.7061 to 64.7061
+Setting mass par 1 from -2.75746 to -2.75746
+Setting mass par 2 from 62.126 to 62.126
+Setting mass par 3 from 1.86095 to 1.86095
+Setting mass par 4 from 0.0173949 to 0.0173949
+Setting mass par 5 from 0.898234 to 0.898234
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 1.209 to 1.209
+Setting mass par 8 from 1.51104 to 1.51104
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_2] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_2] Configuring fitter ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_2] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_2] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_2] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 64.7061 [0, 142.832]
+Par 1 (BkgExpLambda): -2.75746 [-100, 100]
+Par 2 (SgnNorm): 62.126 [0, 142.832]
+Par 3 (Mean): 1.86095 [0, 0]
+Par 4 (Sigma): 0.0173949 [0, 0]
+Par 5 (Alpha1): 0.898234 [0.718587, 1.07788]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 1.209 [0.967203, 1.4508]
+Par 8 (N2): 1.51104 [1.20884, 1.81325]
+Par 9 (ConstVnBkg): 0.0980557 [0, 1]
+Par 10 (SlopeVnBkg): -0.0828549 [-1, 1]
+Par 11 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      193.343
+NDf                       =           93
+Edm                       =  3.34588e-06
+NCalls                    =          107
+BkgNorm                   =      64.7045   +/-   1.04034      	 (limited)
+BkgExpLambda              =     -2.75788   +/-   0.0878971    	 (limited)
+SgnNorm                   =      62.1279   +/-   0.964822     	 (limited)
+Mean                      =      1.86095                      	 (fixed)
+Sigma                     =    0.0173949                      	 (fixed)
+Alpha1                    =     0.898234                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =        1.209                      	 (fixed)
+N2                        =      1.51104                      	 (fixed)
+ConstVnBkg                =     0.101133   +/-   0.0150433    	 (limited)
+SlopeVnBkg                =   -0.0796778   +/-   0.0814193    	 (limited)
+v2Sgn                     =    0.0632904   +/-   0.0141106    	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.0632904
+The vn of templates is equal to the one of signal: 0.0632904
+[Parameter summary]
+---> fNParsMassSgn: 3
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 5
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 8
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 8
+[Parameter summary]
+---> fNParsMassSgn: 3
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 8
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 11
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+Loading cutset configuration from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/cutsets/cutset_02.yml
+[33m[WARNING] Config entry FixSigmaFromFile not found in fit configuration.[0m
+[33m[WARNING] More than 16 pt bins not supported for full fit canvas. Skip creating it.[0m
+Rebin from 600 bins to 75 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 5.0 - 6.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for pt 5.0 - 6.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for correlated bkg source DsToPiKK from folder pt_50_60/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.45 && fMlScore1 < 0.65 && fM > 1.68 && fM < 2.19': 127 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 34.6074986516312 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 64 bins -- Used bins = 504 in range 1-504
+
+[32m[INFO] Setting channel DsToPiKK frac to: 34.6074986516312 / sgn_frac 345.05000164444954 = 0.100297054011586[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for correlated bkg source DplusToPiKK from folder pt_50_60/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.45 && fMlScore1 < 0.65 && fM > 1.68 && fM < 2.19': 445 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 13.053332995084514 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 64 bins -- Used bins = 504 in range 1-504
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 13.053332995084514 / sgn_frac 345.05000164444954 = 0.03783026498442125[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 5.0 - 6.0 GeV/c ...[0m
+Fit status for pt 5.0 - 6.0 GeV/c: 2
+Rebin from 600 bins to 75 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 6.0 - 7.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for pt 6.0 - 7.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for correlated bkg source DsToPiKK from folder pt_60_70/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.45 && fMlScore1 < 0.65 && fM > 1.68 && fM < 2.19': 92 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 25.0699990232289 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 64 bins -- Used bins = 504 in range 1-504
+
+[32m[INFO] Setting channel DsToPiKK frac to: 25.0699990232289 / sgn_frac 211.38500100742493 = 0.11859876010005228[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for correlated bkg source DplusToPiKK from folder pt_60_70/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.45 && fMlScore1 < 0.65 && fM > 1.68 && fM < 2.19': 316 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 9.269333093138666 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 64 bins -- Used bins = 504 in range 1-504
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 9.269333093138666 / sgn_frac 211.38500100742493 = 0.04385047685011993[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 6.0 - 7.0 GeV/c ...[0m
+Fit status for pt 6.0 - 7.0 GeV/c: 2
+Rebin from 600 bins to 75 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 7.0 - 8.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for pt 7.0 - 8.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for correlated bkg source DsToPiKK from folder pt_70_80/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.45 && fMlScore1 < 0.65 && fM > 1.68 && fM < 2.19': 61 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 16.62249935235829 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 64 bins -- Used bins = 504 in range 1-504
+
+[32m[INFO] Setting channel DsToPiKK frac to: 16.62249935235829 / sgn_frac 136.0100006482005 = 0.12221527294418269[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for correlated bkg source DplusToPiKK from folder pt_70_80/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.45 && fMlScore1 < 0.65 && fM > 1.68 && fM < 2.19': 225 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 6.5999998289753155 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 64 bins -- Used bins = 504 in range 1-504
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 6.5999998289753155 / sgn_frac 136.0100006482005 = 0.04852584219925623[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 7.0 - 8.0 GeV/c ...[0m
+Fit status for pt 7.0 - 8.0 GeV/c: 2
+Rebin from 600 bins to 75 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 8.0 - 10.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for pt 8.0 - 10.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for correlated bkg source DsToPiKK from folder pt_80_100/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.5 && fMlScore1 < 0.75 && fM > 1.68 && fM < 2.19': 109 for correlated bkg source DsToPiKK[0m
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_2] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_2] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      219.638
+NDf                       =           43
+Edm                       =  3.23846e-09
+NCalls                    =           63
+BkgNorm                   =      189.342   +/-   1.50683      	 (limited)
+BkgExpLambda              =     -2.88926   +/-   0.0448052    	 (limited)
+--- [VnVsMassFit_pt_8.0_10.0_cutset_2] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      147.658
+NDf                       =           56
+Edm                       =  1.38181e-07
+NCalls                    =          483
+BkgNorm                   =      166.355   +/-   2.04455      	 (limited)
+BkgExpLambda              =     -2.80976   +/-   0.0606915    	 (limited)
+SgnNorm                   =      83.9815   +/-   1.25712      	 (limited)
+Mean                      =      1.85912   +/-   0.000421927  	 (limited)
+Sigma                     =    0.0277052   +/-   0.00047875   	 (limited)
+SecPeakNorm               =       9.0949   +/-   0.919311     	 (limited)
+SecPeakMean               =      1.99796   +/-   0.00623677   	 (limited)
+SecPeakSigma              =         0.05   +/-   0.00166827   	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 189.342 to 189.342
+Setting prefit parameter 1 from -2.88926 to -2.88926
+Counts in second peak region: 2690, background counts: 1773.27, net counts: 916.725
+PrefitMass: Second peak will be removed due to low counts in the specified region (916.73 < 1000)
+Mass prefit indicated to remove second peak, restarting the chain ...
+[Parameter summary]
+---> fNParsMassSgn: 3
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 5
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 8
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_2] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      219.638
+NDf                       =           43
+Edm                       =  1.15973e-11
+NCalls                    =           31
+BkgNorm                   =      189.342   +/-   1.50683      	 (limited)
+BkgExpLambda              =     -2.88927   +/-   0.0448052    	 (limited)
+--- [VnVsMassFit_pt_8.0_10.0_cutset_2] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      247.278
+NDf                       =           59
+Edm                       =  2.14626e-06
+NCalls                    =          143
+BkgNorm                   =      177.807   +/-   1.61665      	 (limited)
+BkgExpLambda              =     -2.58082   +/-   0.047338     	 (limited)
+SgnNorm                   =      81.2946   +/-   1.17894      	 (limited)
+Mean                      =      1.85938   +/-   0.000416786  	 (limited)
+Sigma                     =    0.0272461   +/-   0.000459851  	 (limited)
+PrefitMass fit done
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_2] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =       18.441
+NDf                       =           18
+Edm                       =  9.43541e-11
+NCalls                    =           45
+ConstVnBkg                =    0.0988233   +/-   0.00769064   	 (limited)
+SlopeVnBkg                =     0.039865   +/-   0.0451845    	 (limited)
+Setting mass par 0 from 177.807 to 177.807
+Setting mass par 1 from -2.58082 to -2.58082
+Setting mass par 2 from 81.2946 to 81.2946
+Setting mass par 3 from 1.85938 to 1.85938
+Setting mass par 4 from 0.0272461 to 0.0272461
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_2] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_2] Configuring fitter ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_2] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_2] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_2] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 177.807 [0, 297.008]
+Par 1 (BkgExpLambda): -2.58082 [-100, 100]
+Par 2 (SgnNorm): 81.2946 [0, 297.008]
+Par 3 (Mean): 1.85938 [1.8, 2]
+Par 4 (Sigma): 0.0272461 [0, 0.2]
+Par 5 (ConstVnBkg): 0.0988233 [0, 1]
+Par 6 (SlopeVnBkg): 0.039865 [-1, 1]
+Par 7 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      275.741
+NDf                       =           91
+Edm                       =  6.03231e-06
+NCalls                    =          168
+BkgNorm                   =      177.807   +/-   1.61666      	 (limited)
+BkgExpLambda              =     -2.58076   +/-   0.0473381    	 (limited)
+SgnNorm                   =      81.2955   +/-   1.17893      	 (limited)
+Mean                      =      1.85938   +/-   0.00041679   	 (limited)
+Sigma                     =    0.0272467   +/-   0.000459845  	 (limited)
+ConstVnBkg                =      0.09707   +/-   0.0077433    	 (limited)
+SlopeVnBkg                =    0.0441095   +/-   0.0476661    	 (limited)
+v2Sgn                     =    0.0902196   +/-   0.0116859    	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.0902196
+The vn of templates is equal to the one of signal: 0.0902196
+[32m[INFO] Returning frac 29.702498842738585 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 64 bins -- Used bins = 504 in range 1-504
+
+[32m[INFO] Setting channel DsToPiKK frac to: 29.702498842738585 / sgn_frac 209.3750009978456 = 0.1418626803638521[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for correlated bkg source DplusToPiKK from folder pt_80_100/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.5 && fMlScore1 < 0.75 && fM > 1.68 && fM < 2.19': 346 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 10.149333070335373 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 64 bins -- Used bins = 504 in range 1-504
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 10.149333070335373 / sgn_frac 209.3750009978456 = 0.04847442637356599[0m
+Fit status for pt 8.0 - 10.0 GeV/c: 2
+Drawing Vn vs pT ...
+[32m[INFO] Saving output histos to /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_02.root[0m
+[33m[WARNING] Created directory pt_50_60 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_02.root[0m
+[33m[WARNING] Created directory pt_60_70 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_02.root[0m
+[33m[WARNING] Created directory pt_70_80 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_02.root[0m
+[33m[WARNING] Created directory pt_80_100 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_02.root[0m
+[33m[WARNING] Created directory pt_100_120 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_02.root[0m
+[33m[WARNING] Created directory pt_120_160 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_02.root[0m
+[33m[WARNING] Created directory pt_160_240 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_02.root[0m
+[33m[WARNING] Fit function for pt 100-120 not available. Skipping.[0m
+[33m[WARNING] Fit function for pt 120-160 not available. Skipping.[0m
+[33m[WARNING] Fit function for pt 160-240 not available. Skipping.[0m
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_3] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_3] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      84.2677
+NDf                       =           33
+Edm                       =  2.82916e-09
+NCalls                    =           66
+BkgNorm                   =      237.865   +/-   1.93343      	 (limited)
+BkgExpLambda              =     -3.38104   +/-   0.0475423    	 (limited)
+--- [VnVsMassFit_pt_5.0_6.0_cutset_3] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      172.258
+NDf                       =           45
+Edm                       =  2.09972e-07
+NCalls                    =          352
+BkgNorm                   =      231.791   +/-   1.97191      	 (limited)
+BkgExpLambda              =     -3.29404   +/-   0.0544856    	 (limited)
+SgnNorm                   =      93.0294   +/-   1.18636      	 (limited)
+Mean                      =      1.86082                      	 (fixed)
+Sigma                     =    0.0166271                      	 (fixed)
+Alpha1                    =      1.48511                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      1.57382                      	 (fixed)
+N2                        =           12                      	 (fixed)
+SecPeakNorm               =      1.53492   +/-   0.722978     	 (limited)
+SecPeakMean               =         2.05   +/-   0.0378768    	 (limited)
+SecPeakSigma              =     0.021804   +/-   0.00950035   	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 237.865 to 237.865
+Setting prefit parameter 1 from -3.38104 to -3.38104
+Counts in second peak region: 2280, background counts: 1840.2, net counts: 439.803
+PrefitMass: Second peak will be removed due to low counts in the specified region (439.80 < 1000)
+Mass prefit indicated to remove second peak, restarting the chain ...
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_3] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      84.2677
+NDf                       =           33
+Edm                       =  1.14906e-11
+NCalls                    =           33
+BkgNorm                   =      237.865   +/-   1.93343      	 (limited)
+BkgExpLambda              =     -3.38104   +/-   0.0475423    	 (limited)
+--- [VnVsMassFit_pt_5.0_6.0_cutset_3] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      179.825
+NDf                       =           48
+Edm                       =  1.89874e-06
+NCalls                    =           71
+BkgNorm                   =      233.607   +/-   1.76785      	 (limited)
+BkgExpLambda              =     -3.23852   +/-   0.0467689    	 (limited)
+SgnNorm                   =      92.7225   +/-   1.17727      	 (limited)
+Mean                      =      1.86082                      	 (fixed)
+Sigma                     =    0.0166271                      	 (fixed)
+Alpha1                    =      1.48511                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      1.57382                      	 (fixed)
+N2                        =           12                      	 (fixed)
+PrefitMass fit done
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_3] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      9.70407
+NDf                       =           17
+Edm                       =  1.75859e-08
+NCalls                    =           50
+ConstVnBkg                =     0.143036   +/-   0.00797156   	 (limited)
+SlopeVnBkg                =    0.0512226   +/-   0.0455345    	 (limited)
+Setting mass par 0 from 233.607 to 233.607
+Setting mass par 1 from -3.23852 to -3.23852
+Setting mass par 2 from 92.7225 to 92.7225
+Setting mass par 3 from 1.86082 to 1.86082
+Setting mass par 4 from 0.0166271 to 0.0166271
+Setting mass par 5 from 1.48511 to 1.48511
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 1.57382 to 1.57382
+Setting mass par 8 from 12 to 12
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_3] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_3] Configuring fitter ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_3] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_3] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_3] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 233.607 [0, 372.91]
+Par 1 (BkgExpLambda): -3.23852 [-100, 100]
+Par 2 (SgnNorm): 92.7225 [0, 372.91]
+Par 3 (Mean): 1.86082 [0, 0]
+Par 4 (Sigma): 0.0166271 [0, 0]
+Par 5 (Alpha1): 1.48511 [1.18809, 1.78213]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 1.57382 [1.25906, 1.88859]
+Par 8 (N2): 12 [9.6, 14.4]
+Par 9 (ConstVnBkg): 0.143036 [0, 1]
+Par 10 (SlopeVnBkg): 0.0512226 [-1, 1]
+Par 11 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      193.389
+NDf                       =           80
+Edm                       =  4.52713e-06
+NCalls                    =          123
+BkgNorm                   =      233.599   +/-   1.76785      	 (limited)
+BkgExpLambda              =     -3.23856   +/-   0.0467711    	 (limited)
+SgnNorm                   =      92.7292   +/-   1.17723      	 (limited)
+Mean                      =      1.86082                      	 (fixed)
+Sigma                     =    0.0166271                      	 (fixed)
+Alpha1                    =      1.48511                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      1.57382                      	 (fixed)
+N2                        =           12                      	 (fixed)
+ConstVnBkg                =     0.143176   +/-   0.00743864   	 (limited)
+SlopeVnBkg                =    0.0488398   +/-   0.0459933    	 (limited)
+v2Sgn                     =     0.111429   +/-   0.0117431    	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.111429
+The vn of templates is equal to the one of signal: 0.111429
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_3] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_3] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =       59.377
+NDf                       =           30
+Edm                       =  3.12446e-09
+NCalls                    =           59
+BkgNorm                   =      166.849   +/-   1.70479      	 (limited)
+BkgExpLambda              =     -2.99626   +/-   0.0569785    	 (limited)
+--- [VnVsMassFit_pt_6.0_7.0_cutset_3] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      131.221
+NDf                       =           45
+Edm                       =   2.6236e-07
+NCalls                    =          324
+BkgNorm                   =      166.337   +/-   1.64055      	 (limited)
+BkgExpLambda              =      -2.9416   +/-   0.0598152    	 (limited)
+SgnNorm                   =      46.7974   +/-   0.91374      	 (limited)
+Mean                      =       1.8609                      	 (fixed)
+Sigma                     =    0.0190055                      	 (fixed)
+Alpha1                    =      1.35589                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      6.13369                      	 (fixed)
+N2                        =      5.64753                      	 (fixed)
+SecPeakNorm               =      1.18097   +/-   0.556152     	 (limited)
+SecPeakMean               =      2.04094   +/-   0.0107331    	 (limited)
+SecPeakSigma              =    0.0204128   +/-   0.00762845   	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 166.849 to 166.849
+Setting prefit parameter 1 from -2.99626 to -2.99626
+Counts in second peak region: 1750, background counts: 1391.73, net counts: 358.267
+PrefitMass: Second peak will be removed due to low counts in the specified region (358.27 < 1000)
+Mass prefit indicated to remove second peak, restarting the chain ...
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_3] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =       59.377
+NDf                       =           30
+Edm                       =  1.68665e-11
+NCalls                    =           38
+BkgNorm                   =      166.849   +/-   1.70479      	 (limited)
+BkgExpLambda              =     -2.99626   +/-   0.0569785    	 (limited)
+--- [VnVsMassFit_pt_6.0_7.0_cutset_3] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      137.523
+NDf                       =           48
+Edm                       =  1.95736e-08
+NCalls                    =           71
+BkgNorm                   =      167.723   +/-   1.49957      	 (limited)
+BkgExpLambda              =     -2.89062   +/-   0.0541124    	 (limited)
+SgnNorm                   =      46.5671   +/-   0.906995     	 (limited)
+Mean                      =       1.8609                      	 (fixed)
+Sigma                     =    0.0190055                      	 (fixed)
+Alpha1                    =      1.35589                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      6.13369                      	 (fixed)
+N2                        =      5.64753                      	 (fixed)
+PrefitMass fit done
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_3] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =       8.5625
+NDf                       =           14
+Edm                       =  8.39849e-09
+NCalls                    =           45
+ConstVnBkg                =     0.108501   +/-   0.00973767   	 (limited)
+SlopeVnBkg                =   -0.0395151   +/-   0.0538386    	 (limited)
+Setting mass par 0 from 167.723 to 167.723
+Setting mass par 1 from -2.89062 to -2.89062
+Setting mass par 2 from 46.5671 to 46.5671
+Setting mass par 3 from 1.8609 to 1.8609
+Setting mass par 4 from 0.0190055 to 0.0190055
+Setting mass par 5 from 1.35589 to 1.35589
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 6.13369 to 6.13369
+Setting mass par 8 from 5.64753 to 5.64753
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_3] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_3] Configuring fitter ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_3] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_3] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_3] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 167.723 [0, 244.28]
+Par 1 (BkgExpLambda): -2.89062 [-100, 100]
+Par 2 (SgnNorm): 46.5671 [0, 244.28]
+Par 3 (Mean): 1.8609 [0, 0]
+Par 4 (Sigma): 0.0190055 [0, 0]
+Par 5 (Alpha1): 1.35589 [1.08471, 1.62706]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 6.13369 [4.90695, 7.36042]
+Par 8 (N2): 5.64753 [4.51803, 6.77704]
+Par 9 (ConstVnBkg): 0.108501 [0, 1]
+Par 10 (SlopeVnBkg): -0.0395151 [-1, 1]
+Par 11 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      169.498
+NDf                       =           80
+Edm                       =  1.99533e-07
+NCalls                    =          121
+BkgNorm                   =       167.73   +/-   1.49958      	 (limited)
+BkgExpLambda              =     -2.89072   +/-   0.0541099    	 (limited)
+SgnNorm                   =      46.5614   +/-   0.907061     	 (limited)
+Mean                      =       1.8609                      	 (fixed)
+Sigma                     =    0.0190055                      	 (fixed)
+Alpha1                    =      1.35589                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      6.13369                      	 (fixed)
+N2                        =      5.64753                      	 (fixed)
+ConstVnBkg                =     0.108105   +/-   0.00856322   	 (limited)
+SlopeVnBkg                =   -0.0222702   +/-   0.0532941    	 (limited)
+v2Sgn                     =    0.0854188   +/-   0.0177116    	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.0854188
+The vn of templates is equal to the one of signal: 0.0854188
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_3] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_3] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      36.8778
+NDf                       =           31
+Edm                       =  9.13487e-09
+NCalls                    =           54
+BkgNorm                   =      115.836   +/-   1.40074      	 (limited)
+BkgExpLambda              =     -2.79687   +/-   0.0678507    	 (limited)
+--- [VnVsMassFit_pt_7.0_8.0_cutset_3] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      95.8329
+NDf                       =           45
+Edm                       =  1.52013e-07
+NCalls                    =          314
+BkgNorm                   =       108.63   +/-   1.61269      	 (limited)
+BkgExpLambda              =     -2.88565   +/-   0.0883815    	 (limited)
+SgnNorm                   =      34.6121   +/-   0.966703     	 (limited)
+Mean                      =      1.86095                      	 (fixed)
+Sigma                     =    0.0173949                      	 (fixed)
+Alpha1                    =     0.898234                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =        1.209                      	 (fixed)
+N2                        =      1.51104                      	 (fixed)
+SecPeakNorm               =     0.812706   +/-   0.674188     	 (limited)
+SecPeakMean               =      2.04172   +/-   0.0444659    	 (limited)
+SecPeakSigma              =    0.0265196   +/-   0.0186908    	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 115.836 to 115.836
+Setting prefit parameter 1 from -2.79687 to -2.79687
+Counts in second peak region: 1247, background counts: 916.31, net counts: 330.69
+PrefitMass: Second peak will be removed due to low counts in the specified region (330.69 < 1000)
+Mass prefit indicated to remove second peak, restarting the chain ...
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_3] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      36.8778
+NDf                       =           31
+Edm                       =  3.59886e-12
+NCalls                    =           35
+BkgNorm                   =      115.836   +/-   1.40074      	 (limited)
+BkgExpLambda              =     -2.79686   +/-   0.0678506    	 (limited)
+--- [VnVsMassFit_pt_7.0_8.0_cutset_3] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      98.7731
+NDf                       =           48
+Edm                       =  1.69034e-06
+NCalls                    =           72
+BkgNorm                   =      109.684   +/-   1.344        	 (limited)
+BkgExpLambda              =     -2.82818   +/-   0.0696422    	 (limited)
+SgnNorm                   =       34.368   +/-   0.944387     	 (limited)
+Mean                      =      1.86095                      	 (fixed)
+Sigma                     =    0.0173949                      	 (fixed)
+Alpha1                    =     0.898234                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =        1.209                      	 (fixed)
+N2                        =      1.51104                      	 (fixed)
+PrefitMass fit done
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_3] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      14.6694
+NDf                       =           15
+Edm                       =  7.57355e-09
+NCalls                    =           43
+ConstVnBkg                =     0.105537   +/-   0.0112882    	 (limited)
+SlopeVnBkg                =   0.00373446   +/-   0.0638109    	 (limited)
+Setting mass par 0 from 109.684 to 109.684
+Setting mass par 1 from -2.82818 to -2.82818
+Setting mass par 2 from 34.368 to 34.368
+Setting mass par 3 from 1.86095 to 1.86095
+Setting mass par 4 from 0.0173949 to 0.0173949
+Setting mass par 5 from 0.898234 to 0.898234
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 1.209 to 1.209
+Setting mass par 8 from 1.51104 to 1.51104
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_3] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_3] Configuring fitter ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_3] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_3] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_3] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 109.684 [0, 162.64]
+Par 1 (BkgExpLambda): -2.82818 [-100, 100]
+Par 2 (SgnNorm): 34.368 [0, 162.64]
+Par 3 (Mean): 1.86095 [0, 0]
+Par 4 (Sigma): 0.0173949 [0, 0]
+Par 5 (Alpha1): 0.898234 [0.718587, 1.07788]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 1.209 [0.967203, 1.4508]
+Par 8 (N2): 1.51104 [1.20884, 1.81325]
+Par 9 (ConstVnBkg): 0.105537 [0, 1]
+Par 10 (SlopeVnBkg): 0.00373446 [-1, 1]
+Par 11 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      134.633
+NDf                       =           80
+Edm                       =  9.49052e-06
+NCalls                    =          119
+BkgNorm                   =      109.695   +/-   1.34383      	 (limited)
+BkgExpLambda              =     -2.82818   +/-   0.0696339    	 (limited)
+SgnNorm                   =      34.3578   +/-   0.944323     	 (limited)
+Mean                      =      1.86095                      	 (fixed)
+Sigma                     =    0.0173949                      	 (fixed)
+Alpha1                    =     0.898234                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =        1.209                      	 (fixed)
+N2                        =      1.51104                      	 (fixed)
+ConstVnBkg                =     0.117226   +/-   0.0117215    	 (limited)
+SlopeVnBkg                =   0.00826539   +/-   0.0655835    	 (limited)
+v2Sgn                     =    0.0384965   +/-   0.0254535    	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.0384965
+The vn of templates is equal to the one of signal: 0.0384965
+[Parameter summary]
+---> fNParsMassSgn: 3
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 5
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 8
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 8
+[Parameter summary]
+---> fNParsMassSgn: 3
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 8
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 11
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+Loading cutset configuration from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/cutsets/cutset_03.yml
+[33m[WARNING] Config entry FixSigmaFromFile not found in fit configuration.[0m
+[33m[WARNING] More than 16 pt bins not supported for full fit canvas. Skip creating it.[0m
+Rebin from 600 bins to 60 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 5.0 - 6.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for pt 5.0 - 6.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for correlated bkg source DsToPiKK from folder pt_50_60/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.65 && fMlScore1 < 0.85 && fM > 1.68 && fM < 2.19': 141 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 38.42249850299211 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 38.42249850299211 / sgn_frac 314.56500149916326 = 0.12214486137961002[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for correlated bkg source DplusToPiKK from folder pt_50_60/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.65 && fMlScore1 < 0.85 && fM > 1.68 && fM < 2.19': 405 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 11.879999692155568 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 11.879999692155568 / sgn_frac 314.56500149916326 = 0.03776643821002817[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 5.0 - 6.0 GeV/c ...[0m
+Fit status for pt 5.0 - 6.0 GeV/c: 2
+Rebin from 600 bins to 60 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 6.0 - 7.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for pt 6.0 - 7.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for correlated bkg source DsToPiKK from folder pt_60_70/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.65 && fMlScore1 < 0.85 && fM > 1.68 && fM < 2.19': 85 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 23.162499097548437 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 23.162499097548437 / sgn_frac 190.9500009100352 = 0.12130138249363662[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for correlated bkg source DplusToPiKK from folder pt_60_70/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.65 && fMlScore1 < 0.85 && fM > 1.68 && fM < 2.19': 274 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 8.037333125063274 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 8.037333125063274 / sgn_frac 190.9500009100352 = 0.04209129660517786[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 6.0 - 7.0 GeV/c ...[0m
+Fit status for pt 6.0 - 7.0 GeV/c: 2
+Rebin from 600 bins to 60 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 7.0 - 8.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for pt 7.0 - 8.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for correlated bkg source DsToPiKK from folder pt_70_80/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.65 && fMlScore1 < 0.85 && fM > 1.68 && fM < 2.19': 67 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 18.25749928865583 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 18.25749928865583 / sgn_frac 125.2900005971108 = 0.1457219187616226[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for correlated bkg source DplusToPiKK from folder pt_70_80/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.65 && fMlScore1 < 0.85 && fM > 1.68 && fM < 2.19': 165 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 4.839999874581898 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 4.839999874581898 / sgn_frac 125.2900005971108 = 0.03863037633901575[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 7.0 - 8.0 GeV/c ...[0m
+Fit status for pt 7.0 - 8.0 GeV/c: 2
+Rebin from 600 bins to 60 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 8.0 - 10.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for pt 8.0 - 10.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for correlated bkg source DsToPiKK from folder pt_80_100/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.75 && fMlScore1 < 1.0 && fM > 1.68 && fM < 2.19': 2855 for correlated bkg source DsToPiKK[0m
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_3] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_3] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      381.165
+NDf                       =           34
+Edm                       =    1.233e-06
+NCalls                    =           57
+BkgNorm                   =       7359.8   +/-   10.4606      	 (limited)
+BkgExpLambda              =     -1.44859   +/-   0.00817685   	 (limited)
+--- [VnVsMassFit_pt_8.0_10.0_cutset_3] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      107.777
+NDf                       =           43
+Edm                       =  1.09063e-07
+NCalls                    =          591
+BkgNorm                   =      7150.53   +/-   14.9914      	 (limited)
+BkgExpLambda              =     -1.46217   +/-   0.00970576   	 (limited)
+SgnNorm                   =      243.567   +/-   6.1749       	 (limited)
+Mean                      =      1.85859   +/-   0.000651162  	 (limited)
+Sigma                     =    0.0266462   +/-   0.000801285  	 (limited)
+SecPeakNorm               =      122.105   +/-   6.86593      	 (limited)
+SecPeakMean               =      2.00068   +/-   0.00335627   	 (limited)
+SecPeakSigma              =         0.05   +/-   0.000549511  	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 7359.8 to 7359.8
+Setting prefit parameter 1 from -1.44859 to -1.44859
+Counts in second peak region: 91232, background counts: 72621.7, net counts: 18610.3
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_3] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      14.6034
+NDf                       =           18
+Edm                       =   1.7191e-08
+NCalls                    =           46
+ConstVnBkg                =    0.0877609   +/-   0.00130669   	 (limited)
+SlopeVnBkg                =    0.0146169   +/-   0.00780752   	 (limited)
+Setting mass par 0 from 7150.53 to 7150.53
+Setting mass par 1 from -1.46217 to -1.46217
+Setting mass par 2 from 243.567 to 243.567
+Setting mass par 3 from 1.85859 to 1.85859
+Setting mass par 4 from 0.0266462 to 0.0266462
+Setting mass par 5 from 122.105 to 122.105
+Setting mass par 6 from 2.00068 to 2.00068
+Setting mass par 7 from 0.05 to 0.05
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_3] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_3] Configuring fitter ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_3] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_3] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_3] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 7150.53 [0, 8303.3]
+Par 1 (BkgExpLambda): -1.46217 [-100, 100]
+Par 2 (SgnNorm): 243.567 [0, 8303.3]
+Par 3 (Mean): 1.85859 [1.8, 2]
+Par 4 (Sigma): 0.0266462 [0, 0.2]
+Par 5 (SecPeakNorm): 122.105 [0, 1e+06]
+Par 6 (SecPeakMean): 2.00068 [1.99, 2.04]
+Par 7 (SecPeakSigma): 0.05 [0.005, 0.05]
+Par 8 (ConstVnBkg): 0.0877609 [0, 1]
+Par 9 (SlopeVnBkg): 0.0146169 [-1, 1]
+Par 10 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      137.714
+NDf                       =           75
+Edm                       =   1.3725e-05
+NCalls                    =          191
+BkgNorm                   =      7151.22   +/-   14.7705      	 (limited)
+BkgExpLambda              =     -1.46214   +/-   0.00767332   	 (limited)
+SgnNorm                   =      243.256   +/-   5.96203      	 (limited)
+Mean                      =      1.85856   +/-   0.000630699  	 (limited)
+Sigma                     =    0.0265882   +/-   0.000777192  	 (limited)
+SecPeakNorm               =      121.856   +/-   5.97755      	 (limited)
+SecPeakMean               =       2.0007   +/-   0.00292676   	 (limited)
+SecPeakSigma              =         0.05   +/-   0.000559911  	 (limited)
+ConstVnBkg                =    0.0897942   +/-   0.00151408   	 (limited)
+SlopeVnBkg                =    0.0146265   +/-   0.00773423   	 (limited)
+v2Sgn                     =    0.0590253   +/-   0.0166567    	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.0590253
+The vn of templates is equal to the one of signal: 0.0590253
+[32m[INFO] Returning frac 777.9874696882446 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 777.9874696882446 / sgn_frac 2362.755011260488 = 0.32927132351026184[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for correlated bkg source DplusToPiKK from folder pt_80_100/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.75 && fMlScore1 < 1.0 && fM > 1.68 && fM < 2.19': 3974 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 116.57066364599069 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 116.57066364599069 / sgn_frac 2362.755011260488 = 0.049336754378018356[0m
+Fit status for pt 8.0 - 10.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.059025267138229955 +/- 0.016656735188097536, iPar: 10
+Drawing Vn vs pT ...
+[32m[INFO] Saving output histos to /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_03.root[0m
+[33m[WARNING] Created directory pt_50_60 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_03.root[0m
+[33m[WARNING] Created directory pt_60_70 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_03.root[0m
+[33m[WARNING] Created directory pt_70_80 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_03.root[0m
+[33m[WARNING] Created directory pt_80_100 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_03.root[0m
+[33m[WARNING] Created directory pt_100_120 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_03.root[0m
+[33m[WARNING] Created directory pt_120_160 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_03.root[0m
+[33m[WARNING] Created directory pt_160_240 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_03.root[0m
+[33m[WARNING] Fit function for pt 100-120 not available. Skipping.[0m
+[33m[WARNING] Fit function for pt 120-160 not available. Skipping.[0m
+[33m[WARNING] Fit function for pt 160-240 not available. Skipping.[0m
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_4] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_4] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      67.5214
+NDf                       =           33
+Edm                       =  1.86639e-07
+NCalls                    =           65
+BkgNorm                   =      5641.57   +/-   9.39432      	 (limited)
+BkgExpLambda              =     -2.32896   +/-   0.00967925   	 (limited)
+--- [VnVsMassFit_pt_5.0_6.0_cutset_4] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      77.7237
+NDf                       =           45
+Edm                       =  9.37499e-07
+NCalls                    =          396
+BkgNorm                   =      5585.14   +/-   9.11578      	 (limited)
+BkgExpLambda              =     -2.30863   +/-   0.0101128    	 (limited)
+SgnNorm                   =      235.551   +/-   3.36642      	 (limited)
+Mean                      =      1.86082                      	 (fixed)
+Sigma                     =    0.0166271                      	 (fixed)
+Alpha1                    =      1.48511                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      1.57382                      	 (fixed)
+N2                        =           12                      	 (fixed)
+SecPeakNorm               =      7.59468   +/-   3.02285      	 (limited)
+SecPeakMean               =      2.01143   +/-   0.00830139   	 (limited)
+SecPeakSigma              =    0.0179025   +/-   0.00574406   	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 5641.57 to 5641.57
+Setting prefit parameter 1 from -2.32896 to -2.32896
+Counts in second peak region: 61047, background counts: 51043.1, net counts: 10003.9
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_4] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      11.9842
+NDf                       =           17
+Edm                       =  5.84148e-10
+NCalls                    =           44
+ConstVnBkg                =    0.0820621   +/-   0.00155409   	 (limited)
+SlopeVnBkg                =   0.00869159   +/-   0.00900567   	 (limited)
+Setting mass par 0 from 5585.14 to 5585.14
+Setting mass par 1 from -2.30863 to -2.30863
+Setting mass par 2 from 235.551 to 235.551
+Setting mass par 3 from 1.86082 to 1.86082
+Setting mass par 4 from 0.0166271 to 0.0166271
+Setting mass par 5 from 1.48511 to 1.48511
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 1.57382 to 1.57382
+Setting mass par 8 from 12 to 12
+Setting mass par 9 from 7.59468 to 7.59468
+Setting mass par 10 from 2.01143 to 2.01143
+Setting mass par 11 from 0.0179025 to 0.0179025
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_4] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_4] Configuring fitter ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_4] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_4] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_5.0_6.0_cutset_4] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 5585.14 [0, 6523.24]
+Par 1 (BkgExpLambda): -2.30863 [-100, 100]
+Par 2 (SgnNorm): 235.551 [0, 6523.24]
+Par 3 (Mean): 1.86082 [0, 0]
+Par 4 (Sigma): 0.0166271 [0, 0]
+Par 5 (Alpha1): 1.48511 [1.18809, 1.78213]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 1.57382 [1.25906, 1.88859]
+Par 8 (N2): 12 [9.6, 14.4]
+Par 9 (SecPeakNorm): 7.59468 [0, 1e+06]
+Par 10 (SecPeakMean): 2.01143 [1.99, 2.04]
+Par 11 (SecPeakSigma): 0.0179025 [0.005, 0.05]
+Par 12 (ConstVnBkg): 0.0820621 [0, 1]
+Par 13 (SlopeVnBkg): 0.00869159 [-1, 1]
+Par 14 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      107.204
+NDf                       =           77
+Edm                       =  6.57716e-06
+NCalls                    =          194
+BkgNorm                   =      5585.03   +/-   9.11082      	 (limited)
+BkgExpLambda              =     -2.30874   +/-   0.0101095    	 (limited)
+SgnNorm                   =      235.557   +/-   3.36613      	 (limited)
+Mean                      =      1.86082                      	 (fixed)
+Sigma                     =    0.0166271                      	 (fixed)
+Alpha1                    =      1.48511                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      1.57382                      	 (fixed)
+N2                        =           12                      	 (fixed)
+SecPeakNorm               =      7.69433   +/-   3.01287      	 (limited)
+SecPeakMean               =      2.01129   +/-   0.0081157    	 (limited)
+SecPeakSigma              =    0.0177988   +/-   0.00564631   	 (limited)
+ConstVnBkg                =    0.0825532   +/-   0.00142811   	 (limited)
+SlopeVnBkg                =    0.0101325   +/-   0.00883088   	 (limited)
+v2Sgn                     =    0.0443253   +/-   0.0128852    	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.0443253
+The vn of templates is equal to the one of signal: 0.0443253
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_4] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_4] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      85.0063
+NDf                       =           30
+Edm                       =  1.34368e-08
+NCalls                    =           65
+BkgNorm                   =      3964.23   +/-   8.28869      	 (limited)
+BkgExpLambda              =     -2.01548   +/-   0.0115726    	 (limited)
+--- [VnVsMassFit_pt_6.0_7.0_cutset_4] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      110.472
+NDf                       =           45
+Edm                       =  1.25668e-07
+NCalls                    =          400
+BkgNorm                   =      3937.01   +/-   7.82223      	 (limited)
+BkgExpLambda              =     -2.01375   +/-   0.0117002    	 (limited)
+SgnNorm                   =      164.445   +/-   2.93024      	 (limited)
+Mean                      =       1.8609                      	 (fixed)
+Sigma                     =    0.0190055                      	 (fixed)
+Alpha1                    =      1.35589                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      6.13369                      	 (fixed)
+N2                        =      5.64753                      	 (fixed)
+SecPeakNorm               =      13.5333   +/-   2.61699      	 (limited)
+SecPeakMean               =      1.99919   +/-   0.00384034   	 (limited)
+SecPeakSigma              =     0.017649   +/-   0.00286726   	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 3964.23 to 3964.23
+Setting prefit parameter 1 from -2.01548 to -2.01548
+Counts in second peak region: 45272, background counts: 37389.8, net counts: 7882.21
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_4] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =       15.054
+NDf                       =           14
+Edm                       =  7.79823e-09
+NCalls                    =           43
+ConstVnBkg                =    0.0735341   +/-   0.00193299   	 (limited)
+SlopeVnBkg                =      0.01845   +/-   0.0109185    	 (limited)
+Setting mass par 0 from 3937.01 to 3937.01
+Setting mass par 1 from -2.01375 to -2.01375
+Setting mass par 2 from 164.445 to 164.445
+Setting mass par 3 from 1.8609 to 1.8609
+Setting mass par 4 from 0.0190055 to 0.0190055
+Setting mass par 5 from 1.35589 to 1.35589
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 6.13369 to 6.13369
+Setting mass par 8 from 5.64753 to 5.64753
+Setting mass par 9 from 13.5333 to 13.5333
+Setting mass par 10 from 1.99919 to 1.99919
+Setting mass par 11 from 0.017649 to 0.017649
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_4] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_4] Configuring fitter ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_4] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_4] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_6.0_7.0_cutset_4] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 3937.01 [0, 4580.59]
+Par 1 (BkgExpLambda): -2.01375 [-100, 100]
+Par 2 (SgnNorm): 164.445 [0, 4580.59]
+Par 3 (Mean): 1.8609 [0, 0]
+Par 4 (Sigma): 0.0190055 [0, 0]
+Par 5 (Alpha1): 1.35589 [1.08471, 1.62706]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 6.13369 [4.90695, 7.36042]
+Par 8 (N2): 5.64753 [4.51803, 6.77704]
+Par 9 (SecPeakNorm): 13.5333 [0, 1e+06]
+Par 10 (SecPeakMean): 1.99919 [1.99, 2.04]
+Par 11 (SecPeakSigma): 0.017649 [0.005, 0.05]
+Par 12 (ConstVnBkg): 0.0735341 [0, 1]
+Par 13 (SlopeVnBkg): 0.01845 [-1, 1]
+Par 14 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      138.665
+NDf                       =           77
+Edm                       =  1.05734e-05
+NCalls                    =          192
+BkgNorm                   =      3937.01   +/-   7.82151      	 (limited)
+BkgExpLambda              =     -2.01376   +/-   0.0116998    	 (limited)
+SgnNorm                   =       164.44   +/-   2.93026      	 (limited)
+Mean                      =       1.8609                      	 (fixed)
+Sigma                     =    0.0190055                      	 (fixed)
+Alpha1                    =      1.35589                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =      6.13369                      	 (fixed)
+N2                        =      5.64753                      	 (fixed)
+SecPeakNorm               =      13.5383   +/-   2.61545      	 (limited)
+SecPeakMean               =      1.99916   +/-   0.0038256    	 (limited)
+SecPeakSigma              =    0.0176084   +/-   0.00286808   	 (limited)
+ConstVnBkg                =    0.0734932   +/-   0.00173272   	 (limited)
+SlopeVnBkg                =    0.0214879   +/-   0.0105495    	 (limited)
+v2Sgn                     =    0.0838983   +/-   0.0162017    	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.0838983
+The vn of templates is equal to the one of signal: 0.0838983
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 9
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 12
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+[Parameter summary]
+---> fNParsMassSgn: 7
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 12
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 15
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_4] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 16
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_4] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      154.328
+NDf                       =           31
+Edm                       =  7.03351e-06
+NCalls                    =           61
+BkgNorm                   =      2733.93   +/-   6.77826      	 (limited)
+BkgExpLambda              =      -1.7565   +/-   0.0137947    	 (limited)
+--- [VnVsMassFit_pt_7.0_8.0_cutset_4] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      67.2051
+NDf                       =           45
+Edm                       =  1.72531e-06
+NCalls                    =          328
+BkgNorm                   =      2651.78   +/-   10.4952      	 (limited)
+BkgExpLambda              =     -1.77618   +/-   0.0187909    	 (limited)
+SgnNorm                   =      146.408   +/-   3.30464      	 (limited)
+Mean                      =      1.86095                      	 (fixed)
+Sigma                     =    0.0173949                      	 (fixed)
+Alpha1                    =     0.898234                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =        1.209                      	 (fixed)
+N2                        =      1.51104                      	 (fixed)
+SecPeakNorm               =      34.3225   +/-   7.5012       	 (limited)
+SecPeakMean               =      2.00052   +/-   0.00505947   	 (limited)
+SecPeakSigma              =    0.0431873   +/-   0.00957431   	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 2733.93 to 2733.93
+Setting prefit parameter 1 from -1.7565 to -1.7565
+Counts in second peak region: 32943, background counts: 25942.3, net counts: 7000.69
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_4] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      10.4663
+NDf                       =           15
+Edm                       =  6.67738e-09
+NCalls                    =           37
+ConstVnBkg                =    0.0678992   +/-   0.00226504   	 (limited)
+SlopeVnBkg                =  -0.00432277   +/-   0.0131687    	 (limited)
+Setting mass par 0 from 2651.78 to 2651.78
+Setting mass par 1 from -1.77618 to -1.77618
+Setting mass par 2 from 146.408 to 146.408
+Setting mass par 3 from 1.86095 to 1.86095
+Setting mass par 4 from 0.0173949 to 0.0173949
+Setting mass par 5 from 0.898234 to 0.898234
+Setting mass par 6 from 12 to 12
+Setting mass par 7 from 1.209 to 1.209
+Setting mass par 8 from 1.51104 to 1.51104
+Setting mass par 9 from 34.3225 to 34.3225
+Setting mass par 10 from 2.00052 to 2.00052
+Setting mass par 11 from 0.0431873 to 0.0431873
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_4] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_4] Configuring fitter ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_4] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_4] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_7.0_8.0_cutset_4] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 2651.78 [0, 3141.28]
+Par 1 (BkgExpLambda): -1.77618 [-100, 100]
+Par 2 (SgnNorm): 146.408 [0, 3141.28]
+Par 3 (Mean): 1.86095 [0, 0]
+Par 4 (Sigma): 0.0173949 [0, 0]
+Par 5 (Alpha1): 0.898234 [0.718587, 1.07788]
+Par 6 (N1): 12 [9.6, 14.4]
+Par 7 (Alpha2): 1.209 [0.967203, 1.4508]
+Par 8 (N2): 1.51104 [1.20884, 1.81325]
+Par 9 (SecPeakNorm): 34.3225 [0, 1e+06]
+Par 10 (SecPeakMean): 2.00052 [1.99, 2.04]
+Par 11 (SecPeakSigma): 0.0431873 [0.005, 0.05]
+Par 12 (ConstVnBkg): 0.0678992 [0, 1]
+Par 13 (SlopeVnBkg): -0.00432277 [-1, 1]
+Par 14 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      92.3813
+NDf                       =           77
+Edm                       =  2.01016e-09
+NCalls                    =          233
+BkgNorm                   =      2651.92   +/-   10.4959      	 (limited)
+BkgExpLambda              =     -1.77598   +/-   0.0187733    	 (limited)
+SgnNorm                   =      146.397   +/-   3.30676      	 (limited)
+Mean                      =      1.86095                      	 (fixed)
+Sigma                     =    0.0173949                      	 (fixed)
+Alpha1                    =     0.898234                      	 (fixed)
+N1                        =           12                      	 (fixed)
+Alpha2                    =        1.209                      	 (fixed)
+N2                        =      1.51104                      	 (fixed)
+SecPeakNorm               =      34.1995   +/-   7.48319      	 (limited)
+SecPeakMean               =      2.00055   +/-   0.00503417   	 (limited)
+SecPeakSigma              =    0.0429976   +/-   0.00959783   	 (limited)
+ConstVnBkg                =    0.0694587   +/-   0.00242152   	 (limited)
+SlopeVnBkg                =  -0.00539379   +/-   0.0127828    	 (limited)
+v2Sgn                     =    0.0624606   +/-   0.0204579    	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.0624606
+The vn of templates is equal to the one of signal: 0.0624606
+[Parameter summary]
+---> fNParsMassSgn: 3
+---> fNParsMassBkg: 2
+---> fNParsSec: 0
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 5
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 8
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 8
+[Parameter summary]
+---> fNParsMassSgn: 3
+---> fNParsMassBkg: 2
+---> fNParsSec: 3
+---> fNParsRfl: 0
+---> fNParsTempls: 0
+---> fNParsTotMass: 8
+---> fNParsVnBkg: 2
+---> fNVnParsSgn: 1
+---> fNParsTotVn: 11
+
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+Loading cutset configuration from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/cutsets/cutset_04.yml
+[33m[WARNING] Config entry FixSigmaFromFile not found in fit configuration.[0m
+[33m[WARNING] More than 16 pt bins not supported for full fit canvas. Skip creating it.[0m
+Rebin from 600 bins to 60 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 5.0 - 6.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for pt 5.0 - 6.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for correlated bkg source DsToPiKK from folder pt_50_60/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.85 && fMlScore1 < 1.0 && fM > 1.68 && fM < 2.19': 2542 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 692.6949730113897 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 692.6949730113897 / sgn_frac 3317.8400158122604 = 0.20877889521801035[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_50_60.root for correlated bkg source DplusToPiKK from folder pt_50_60/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.85 && fMlScore1 < 1.0 && fM > 1.68 && fM < 2.19': 4484 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 131.53066325833473 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 131.53066325833473 / sgn_frac 3317.8400158122604 = 0.03964346159895655[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 5.0 - 6.0 GeV/c ...[0m
+Fit status for pt 5.0 - 6.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.044325250741010645 +/- 0.012885222254923511, iPar: 14
+Rebin from 600 bins to 60 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 6.0 - 7.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for pt 6.0 - 7.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for correlated bkg source DsToPiKK from folder pt_60_70/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.85 && fMlScore1 < 1.0 && fM > 1.68 && fM < 2.19': 1980 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 539.5499789781871 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 539.5499789781871 / sgn_frac 2207.9850105228807 = 0.24436306243329722[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_60_70.root for correlated bkg source DplusToPiKK from folder pt_60_70/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.85 && fMlScore1 < 1.0 && fM > 1.68 && fM < 2.19': 3302 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 96.85866415678441 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 96.85866415678441 / sgn_frac 2207.9850105228807 = 0.043867446425212356[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 6.0 - 7.0 GeV/c ...[0m
+Fit status for pt 6.0 - 7.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.08389827232511082 +/- 0.016201651277789025, iPar: 14
+Rebin from 600 bins to 60 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 7.0 - 8.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for pt 7.0 - 8.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for correlated bkg source DsToPiKK from folder pt_70_80/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.85 && fMlScore1 < 1.0 && fM > 1.68 && fM < 2.19': 1433 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 390.4924847857284 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 390.4924847857284 / sgn_frac 1429.4450068124916 = 0.2731776898899277[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_70_80.root for correlated bkg source DplusToPiKK from folder pt_70_80/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.85 && fMlScore1 < 1.0 && fM > 1.68 && fM < 2.19': 2267 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 66.49866494349796 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 66.49866494349796 / sgn_frac 1429.4450068124916 = 0.046520617880769555[0m
+[32m[INFO] Trying to fix signal parameters from file /home/mdicosta/FlowDplus/CorrBkgsChecks/cutvar_templs_inclusive_tight_bkg_for_lineshape_combined/raw_yields/raw_yields_00.root for pt 7.0 - 8.0 GeV/c ...[0m
+Fit status for pt 7.0 - 8.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.06246063749980932 +/- 0.020457897432536266, iPar: 14
+Rebin from 600 bins to 60 bins -- Used bins = 600 in range 1-600
+
+[32m[INFO] Processing pt 8.0 - 10.0 GeV/c[0m
+[32m[INFO] Including second peak with frac width 1.2 and False[0m
+[32m[INFO] Retrieving correlated bkg templates from /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for pt 8.0 - 10.0 GeV/c ...[0m
+[32m[INFO] Getting correlated bkg template for channel DsToPiKK ...[0m
+WARNING: Vn parameter of templates will be the same as the signal!
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_4] Performing simultaneous fit of mass and vn vs mass ---
+Setting background parameter names...
+Parameter names set.
+Length of fInitFuncPars: 12
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_4] Prefitting combinatorial background from data sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      381.165
+NDf                       =           34
+Edm                       =    1.233e-06
+NCalls                    =           57
+BkgNorm                   =       7359.8   +/-   10.4606      	 (limited)
+BkgExpLambda              =     -1.44859   +/-   0.00817685   	 (limited)
+--- [VnVsMassFit_pt_8.0_10.0_cutset_4] Prefitting Inv. Mass spectrum ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      107.777
+NDf                       =           43
+Edm                       =  1.09063e-07
+NCalls                    =          591
+BkgNorm                   =      7150.53   +/-   14.9914      	 (limited)
+BkgExpLambda              =     -1.46217   +/-   0.00970576   	 (limited)
+SgnNorm                   =      243.567   +/-   6.1749       	 (limited)
+Mean                      =      1.85859   +/-   0.000651162  	 (limited)
+Sigma                     =    0.0266462   +/-   0.000801285  	 (limited)
+SecPeakNorm               =      122.105   +/-   6.86593      	 (limited)
+SecPeakMean               =      2.00068   +/-   0.00335627   	 (limited)
+SecPeakSigma              =         0.05   +/-   0.000549511  	 (limited)
+PrefitMass fit done
+Setting prefit parameter 0 from 7359.8 to 7359.8
+Setting prefit parameter 1 from -1.44859 to -1.44859
+Counts in second peak region: 91232, background counts: 72621.7, net counts: 18610.3
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_4] Prefitting Vn of sidebands ---
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      14.6034
+NDf                       =           18
+Edm                       =   1.7191e-08
+NCalls                    =           46
+ConstVnBkg                =    0.0877609   +/-   0.00130669   	 (limited)
+SlopeVnBkg                =    0.0146169   +/-   0.00780752   	 (limited)
+Setting mass par 0 from 7150.53 to 7150.53
+Setting mass par 1 from -1.46217 to -1.46217
+Setting mass par 2 from 243.567 to 243.567
+Setting mass par 3 from 1.85859 to 1.85859
+Setting mass par 4 from 0.0266462 to 0.0266462
+Setting mass par 5 from 122.105 to 122.105
+Setting mass par 6 from 2.00068 to 2.00068
+Setting mass par 7 from 0.05 to 0.05
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_4] Starting simultaneous fit ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_4] Configuring fitter ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_4] Parameter fixing and limits set ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_4] Parameter limits and fixing for signal shape applied ---
+
+--- [VnVsMassFit_pt_8.0_10.0_cutset_4] Running fit ---
+Debugging of fit parameters before fit:
+Par 0 (BkgNorm): 7150.53 [0, 8303.3]
+Par 1 (BkgExpLambda): -1.46217 [-100, 100]
+Par 2 (SgnNorm): 243.567 [0, 8303.3]
+Par 3 (Mean): 1.85859 [1.8, 2]
+Par 4 (Sigma): 0.0266462 [0, 0.2]
+Par 5 (SecPeakNorm): 122.105 [0, 1e+06]
+Par 6 (SecPeakMean): 2.00068 [1.99, 2.04]
+Par 7 (SecPeakSigma): 0.05 [0.005, 0.05]
+Par 8 (ConstVnBkg): 0.0877609 [0, 1]
+Par 9 (SlopeVnBkg): 0.0146169 [-1, 1]
+Par 10 (v2Sgn): 0.05 [-0.3, 0.5]
+****************************************
+Minimizer is Minuit2 / Migrad
+MinFCN                    =      137.714
+NDf                       =           75
+Edm                       =   1.3725e-05
+NCalls                    =          191
+BkgNorm                   =      7151.22   +/-   14.7705      	 (limited)
+BkgExpLambda              =     -1.46214   +/-   0.00767332   	 (limited)
+SgnNorm                   =      243.256   +/-   5.96203      	 (limited)
+Mean                      =      1.85856   +/-   0.000630699  	 (limited)
+Sigma                     =    0.0265882   +/-   0.000777192  	 (limited)
+SecPeakNorm               =      121.856   +/-   5.97755      	 (limited)
+SecPeakMean               =       2.0007   +/-   0.00292676   	 (limited)
+SecPeakSigma              =         0.05   +/-   0.000559911  	 (limited)
+ConstVnBkg                =    0.0897942   +/-   0.00151408   	 (limited)
+SlopeVnBkg                =    0.0146265   +/-   0.00773423   	 (limited)
+v2Sgn                     =    0.0590253   +/-   0.0166567    	 (limited)
+
+ ---> Templates share the vn parameter with the signal! 
+The vn of templates is equal to the one of signal: 0.0590253
+The vn of templates is equal to the one of signal: 0.0590253
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for correlated bkg source DsToPiKK from folder pt_80_100/DsToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.054499998688697815, MC = 0.20000000298023224[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.75 && fMlScore1 < 1.0 && fM > 1.68 && fM < 2.19': 2855 for correlated bkg source DsToPiKK[0m
+[32m[INFO] Returning frac 777.9874696882446 for correlated bkg source DsToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DsToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DsToPiKK frac to: 777.9874696882446 / sgn_frac 2362.755011260488 = 0.32927132351026184[0m
+[32m[INFO] Getting correlated bkg template for channel DplusToPiKK ...[0m
+[32m[INFO] Using correlated bkg file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/corrbkgs/templs_pt_80_100.root for correlated bkg source DplusToPiKK from folder pt_80_100/DplusToPiKK
+[0m
+[32m[INFO] Branching ratios: PDG = 0.009680000133812428, MC = 0.33000001311302185[0m
+[32m[INFO] Number of entries after selection 'fMlScore0 < 0.004 && fMlScore1 > 0.75 && fMlScore1 < 1.0 && fM > 1.68 && fM < 2.19': 3974 for correlated bkg source DplusToPiKK[0m
+[32m[INFO] Returning frac 116.57066364599069 for correlated bkg source DplusToPiKK[0m
+[33m[WARNING] Returning hist for correlated bkg source DplusToPiKK[0m
+Rebin from 510 bins to 51 bins -- Used bins = 510 in range 1-510
+
+[32m[INFO] Setting channel DplusToPiKK frac to: 116.57066364599069 / sgn_frac 2362.755011260488 = 0.049336754378018356[0m
+Fit status for pt 8.0 - 10.0 GeV/c: 1
+Getting vn of secondary peak fixed to signal vn
+vnSecPeak: 0.059025267138229955 +/- 0.016656735188097536, iPar: 10
+Drawing Vn vs pT ...
+[32m[INFO] Saving output histos to /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_04.root[0m
+[33m[WARNING] Created directory pt_50_60 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_04.root[0m
+[33m[WARNING] Created directory pt_60_70 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_04.root[0m
+[33m[WARNING] Created directory pt_70_80 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_04.root[0m
+[33m[WARNING] Created directory pt_80_100 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_04.root[0m
+[33m[WARNING] Created directory pt_100_120 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_04.root[0m
+[33m[WARNING] Created directory pt_120_160 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_04.root[0m
+[33m[WARNING] Created directory pt_160_240 in file /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields/raw_yields_04.root[0m
+[33m[WARNING] Fit function for pt 100-120 not available. Skipping.[0m
+[33m[WARNING] Fit function for pt 120-160 not available. Skipping.[0m
+[33m[WARNING] Fit function for pt 160-240 not available. Skipping.[0m
+[33m[WARNING] Preprocess will not be performed[0m
+[33m[WARNING] Make yaml will not be performed[0m
+[32m[INFO] mCutSets: 5[0m
+[33m[WARNING] Projections will not be performed[0m
+[33m[WARNING] Efficiencies will not be computed[0m
+[32m[INFO] Fit v2 vs mass will be performed[0m
+[33m/home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/raw_yields already exists, it will be overwritten[0m
+[32mProcessing cutset 00...[0m
+[35m[COMMAND] python3 /home/mdicosta/alice/hf-vn/./src/get_vn_vs_mass.py /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/config_templs_tight_bkg_high_pt_total_fix_dscb.yml /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/cutsets/cutset_00.yml /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/projs/proj_00.root -b[0m
+[32mProcessing cutset 01...[0m
+[35m[COMMAND] python3 /home/mdicosta/alice/hf-vn/./src/get_vn_vs_mass.py /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/config_templs_tight_bkg_high_pt_total_fix_dscb.yml /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/cutsets/cutset_01.yml /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/projs/proj_01.root -b[0m
+[32mProcessing cutset 02...[0m
+[35m[COMMAND] python3 /home/mdicosta/alice/hf-vn/./src/get_vn_vs_mass.py /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/config_templs_tight_bkg_high_pt_total_fix_dscb.yml /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/cutsets/cutset_02.yml /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/projs/proj_02.root -b[0m
+[32mProcessing cutset 03...[0m
+[35m[COMMAND] python3 /home/mdicosta/alice/hf-vn/./src/get_vn_vs_mass.py /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/config_templs_tight_bkg_high_pt_total_fix_dscb.yml /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/cutsets/cutset_03.yml /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/projs/proj_03.root -b[0m
+[32mProcessing cutset 04...[0m
+[35m[COMMAND] python3 /home/mdicosta/alice/hf-vn/./src/get_vn_vs_mass.py /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/config_templs_tight_bkg_high_pt_total_fix_dscb.yml /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/cutsets/cutset_04.yml /home/mdicosta/FlowDplus/CorrBkgsChecks/HighPt/cutvar_templs_tight_bkg_high_pt_total_fix_dscb_combined/projs/proj_04.root -b[0m
+[33m[WARNING] Cut variation will not be performed[0m
+[33m[WARNING] Data driven fraction will not be performed[0m
+[33m[WARNING] Fit v2 vs fd fraction will not be performed[0m
+[32m[INFO] Analysis completed, total execution time: 37.85 seconds[0m
