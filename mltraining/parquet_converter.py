@@ -14,7 +14,6 @@ def converter(file, table, cent_min, cent_max, queries, labels):
     # Pick data tree, convert to pandas dataframe, and save as parquet
     with uproot.open(file) as f:
         keys = f.keys()
-        print(keys)
 
         matched_keys = [key for key in keys if table in key]
         dfs = []
@@ -52,5 +51,4 @@ if __name__ == "__main__":
     if args.data != "AO2D_data.root":
         converter(args.data, args.table, cent_min, cent_max, queries=["fM > 1.6 and fM < 2.5"], labels=["data"])
     if args.mc != "AO2D_mc.root":
-        print("Converting MC file...")
         converter(args.mc, args.table, cent_min, cent_max, queries=["fM > 1.6 and fM < 2.5 and fOriginMcRec == 1", "fM > 1.6 and fM < 2.5 and fOriginMcRec == 2"], labels=["prompt", "fd"])
