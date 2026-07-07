@@ -61,7 +61,7 @@ void SetTH1HistoStyle(TH1F*& histo, TString hTitle, TString hXaxisTitle, TString
                       Float_t hTitleXaxisSize = 0.045, Float_t hTitleYaxisSize = 0.045, Float_t hLabelXaxisSize = 0.045, Float_t hLabelYaxisSize = 0.045,
                       Bool_t centerXaxisTitle = false, Bool_t centerYaxisTitle = false);
 
-void FitCorrel(const TString cfgFileName = "config_CorrAnalysis.json")
+void FitCorrel(const TString cfgFileName = "config_CorrAnalysis.json", const TString yamlFileName = "config.yml")
 {
   gStyle->SetOptStat(0);
   gStyle->SetPadLeftMargin(0.2);
@@ -162,8 +162,7 @@ void FitCorrel(const TString cfgFileName = "config_CorrAnalysis.json")
   bool lmTemplate = true;
 
   // YAML config
-  string yamlConfigFile = "/home/wuct/MetaData/DATA/OO/apass2/corr/results/fthlook_Biao/large/k020/CorrelExtract_0d8_1d3_1limits/config_CorrAnalysis_v2_010_negDeta_0d8_1d3_1limits.yaml";
-  YAML::Node yamlConfig = YAML::LoadFile(yamlConfigFile);
+  YAML::Node yamlConfig = YAML::LoadFile(yamlFileName.Data());
   string outdir = yamlConfig["outdir"].as<std::string>();
   string suffix = yamlConfig["suffix"].as<std::string>();
   string outdirLM;
@@ -171,7 +170,6 @@ void FitCorrel(const TString cfgFileName = "config_CorrAnalysis.json")
   if (yamlConfig["task_LM"] && yamlConfig["task_LM"]["do"].as<bool>()) {
     outdirLM = yamlConfig["task_LM"]["outdir"].as<std::string>();
     inputLMFile = outdirLM + "/CorrelExtract_" + suffix + "/AssociatedPairsYields/PairYieldsVsPhi.root";
-
   }
   string inputFile = outdir + "/CorrelExtract_" + suffix + "/AssociatedPairsYields/PairYieldsVsPhi.root";
   string outputPath = outdir + "/CorrelExtract_" + suffix + "/CorrelationFitResults/";
@@ -180,7 +178,7 @@ void FitCorrel(const TString cfgFileName = "config_CorrAnalysis.json")
     cout << "No input LM template file provided, will not perform template fit" << endl;
     for (int iFunc=0; iFunc < nBinsPtCand; iFunc++) {
       fitFunc[iFunc] = 8;
-    }  
+    }
   } else {
     cout << "Input LM template file: " << inputLMFile << endl;
   }
@@ -238,14 +236,14 @@ void FitCorrel(const TString cfgFileName = "config_CorrAnalysis.json")
     for (int iBinPtCand = 0; iBinPtCand < nBinsPtCand; iBinPtCand++) {
       for (int iBinPtHad = 0; iBinPtHad < nBinsPtHad; iBinPtHad++) {
         if (isReflected) {
-          hCorrPhi[iBinPtCand][iBinPtHad][iBinInvMass] = reinterpret_cast<TH1D*>(inFile->Get(Form("PtCandBin_%0.f_%0.f/PtHadBin_4_50/InvMassBin_%0.f_%0.f/hCorrectedCorrel_Reflected_%d", binsPtCandIntervals[iBinPtCand], binsPtCandIntervals[iBinPtCand + 1], binsInvMassIntervals[iBinInvMass]*1000, binsInvMassIntervals[iBinInvMass + 1]*1000, iBinInvMass+1)));
+          hCorrPhi[iBinPtCand][iBinPtHad][iBinInvMass] = reinterpret_cast<TH1D*>(inFile->Get(Form("PtCand_%0.f_%0.f/PtHad_4_50/InvMassBin_%0.f_%0.f/hCorrectedCorrel_Reflected_%d", binsPtCandIntervals[iBinPtCand], binsPtCandIntervals[iBinPtCand + 1], binsInvMassIntervals[iBinInvMass]*1000, binsInvMassIntervals[iBinInvMass + 1]*1000, iBinInvMass+1)));
         } else {
-          hCorrPhi[iBinPtCand][iBinPtHad][iBinInvMass] = reinterpret_cast<TH1D*>(inFile->Get(Form("PtCandBin_%0.f_%0.f/PtHadBin_4_30/hPairsYields_vs_DeltaPhi", binsPtCandIntervals[iBinPtCand]*10, binsPtCandIntervals[iBinPtCand + 1]*10)));
+          hCorrPhi[iBinPtCand][iBinPtHad][iBinInvMass] = reinterpret_cast<TH1D*>(inFile->Get(Form("PtCand_%0.f_%0.f/PtHad_4_30/hPairsYields_vs_DeltaPhi", binsPtCandIntervals[iBinPtCand]*10, binsPtCandIntervals[iBinPtCand + 1]*10)));
           if (!inputLMFile.empty()) {
-            hCorrPhiLMTemplate[iBinPtCand][iBinPtHad][iBinInvMass] = reinterpret_cast<TH1D*>(inFileLMTemplate->Get(Form("PtCandBin_%0.f_%0.f/PtHadBin_4_30/hPairsYields_vs_DeltaPhi", binsPtCandIntervals[iBinPtCand]*10, binsPtCandIntervals[iBinPtCand + 1]*10)));
+            hCorrPhiLMTemplate[iBinPtCand][iBinPtHad][iBinInvMass] = reinterpret_cast<TH1D*>(inFileLMTemplate->Get(Form("PtCand_%0.f_%0.f/PtHad_4_30/hPairsYields_vs_DeltaPhi", binsPtCandIntervals[iBinPtCand]*10, binsPtCandIntervals[iBinPtCand + 1]*10)));
           }
           if (!hCorrPhi[iBinPtCand][iBinPtHad][iBinInvMass]) {
-            printf("Not found Fitting histogram: PtCandBin_%0.f_%0.f/PtHadBin_4_50/InvMassBin_%0.f_%0.f/hCorrectedCorr\n", binsPtCandIntervals[iBinPtCand], binsPtCandIntervals[iBinPtCand + 1], binsInvMassIntervals[iBinInvMass]*1000, binsInvMassIntervals[iBinInvMass + 1]*1000);
+            printf("Not found Fitting histogram: PtCand_%0.f_%0.f/PtHad_4_50/InvMassBin_%0.f_%0.f/hCorrectedCorr\n", binsPtCandIntervals[iBinPtCand], binsPtCandIntervals[iBinPtCand + 1], binsInvMassIntervals[iBinInvMass]*1000, binsInvMassIntervals[iBinInvMass + 1]*1000);
             continue;
           }
         }
@@ -379,7 +377,7 @@ void FitCorrel(const TString cfgFileName = "config_CorrAnalysis.json")
   }
 
   // histogram with fit parameter and errors
-  TFile* outFile = new TFile(Form("%sOutput_CorrelationFitting_Root/CorrPhi%s_FinalPlots.root", outputPath.c_str(), DmesonName.Data()), "RECREATE");
+  TFile* outFile = new TFile(Form("%sOutput_CorrelationFitting_Root/CorrPhi%s.root", outputPath.c_str(), DmesonName.Data()), "RECREATE");
   outFile->cd();
   for (int iBinInvMass = 0; iBinInvMass < nBinsInvMass; iBinInvMass++) {
     for (int iBinPtHad = 0; iBinPtHad < nBinsPtHad; iBinPtHad++) {

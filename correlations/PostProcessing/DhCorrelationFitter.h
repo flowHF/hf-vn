@@ -48,6 +48,7 @@ class DhCorrelationFitter
   DhCorrelationFitter& operator=(const DhCorrelationFitter& cfit);
 
   /// Setters
+  void SetVerbosity(Int_t isVerbose) { fVerbose = isVerbose; }
   void SetHistoIsReflected(Bool_t isrefl) { fIsReflected = isrefl; }
   void SetFuncType(FunctionType fitType) { fTypeOfFitFunc = fitType; }
   void SetFixBaseline(Int_t fixBase) { fFixBase = fixBase; }
@@ -61,7 +62,7 @@ class DhCorrelationFitter
   }
   void SetExternalValsAndBounds(Int_t nPars, Double_t* vals, Double_t* lowBounds, Double_t* uppBounds);
   void SetPointsForBaseline(Int_t nBaselinePoints, Int_t* binsBaseline);
-  void SetReflectedCorrHisto(Bool_t isReflected) { fIsTotal = !isReflected; }
+  void SetReflectedCorrHisto(Bool_t isReflected) { fIsTotal = isReflected; }
   void SetBaselineUpOrDown(Bool_t baseUp, Bool_t baseDown)
   {
     fShiftBaselineUp = baseUp;
@@ -135,6 +136,7 @@ class DhCorrelationFitter
   }
 
  private:
+  bool fVerbose = true;
   TH1F* fHist; // 1D azimuthal correlation histogram
   TH1D* fTempHisto; // 1D histogram for the template fit function
   TH1D* fLMOutput; // LM template histogram clone (for drawing hLM_template)

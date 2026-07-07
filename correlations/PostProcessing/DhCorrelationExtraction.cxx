@@ -238,7 +238,7 @@ Bool_t DhCorrelationExtraction::Init()
 Bool_t DhCorrelationExtraction::ExtractCorrelations()
 {
   TH1::AddDirectory(kFALSE);
-  if (Init() == kFALSE) { // todo: reload file evry time
+  if (Init() == kFALSE) { // todo: reload file every time
     return kFALSE;
   }
 
@@ -296,7 +296,7 @@ Bool_t DhCorrelationExtraction::ExtractCorrelations()
         Form("Corrected %s-h correlation with %s", fDmesonLabel.Data(), fDeltaEtaGap.Data()), "#Delta#eta", "#Delta#phi (rad)", AxisLabels::kRawYieldRad
       ));
     }
- 
+
     // Pools integration
     if (iPool == 0) {
       h2D_SE = reinterpret_cast<TH2D*>(hSE_2D_Raw[0]->Clone("h2D_SE"));
@@ -374,6 +374,7 @@ Bool_t DhCorrelationExtraction::ExtractCorrelations()
   // Apply normalization to number of triggers - NOT DONE
   h1D_NormalizedCorrectedCorrel = reinterpret_cast<TH1D*>(h1D_CorrectedCorrel->Clone("h1D_NormalizedCorrectedCorrel"));
   if (!fMassVsPt_2D) {
+    std::cout << "[WARNING] Mass vs pT histogram not found, skipping trigger normalization." << std::endl;
     ProjMassVsPt();
   }
   Double_t N_triggers = CalculateTriggerNormalizationFactor(fMassVsPt_2D, fPtCandBins[0], fPtCandBins[1], fInvMassBins[0], fInvMassBins[1]);
@@ -425,9 +426,9 @@ TH2D* DhCorrelationExtraction::ProjCorrelHisto(Int_t SEorME, Int_t pool)
   // get the THnSparse from the corresponding directory
   THnSparseF* hSparse = 0x0;
   if (SEorME == kSE) { // Same Event
-      hSparse = reinterpret_cast<THnSparseF*>(fDirSE->Get(fCorrelSparseNameSE.Data()));
+    hSparse = reinterpret_cast<THnSparseF*>(fDirSE->Get(fCorrelSparseNameSE.Data()));
   } else { // Mixed Event
-      hSparse = reinterpret_cast<THnSparseF*>(fDirME->Get(fCorrelSparseNameME.Data()));
+    hSparse = reinterpret_cast<THnSparseF*>(fDirME->Get(fCorrelSparseNameME.Data()));
   }
 
   // Check pointer
@@ -448,16 +449,16 @@ TH2D* DhCorrelationExtraction::ProjCorrelHisto(Int_t SEorME, Int_t pool)
   }
 
   // adjust deltaEta range if it's out of the histogram range
-  if (fDeltaEtaLeftMin < hSparse->GetAxis(kDeltaEta)->GetXmin()) fDeltaEtaLeftMin = hSparse->GetAxis(kDeltaEta)->GetXmin();
+  if (fDeltaEtaLeftMin  < hSparse->GetAxis(kDeltaEta)->GetXmin()) fDeltaEtaLeftMin  = hSparse->GetAxis(kDeltaEta)->GetXmin();
   if (fDeltaEtaRightMax > hSparse->GetAxis(kDeltaEta)->GetXmax()) fDeltaEtaRightMax = hSparse->GetAxis(kDeltaEta)->GetXmax();
 
   // set ranges
   hSparse->GetAxis(kPool)->SetRangeUser(pool+0.01, fDoPoolByPool ? pool+0.99 : hSparse->GetAxis(kPool)->GetXmax()); // axis0: pool bin
-  hSparse->GetAxis(kPtCand)->SetRangeUser(fPtCandBins[0], fPtCandBins[1]);     // axis1: ptCand
+  hSparse->GetAxis(kPtCand)->SetRangeUser(fPtCandBins[0], fPtCandBins[1]);    // axis1: ptCand
   hSparse->GetAxis(kPtHad)->SetRangeUser(fPtHadBins[0], fPtHadBins[1]);       // axis2: ptHad
 
   // debug: get original histogram before any operations
-if (fDebug > 0) {
+  if (fDebug > 0) {
     TH2D* h2D_Original = static_cast<TH2D*>(hSparse->Projection(kDeltaPhi, kDeltaEta));
     TH2D* h2D_Original_MassVsDeltaEta = nullptr;
     if (SEorME == kSE && fMethod == kDeltaPhiBinning) {
@@ -520,7 +521,7 @@ if (fDebug > 0) {
 
   // mass selecton for kMassBinning method, but whole range will be applied for kDeltaPhiBinning method
   hSparse->GetAxis(kMass)->SetRangeUser(fInvMassBins[0]*1.001, fInvMassBins[1]*0.999); // axis5: invMass
-  
+
   // set outer deltaEta range
   hSparse->GetAxis(kDeltaEta)->SetRangeUser(fDeltaEtaLeftMin+0.01, fDeltaEtaRightMax-0.01); // axis3: deltaEta
 

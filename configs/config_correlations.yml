@@ -1,0 +1,130 @@
+operations:
+  do_make_yaml: True
+  do_maps: False
+  do_trigger_ry: False
+  do_lm_maps: False
+  do_lm_trigger_ry: False
+  do_fit_correl: False
+  do_construct_v2_mass: False
+  do_simfit: False
+  do_final_results: False
+
+Dmeson: Dplus
+suffix: "test"
+outdir: "/home/mdicosta/DFlowOO/Correlations/v2_020/"
+pathFileSE: "/home/mdicosta/DFlowOO/Correlations/se_020/AnalysisResults_se_020.root"
+pathFileME: "/home/mdicosta/DFlowOO/Correlations/me_020/AnalysisResults_me_020.root"
+pathFileMass: "/home/mdicosta/DFlowOO/Correlations/se_020/AnalysisResults_se_020.root"
+method: "MassBinning" # "MassBinning" or "DeltaPhiBinning"
+Workers: 1
+DeltaEtaRanges: [
+  [0.8, 1.3],
+  [0.6, 1.5]
+]
+
+debug: 1000
+task_LM:
+  do: true
+  suffix: "test"
+  pathFileSE: "/home/mdicosta/DFlowOO/Correlations/se_50100/AnalysisResults_se_50100.root"
+  pathFileME: "/home/mdicosta/DFlowOO/Correlations/me_50100/AnalysisResults_me_50100.root"
+  pathFileMass: "/home/mdicosta/DFlowOO/Correlations/se_50100/AnalysisResults_se_50100.root"
+  nDeltaPhiBins: 16
+  rebinDeltaEtaLM: 1 # 1 no rebin, N (N > 1) rebin by N
+  rebinDeltaPhiLM: 1 # 1 no rebin, N (N > 1) rebin by N
+
+
+nDeltaPhiBins: 16
+DeltaEtaBins: [
+  [0.8, 1.5],
+  [0.6, 1.5]
+]
+nPools: 10
+doPoolByPool: false
+deltaEtaIntegrated: true # if true, the mass correlation will be integrated over the delta eta range defined in deltaEtaBins. If false, the correlation will be analyzed in different delta eta bins defined in deltaEtaBins.
+
+ptBinsCand: [
+  1.0,
+  2.0,
+  3.0,
+  4.0,
+  6.0,
+  8.0,
+  12.0
+]
+ptBinsHad: [0.2,3]
+invMassBins: [
+  [1.70,1.75,1.78,1.81,1.84,1.86,1.88,1.90,1.92,1.95,2.00], # pt 1
+  [1.70,1.75,1.78,1.81,1.84,1.86,1.88,1.90,1.92,1.95,2.00], # pt 2
+  [1.70,1.75,1.78,1.81,1.84,1.86,1.88,1.90,1.92,1.95,2.00], # pt 3
+  [1.70,1.74,1.78,1.81,1.84,1.86,1.88,1.90,1.93,1.96,2.00], # pt 4
+  [1.70,1.74,1.78,1.81,1.84,1.86,1.88,1.90,1.93,1.96,2.00], # pt 5
+  [1.70,1.74,1.78,1.81,1.84,1.86,1.88,1.90,1.93,1.96,2.00], # pt 6
+]
+# modify the rebin for deltaphi when using the "MassBinning" method, to have the same binning for the "DeltaPhiBinning"
+# Original binning in THnSparse: 64 bins, then rebin by 2 to have 32, and by 4 to have 16.
+rebinDeltaEta: 1 # 1 no rebin, N (N > 1) rebin by N
+rebinDeltaPhi: 1 # 1 no rebin, N (N > 1) rebin by N
+
+# Options for the analysis
+doSecPartContamination: false
+doRebinSecPart: false
+debug: 2 # 0 only final results, 1 keep correlation histos, 2 keep all histos
+
+fitConfig:
+    minimizer: 'RooFit' # RooFit or flarefly
+    Sigma: [0.02, 0.02, 0.02, 0.02, 0.02, 0.02]
+    MassFitRanges: [
+      [1.75, 1.95], # pt 1
+      [1.75, 1.95], # pt 2
+      [1.75, 1.95], # pt 3
+      [1.70, 2.00], # pt 4
+      [1.70, 2.00], # pt 5
+      [1.70, 2.00], # pt 6
+    ]
+    BkgFunc: 'kExpo' # background function. If a single value is provided, it will be used for all pt bins.
+    SgnFunc: 'kGaus' # signal function. If a single value is provided, it will be used for all pt bins.
+    BkgFuncVn: 'kLin' # background function for vn. If a single value is provided, it will be used for all pt bins.
+    FitFunction: '10'
+    WithPedLM: false # if true, include pedestal in the LM template fit
+    FixLMFactor: true # if true, fix the LM factor
+    FixBaseline: -4
+    # "0 : baseline free, = 1 : fix the baseline to the minimum of the histogram, < 0 : fix the baseline to the weighted average of the abs(fFixBaseline) lower points, = 3 : fix the baseline to the weighted average of the points passed through the function SetPointsForBaseline(), 4 : fix the baseline to the weighted average of default transverse region points
+    FixMean: 0
+    binsForBaseline: [6, 7, 8, 9]
+    nBaselinePoints: 4
+    ShiftBaseDown: false
+    ShiftBaseUp: false
+    Rebin: [4, 4, 4, 4, 4, 4] # optional, default: 1
+
+# pt bins
+ptbins: [
+           1.0,
+           2.0,
+           3.0,
+           4.0,
+           6.0,
+           8.0,
+       ]
+
+# cut variation
+cut_variation:
+    corr_bdt_cut:
+        bkg_max:  [0.01,  0.02,  0.03,  0.03,  0.03]
+        sig:
+            min:  [0.0,  0.0,  0.0,  0.0,  0.0]
+            max:  [0.90, 0.90, 0.90, 0.90, 0.90]
+            step: [0.02, 0.02, 0.02, 0.02, 0.02]
+    uncorr_bdt_cut:
+         bkg_max: # max probability for bkg, one for each pt bin
+            - [0.05] # pt 1
+            - [0.05] # pt 2
+            - [0.05] # pt 3
+            - [0.05] # pt 4
+            - [0.05] # pt 5
+         sig:
+            - [0.00, 1.00] # pt 1
+            - [0.00, 1.00] # pt 2
+            - [0.00, 1.00] # pt 3
+            - [0.00, 1.00] # pt 4
+            - [0.00, 1.00] # pt 5

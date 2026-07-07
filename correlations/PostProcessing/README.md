@@ -42,7 +42,7 @@ To run the full analysis, follow these steps:
 
 - configure `config_CorrAnalysis_v2_010_negDeta.yaml` and `config_CorrAnalysis_v2_010_negDeta.json` first, then execute:
     ```
-    python3 correlations/PostProcessing/ExtractOutputCorrel.py correlations/PostProcessing/config_CorrAnalysis_v2_010_negDeta.yaml
+    python3 correlations/PostProcessing/extract_output_correl.py correlations/PostProcessing/config_CorrAnalysis_v2_010_negDeta.yaml
     ```
     to obtain the correlation distributions.
 - execute:
