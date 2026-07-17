@@ -18,6 +18,7 @@ from raw_yield_fitter import RawYieldFitter
 sys.path.append(f"{os.path.dirname(os.path.abspath(__file__))}/../../utils")
 from utils import logger, get_centrality_bins, make_dir_root_file
 from data_model import get_pt_preprocessed_sparses
+from load_utils import load_aod_file
 
 mp.set_start_method("spawn", force=True)
 
@@ -216,20 +217,22 @@ def ry_vs_cent_figure(pt_bins, cent_intervals, pt_bins_yields, out_file_path):
 # ------------------ Compute Centrality-differential Raw Yields ------------------
 def compute_cent_diff_rys(config, i_pt, pt_min, pt_max, bkg_max, cent_intervals):
     pt_str = f"pt_{int(pt_min*10)}_{int(pt_max*10)}"
-    out_dir_pt = f"{config['outdir']}/cutvar_{config['suffix']}_combined/syst/reso/fits/{pt_str}"
+    out_dir_pt = f"{config['outdir']}/vn_extr_{config['suffix']}_combined/syst/reso/{config['centrality']}/fits/{pt_str}"
     os.makedirs(out_dir_pt, exist_ok=True)
     out_file = TFile.Open(f"{out_dir_pt}/cent_diff_ry_{pt_str}.root", "RECREATE")
 
     # Retrieve sparse
-    sparses_flow, _, _, axes = get_pt_preprocessed_sparses(config, pt_str)
-    if 'Cent' not in axes['FlowSP']:
-        logger("Centrality axis not found, re-run preprocess including it!", level='FATAL')
-
-    axes_flow = axes['FlowSP']
-    sparse_flow = sparses_flow['FlowSP']
-
-    # Apply background cut
-    sparse_flow.GetAxis(axes_flow['ScoreBkg']).SetRangeUser(0, bkg_max)
+    if config.get('UseSparses'):
+        sparses_flow, _, _, axes = get_pt_preprocessed_sparses(config, pt_str)
+        if 'Cent' not in axes['FlowSP']:
+            logger("Centrality axis not found, re-run preprocess including it!", level='FATAL')
+        sparse_flow = sparses_flow['FlowSP']
+        axes_flow = axes['FlowSP']
+        # Apply background cut
+        sparse_flow.GetAxis(axes_flow['ScoreBkg']).SetRangeUser(0, bkg_max)
+    else:
+        df = load_aod_file(f"{config['outdir']}/vn_extr_{config['suffix']}_combined/syst/reso/preprocess/{pt_str}/TreesPtCenterSp/AO2D_{pt_str}.root",
+                           True, downsample_frac=1.0)
 
     # Initialize fitter
     fitter = RawYieldFitter(config['Dmeson'], pt_min, pt_max, pt_str, 'flarefly', verbose=False)
@@ -252,17 +255,24 @@ def compute_cent_diff_rys(config, i_pt, pt_min, pt_max, bkg_max, cent_intervals)
     results = {'raw_yields': [], 'raw_yields_uncs': [], 'cent_intervals': []}
     for i_cent, (cmin, cmax) in enumerate(zip(cent_intervals[:-1], cent_intervals[1:])):
         cent_str = f"cent_{cmin}_{cmax}"
-        sparse_flow.GetAxis(axes_flow['Cent']).SetRangeUser(cmin, cmax)
-        h_mass = sparse_flow.Projection(axes_flow['Mass'])
-        h_mass.SetDirectory(0)
-        h_cent = sparse_flow.Projection(axes_flow['Cent'])
-        out_file.cd()
-        h_mass.Write(f"h_mass_{cent_str}")
-        h_cent.Write(f"h_cent_{cent_str}")
-        fitter.set_data_to_fit_hist(h_mass)
+        if config.get('UseSparses'):
+            sparse_flow.GetAxis(axes_flow['Cent']).SetRangeUser(cmin, cmax)
+            h_mass = sparse_flow.Projection(axes_flow['Mass'])
+            h_mass.SetDirectory(0)
+            h_cent = sparse_flow.Projection(axes_flow['Cent'])
+            out_file.cd()
+            h_mass.Write(f"h_mass_{cent_str}")
+            h_cent.Write(f"h_cent_{cent_str}")
+            fitter.set_data_to_fit_hist(h_mass)
+        else:
+            sel_string = f"fCent >= {cmin} and fCent < {cmax} and fMlScore0 < {bkg_max} and fM >= {mass_min} and fM <= {mass_max}"
+            logger(f"Selection string: {sel_string}", level="INFO")
+            sel_df = df.query(sel_string).reset_index(drop=True)
+            logger(f"Total entries: {len(df)}, selected entries: {len(sel_df)}", level="INFO")
+            fitter.set_data_to_fit_df(sel_df)
 
         if config.get('corr_bkgs'):
-            sel = f"fMlScore0 < {bkg_max} and fM >= {mass_min} and fM <= {mass_max}"
+            sel = f"fCent >= {cmin} and fCent < {cmax} and fMlScore0 < {bkg_max} and fM >= {mass_min} and fM <= {mass_max}"
             fitter.add_corr_bkgs(config['corr_bkgs'], sel.replace(' and ', ' && '), pt_min, pt_max)
 
         fitter.setup()
@@ -315,7 +325,7 @@ if __name__ == "__main__":
 
     # ------------------ Preprocess if requested ------------------
     if config['operations'].get('preprocess', False):
-        config['outdirPrep'] = f"{config['outdir']}/cutvar_{config['suffix']}_combined/syst/reso"
+        config['outdirPrep'] = f"{config['outdir']}/vn_extr_{config['suffix']}_combined/syst/reso"
         with open(args.config, 'w') as f:
             yaml.dump(config, f, sort_keys=False)
 
@@ -330,7 +340,6 @@ if __name__ == "__main__":
     # ------------------ Parallel or Sequential pT-bin fits ------------------
     pt_bins = config['ptbins']
     bkg_maxs = config['bkg_max']
-
 
     if config['operations'].get('perform_fits_syst_reso'):
         tasks = [
@@ -352,7 +361,7 @@ if __name__ == "__main__":
                 'raw_yields': [],
                 'raw_yields_uncs': []
             }
-            yields_file = TFile.Open(f"{config['outdir']}/cutvar_{config['suffix']}_combined/syst/reso/fits/{pt_str}/cent_diff_ry_{pt_str}.root", "r")
+            yields_file = TFile.Open(f"{config['outdir']}/vn_extr_{config['suffix']}_combined/syst/reso/{config['centrality']}/fits/{pt_str}/cent_diff_ry_{pt_str}.root", "r")
             yields_hist = yields_file.Get("h_ry_vs_cent")
             for i_bin in range(1, yields_hist.GetNbinsX() + 1):
                 pt_bin_yields['cent_intervals'].append(yields_hist.GetBinCenter(i_bin))
@@ -377,7 +386,7 @@ if __name__ == "__main__":
 
     # ------------------ Weighted and Arithmetic Resolutions ------------------
     avg_resos, ry_histos, single_term_histos, cent_pt_integrated_yields = [], [], [], []
-    out_file = TFile.Open(f"{config['outdir']}/cutvar_{config['suffix']}_combined/syst/reso/syst_reso.root", "RECREATE")
+    out_file = TFile.Open(f"{config['outdir']}/vn_extr_{config['suffix']}_combined/syst/reso/{config['centrality']}/syst_reso.root", "RECREATE")
 
     for i_pt, pt_bin_yields in enumerate(pt_bins_yields):
         tot_yield = sum(pt_bin_yields['raw_yields'])
@@ -421,11 +430,11 @@ if __name__ == "__main__":
     # ------------------ Produce Figures ------------------
     # Weighted vs Arithmetic Resolution
     reso_syst_figure(pt_bins, avg_resos, reference_reso, syst_unc,
-                     f"{config['outdir']}/cutvar_{config['suffix']}_combined/syst/reso/reso_syst.pdf")
+                     f"{config['outdir']}/vn_extr_{config['suffix']}_combined/syst/reso/{config['centrality']}/reso_syst.pdf")
 
     # Raw Yields vs Centrality
     ry_vs_cent_figure(pt_bins, cent_intervals, pt_bins_yields,
-                      f"{config['outdir']}/cutvar_{config['suffix']}_combined/syst/reso/reso_syst_ry_vs_cent.pdf")
+                      f"{config['outdir']}/vn_extr_{config['suffix']}_combined/syst/reso/{config['centrality']}/reso_syst_ry_vs_cent.pdf")
 
     logger("All figures produced successfully", "INFO")
 

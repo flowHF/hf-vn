@@ -72,9 +72,13 @@ def minimise_chi2(config, ptmins, ptmaxs, hRawYields, hEffPrompt, hEffFD, inputP
                 logger(f'Skipping cut set {iCut} for pt {ptMin:.1f}-{ptMax:.1f} as suggested by check', level='WARNING')
                 continue
 
+            Raw = hRaw.GetBinContent(iPt+1)
+            EffP = hEffP.GetBinContent(iPt+1)
+            EffF = hEffF.GetBinContent(iPt+1)
+
             # if skip_cuts is defined check if the cut number is present for that pt
             if iPt < len(skip_cuts_pts) and iCut in skip_cuts_pts[iPt]:
-                logger(f'Skipping cut set {iCut} for pt {ptMin:.1f}-{ptMax:.1f}', level='WARNING')
+                logger(f'Skipping cut set {iCut} for pt {ptMin:.1f}-{ptMax:.1f} with raw yield {Raw}, eff prompt {EffP}, eff FD {EffF}', level='WARNING')
                 continue
 
             listRawYield.append(hRaw.GetBinContent(iPt+1))
@@ -148,7 +152,7 @@ def minimise_chi2(config, ptmins, ptmaxs, hRawYields, hEffPrompt, hEffFD, inputP
         nSets = len(listRawYield)
         logger(f'Pt: {ptMin:.1f}-{ptMax:.1f}, iPt: {iPt+1}, number of eff files: {len(listEffPrompt)}', level='INFO')
         for i in range(len(listEffPrompt)):
-            logger(f'({oCuts[i]}) Eff Prompt: {listEffPrompt[i]:.6f}    Eff FD: {listEffFD[i]:.6f}    Raw Yield: {listRawYield[i]:.2f}', level='DEBUG')
+            logger(f'({oCuts[i]}, {i+1}) Eff Prompt: {listEffPrompt[i]:.6f}    Eff FD: {listEffFD[i]:.6f}    Raw Yield: {listRawYield[i]:.2f}', level='DEBUG')
 
         corrYields, covMatrixCorrYields, chiSquare, matrices = \
             GetMinimisation(listEffPrompt, listEffFD, listRawYield, listEffPromptUnc, listEffFDUnc, listRawYieldUnc)
@@ -268,7 +272,7 @@ def minimise_chi2(config, ptmins, ptmaxs, hRawYields, hEffPrompt, hEffFD, inputP
         hCorrMatrixCutSets[iPt].Draw('colz text')
         # top-right: template
         hFrameDistr = cFinalResPt[-1].cd(2).DrawFrame(0.5, 0., nSets + 0.5, hRawYieldsVsCut[iPt].GetMaximum() * 1.2,
-                                    f'{commonString};raw yield')
+                                                      f'{commonString};raw yield')
         hFrameDistr.GetYaxis().SetDecimals()
         hRawYieldsVsCut[iPt].Draw('same')
         hRawYieldPromptVsCut[iPt].DrawCopy('histsame')

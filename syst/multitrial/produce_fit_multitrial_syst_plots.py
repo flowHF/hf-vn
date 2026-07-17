@@ -192,7 +192,7 @@ def study_syst_unc(trials_df, reference_df, v2_type, pt_label, output_dir):
     x_upp_lim = h_vn_vs_trial_indexed.GetXaxis().GetXmax()
     SetObjectStyle(h_vn_vs_trial, markerstyle=20, markercolor=kBlack, markersize=1., linecolor=kBlack)
 
-    h_syst = TH1F('h_syst', ';#it{v}_{n}(trial) - #it{v}_{n}(ref.);Counts', 200, -0.05, 0.05)
+    h_syst = TH1F('h_syst', ';#it{v}_{n}(trial) - #it{v}_{n}(ref.);Counts', 1000, -0.05, 0.05)
     h_syst.GetXaxis().SetTitleSize(0.05)
     h_syst.GetXaxis().SetTitleOffset(0.85)
     h_syst.GetYaxis().SetTitleSize(0.05)
@@ -343,14 +343,31 @@ def get_pt_label_range(pt_label):
 
 def extract_cutset_results(cutset_file, pt_bin):
     """Return dict with V2, Chi2, Significance for one cutset at pt_bin"""
-    return dict(
-        Significance=cutset_file.Get('hRawYieldsSignificanceSimFit').GetBinContent(pt_bin),
-        SignificanceUnc=cutset_file.Get('hRawYieldsSignificanceSimFit').GetBinError(pt_bin),
-        Chi2=cutset_file.Get('hRedChi2SimFit').GetBinContent(pt_bin),
-        Chi2Unc=cutset_file.Get('hRedChi2SimFit').GetBinError(pt_bin),
-        V2=cutset_file.Get('hVnSimFit').GetBinContent(pt_bin),
-        V2Unc=cutset_file.Get('hVnSimFit').GetBinError(pt_bin)
-    )
+    result = {}
+    try:
+        result = dict(
+            Significance=cutset_file.Get('hRawYieldsSignificanceSimFit').GetBinContent(pt_bin),
+            SignificanceUnc=cutset_file.Get('hRawYieldsSignificanceSimFit').GetBinError(pt_bin),
+            Chi2=cutset_file.Get('hRedChi2SimFit').GetBinContent(pt_bin),
+            Chi2Unc=cutset_file.Get('hRedChi2SimFit').GetBinError(pt_bin),
+            V2=cutset_file.Get('hVnSimFit').GetBinContent(pt_bin),
+            V2Unc=cutset_file.Get('hVnSimFit').GetBinError(pt_bin),
+            SoverB=cutset_file.Get('hRawYieldsSoverBSimFit').GetBinContent(pt_bin),
+            Mean=cutset_file.Get('hMeanSimFit').GetBinContent(pt_bin),
+            Sigma=cutset_file.Get('hSigmaSimFit').GetBinContent(pt_bin)
+        )
+    except Exception as e:
+        result = dict(Significance=None, SignificanceUnc=None, Chi2=None, Chi2Unc=None,
+                      V2=None, V2Unc=None, SoverB=None, Mean=None, Sigma=None)
+
+    # Check if the result has second peak sigma
+    try:
+        sigma_sec_peak = cutset_file.Get('hSigmaSecPeakSimFit').GetBinContent(pt_bin)
+    except Exception as e:
+        sigma_sec_peak = None
+    result['SigmaSecPeak'] = sigma_sec_peak
+
+    return result
 
 
 def get_trial_result(trial_dir, cutsets):
@@ -369,8 +386,8 @@ def get_trial_result(trial_dir, cutsets):
         BkgFuncVn=get_cfg_entry(cfg['v2extraction']['BkgFuncVn']),
         SgnFunc=get_cfg_entry(cfg['v2extraction']['SgnFunc']),
         Rebin=get_cfg_entry(cfg['v2extraction']['Rebin']),
-        VnVsMassBinWidths=cfg['projections']['inv_mass_bins'][0][1] - \
-                          cfg['projections']['inv_mass_bins'][0][0],
+        VnVsMassBinWidths=cfg['projections']['VnVsMassBins'][0][1] - \
+                          cfg['projections']['VnVsMassBins'][0][0],
         MassFitRanges=cfg['v2extraction']['MassFitRanges'][0],
         TrialIdx=idx,
         PtLabel=pt_label
@@ -396,7 +413,8 @@ def get_trial_result(trial_dir, cutsets):
         except Exception as e:
             logger(f"Failed to open cutset file in {os.path.basename(trial_dir)} for cutset {cutset}: {e}", "WARNING")
             cutset_row = dict(V2Type=f"Cutset_{str(cutset)}", **config_vals, Significance=None, 
-                              SignificanceUnc=None, Chi2=None, Chi2Unc=None, V2=None, V2Unc=None)
+                              SignificanceUnc=None, Chi2=None, Chi2Unc=None, V2=None, V2Unc=None, 
+                              SoverB=None, Mean=None, Sigma=None, SigmaSecPeak=None)
         cutset_rows.append(cutset_row)
 
     return [prompt_row, nonprompt_row] + cutset_rows
@@ -434,7 +452,7 @@ def get_reference_result(results_dir, cutsets, pt_labels):
     return ref_rows
 
 
-def is_good_trial(trial, max_chi2, min_signif, max_signif, force_prompt_enhanced):
+def is_good_trial(trial, max_chi2, min_signif, max_signif):
     """Check if trial passes quality criteria"""
 
     # Sanity check that prompt v2 has absolute value < 1
@@ -443,17 +461,22 @@ def is_good_trial(trial, max_chi2, min_signif, max_signif, force_prompt_enhanced
             logger(f"Rejecting trial {row['TrialIdx']} due to |V2| > 1.0", "WARNING")
             return False
 
-    if force_prompt_enhanced:
-        if row['V2Type'] == 'Cutset_0':
-            # Reject if None values are present
-            if row['Significance'] is None:
-                logger(f"Rejecting trial {row['TrialIdx']} due to missing prompt-enhanced cutset", "WARNING")
-                return False
-
     # Quality cuts on trials
     for row in trial:
         if "Cutset" in row['V2Type']:
-            signif, chi2 = row['Significance'], row['Chi2']
+            signif, chi2, SoverB, mean, sigma, sigma_sec_peak = row['Significance'], row['Chi2'], row['SoverB'], row['Mean'], row['Sigma'], row['SigmaSecPeak']
+            if sigma is not None:
+                if sigma > 0.07:
+                    logger(f"Rejecting trial {row['TrialIdx']} due to sigma > 0.07 (sigma = {sigma})", "WARNING")
+                    return False
+            if mean is not None:
+                if mean < 1.849 or mean > 1.879:
+                    logger(f"Rejecting trial {row['TrialIdx']} due to mean outside range [1.849, 1.879] (mean = {mean})", "WARNING")
+                    return False
+            if SoverB is not None:
+                if SoverB < 0:
+                    logger(f"Rejecting trial {row['TrialIdx']} due to negative S/B = {SoverB}", "WARNING")
+                    return False
             if chi2 is not None:
                 if chi2 > max_chi2:
                     logger(f"Rejecting trial {row['TrialIdx']} due to chi2 > {max_chi2}", "WARNING")
@@ -464,6 +487,10 @@ def is_good_trial(trial, max_chi2, min_signif, max_signif, force_prompt_enhanced
                     return False
                 if signif > max_signif:
                     logger(f"Rejecting trial {row['TrialIdx']} due to significance > {max_signif}", "WARNING")
+                    return False
+            if sigma_sec_peak is not None:
+                if (sigma_sec_peak / sigma) > 2:
+                    logger(f"Rejecting trial {row['TrialIdx']} due to sigma of second peak > 2 * sigma (sigma_sec_peak = {sigma_sec_peak}, sigma = {sigma})", "WARNING")
                     return False
 
     return True
@@ -477,7 +504,7 @@ if __name__ == "__main__":
     parser.add_argument('--max_chi2', metavar='number', type=float, default=20.0, help='Maximum reduced chi2 to accept a trial')
     parser.add_argument('--min_signif', metavar='number', type=float, default=0.0, help='Minimum significance to accept a trial')
     parser.add_argument('--max_signif', metavar='number', type=float, default=1000.0, help='Maximum significance to accept a trial')
-    parser.add_argument('--force_prompt_enhanced', action='store_true', help='Force convergence of prompt-enhanced cutsets')
+    parser.add_argument('--force_prompt_enhanced', action='store_true', default=False, help='Force convergence of prompt-enhanced cutsets')
     args = parser.parse_args()
 
     # Print required trials quality cuts
@@ -487,6 +514,7 @@ if __name__ == "__main__":
     logger(f"Force prompt-enhanced cutset convergence = {args.force_prompt_enhanced}", "INFO")
 
     trials_path = f"{args.results_dir}/syst/multitrial/{args.multitrial_type}"
+    # pt_dirs = [os.path.join(trials_path, "pt_30_35")]
     pt_dirs = sorted(glob.glob(os.path.join(trials_path, "pt_*")))
     pt_labels = [os.path.basename(d) for d in pt_dirs]
 
@@ -495,36 +523,54 @@ if __name__ == "__main__":
                     for f in os.listdir(os.path.join(args.results_dir, 'raw_yields'))
                     if re.match(r'raw_yields_\d+\.root', f))
 
-    # Extract all trial rows
-    trials_results = []
-    for pt_dir in pt_dirs:
-        trial_dirs = sorted(glob.glob(os.path.join(pt_dir, 'trials/*')))
-        for trial_dir in trial_dirs:
-            try:
-                trial_result = get_trial_result(trial_dir, cutsets)
-                if is_good_trial(trial_result, args.max_chi2, args.min_signif, \
-                                 args.max_signif, args.force_prompt_enhanced):
-                    trials_results.extend(trial_result)
-            except Exception as e:
-                logger(f"Failed trial {os.path.basename(trial_dir)}: {e}", "WARNING")
-                continue
-
-    trials_df = pd.DataFrame(trials_results)
-    logger(f"Extracted {len(trials_results)} trial results.", "INFO")
-
-    # Convert categorical columns
+    # Check if the trials dataframe has already been produced
     categories = ['BkgFunc', 'BkgFuncVn', 'SgnFunc', 'Rebin', 'VnVsMassBinWidths', 'MassFitRanges']
-    for col in categories:
-        if col in trials_df:
-            trials_df[col] = trials_df[col].astype(str).astype('category')
-    trials_df['PtLabel'] = trials_df['PtLabel'].apply(lambda x: str(x)).astype('category')
-    trials_df['V2Type'] = trials_df['V2Type'].apply(lambda x: str(x)).astype('category')
+    if os.path.exists(f"{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/trials_results.parquet") and \
+       os.path.exists(f"{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/reference_results.parquet"):
+        logger("✔ Found existing parquet files, loading them...", "INFO")
+        trials_df = pd.read_parquet(f"{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/trials_results.parquet")
+        reference_df = pd.read_parquet(f"{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/reference_results.parquet")
+    else:
+        # Extract all trial rows
+        trials_results = []
+        for pt_dir in pt_dirs:
+            trial_dirs = sorted(glob.glob(os.path.join(pt_dir, 'trials/*')))
+            for i_trial, trial_dir in enumerate(trial_dirs):
+                try:
+                    trial_result = get_trial_result(trial_dir, cutsets)
+                    if args.force_prompt_enhanced:
+                        print(f"Checking prompt-enhanced cutset convergence for trial {os.path.basename(trial_dir)}...")
+                        # Retrieve Cutset_0 row
+                        cutset_0_row = next((row for row in trial_result if row['V2Type'] == 'Cutset_0'), None)
+                        if cutset_0_row is None or cutset_0_row['Significance'] is None:
+                            print(f"Rejecting trial {os.path.basename(trial_dir)} due to missing prompt-enhanced cutset")
+                            continue
+                    if is_good_trial(trial_result, args.max_chi2, args.min_signif, args.max_signif):
+                        trials_results.extend(trial_result)
+                except Exception as e:
+                    logger(f"Failed trial {os.path.basename(trial_dir)}: {e}", "WARNING")
+                    continue
 
-    # Extract reference
-    reference_rows = get_reference_result(args.results_dir, cutsets, pt_labels)
-    reference_df = pd.DataFrame(reference_rows)
-    for col in ['PtLabel', 'V2Type']:
-        reference_df[col] = reference_df[col].apply(lambda x: str(x)).astype('category')
+        trials_df = pd.DataFrame(trials_results)
+        logger(f"Extracted {len(trials_results)} trial results.", "INFO")
+
+        # Convert categorical columns
+        for col in categories:
+            if col in trials_df:
+                trials_df[col] = trials_df[col].astype(str).astype('category')
+        trials_df['PtLabel'] = trials_df['PtLabel'].apply(lambda x: str(x)).astype('category')
+        trials_df['V2Type'] = trials_df['V2Type'].apply(lambda x: str(x)).astype('category')
+
+        # Extract reference
+        reference_rows = get_reference_result(args.results_dir, cutsets, pt_labels)
+        reference_df = pd.DataFrame(reference_rows)
+        for col in ['PtLabel', 'V2Type']:
+            reference_df[col] = reference_df[col].apply(lambda x: str(x)).astype('category')
+
+        # Save trials_df and reference_df to .parquet files
+        trials_df.to_parquet(f"{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/trials_results.parquet")
+        reference_df.to_parquet(f"{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/reference_results.parquet")
+        logger("✔ Saved trials and reference results to parquet files.", "INFO")
 
     # Summary files and figures
     output_dir = f"{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/"
@@ -532,12 +578,16 @@ if __name__ == "__main__":
 
     # Produce variations figures
     pt_bins = sorted(set(edge for pt in pt_labels for edge in get_pt_label_range(pt)))
+    # # Only 3.0-3.5
+    # pt_bins = [3.0, 3.5]
+
     syst_uncs_prompt, syst_uncs_non_prompt = {}, {}
     hist_prompt_syst = TH1F('h_prompt_syst', f';#it{{p}}_{{T}} (GeV/#it{{c}});{args.multitrial_type.capitalize()} syst. unc. on prompt #it{{v}}_{{2}}', \
                             len(pt_bins)-1, array.array('d', pt_bins))
     hist_non_prompt_syst = TH1F('h_non_prompt_syst', f';#it{{p}}_{{T}} (GeV/#it{{c}});{args.multitrial_type.capitalize()} syst. unc. on non-prompt #it{{v}}_{{2}}', \
                                 len(pt_bins)-1, array.array('d', pt_bins))
     for pt_label in pt_labels:
+        print(f"Processing pt bin {pt_label}...")
         os.makedirs(os.path.join(output_dir, pt_label), exist_ok=True)
         out_file_summary = TFile.Open(f"{output_dir}/SystSummary_{pt_label}.root", 'RECREATE')
         # Print all V2Type values
@@ -545,11 +595,11 @@ if __name__ == "__main__":
             # Apply category filtering
             sel_trials_df = trials_df[(trials_df["V2Type"] == v2_type) & (trials_df["PtLabel"] == pt_label)]
             sel_reference_df = reference_df[(reference_df["V2Type"] == v2_type) & (reference_df["PtLabel"] == pt_label)]
-            
+
             # Cleanup entries with None in Cutsets (missing cutset, but v2 vs fFD could still be extracted)
             if "Cutset" in v2_type:
-                sel_trials_df = sel_trials_df.dropna(subset=["V2", "V2Unc", "Chi2", "Chi2Unc", "Significance", "SignificanceUnc"])
-            
+                sel_trials_df = sel_trials_df.dropna(subset=["V2", "V2Unc", "Chi2", "Chi2Unc", "Significance", "SignificanceUnc", "SoverB", "Mean", "Sigma"])
+
             # Reset row indices
             sel_trials_df = sel_trials_df.reset_index(drop=True)
             sel_reference_df = sel_reference_df.reset_index(drop=True)
@@ -606,6 +656,19 @@ if __name__ == "__main__":
     hist_non_prompt_syst.GetXaxis().SetTitleOffset(1.07)
     canvas_non_prompt.SaveAs(f'{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/SystNonPrompt_AllPtBins.pdf')
 
+    logger("Combining all cutsets pdfs into multi-page pdfs...", "INFO")
+    for pt_dir in pt_dirs:
+        pt_label = os.path.basename(pt_dir)
+        cutset_files = sorted(glob.glob(f'{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/{pt_label}/SystCutset_*.pdf'))
+        if cutset_files:
+            merger = PdfMerger()
+            for pdf in cutset_files:
+                merger.append(pdf)
+            out_cutsets = f"{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/CutsetsSyst_{pt_label}.pdf"
+            merger.write(out_cutsets)
+            merger.close()
+            logger(f"✔ Saved merged PDF for cutsets in {pt_label} -> {out_cutsets}", "INFO")
+
     logger("Combining all SystPrompt and SystNonPrompt plots into multi-page pdfs...", "INFO")
     # Create a multi-page pdf with all SystPrompt and SystNonPrompt plots
     all_prompt_files = sorted(glob.glob(f'{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/**/SystPrompt.pdf', recursive=True))
@@ -628,15 +691,10 @@ if __name__ == "__main__":
         out_non_prompt = f"{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/TrialsSystNonPrompt.pdf"
         merger.write(out_non_prompt)
         merger.close()
-    
+
     out_file_syst = TFile.Open(f"{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/TotalSystV2.root", 'RECREATE')
     out_file_syst.cd()
     hist_prompt_syst.Write()
     hist_non_prompt_syst.Write()
     out_file_syst.Close()
     logger(f"✔ Saved systematic uncertainties to {out_file_syst.GetName()}", "INFO")
-
-    # Save trials_df and reference_df to .parquet files
-    trials_df.to_parquet(f"{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/trials_results.parquet")
-    reference_df.to_parquet(f"{args.results_dir}/syst/multitrial/{args.multitrial_type}/summary/reference_results.parquet")
-    logger("✔ Saved trials and reference results to parquet files.", "INFO")

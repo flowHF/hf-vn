@@ -30,8 +30,11 @@ def fill_pt_spectrum(hist, pp_cross_sect, pp_cross_sect_pt_min=None, pp_cross_se
         pt = hist.GetBinCenter(i)
         if pt < pp_cross_sect_pt_min or pt > pp_cross_sect_pt_max:
             continue  # skip out-of-range bins
-
-        val = pp_cross_sect(pt)
+        
+        pt_low = hist.GetBinLowEdge(i)
+        pt_up = hist.GetBinLowEdge(i+1)
+        val = pp_cross_sect.integral(pt_low, pt_up)
+        # val = pp_cross_sect(pt)
         if RAA is not None:
             if RAA_pt_min <= pt <= RAA_pt_max:
                 val *= RAA(pt)
@@ -52,18 +55,20 @@ def compute_pt_weights(cfg):
         cfg = yaml.load(ymlCfgFile, yaml.FullLoader)
 
     cfg_pt_weights = cfg['ptWeights']
-    Dspecie = cfg['Dmeson']
+    charmSpecie = cfg['Dmeson']
 
     # 'Ds', 'Dplus', 'Dzero', 'Lc'
-    if Dspecie not in ['Ds', 'Dplus', 'Dzero', 'Lc']:
-        print(f'ERROR: D specie {Dspecie} not supported! Only Ds, Dplus, Dzero, Lc is supported! Exit')
+    if charmSpecie not in ['Ds', 'Dplus', 'Dzero', 'Lc']:
+        print(f'ERROR: D specie {charmSpecie} not supported! Only Ds, Dplus, Dzero, Lc is supported! Exit')
         sys.exit()
 
     cent = cfg['centrality']
-    Bspecie = cfg_pt_weights.get('Bspecie', None)
+    beautySpecie = cfg_pt_weights.get('BeautySpecie', None)
     rebin = cfg_pt_weights.get('Rebin', 1) # default rebin
     smooth = cfg_pt_weights.get('Smooth', 100) # default smooth
-    suffix = cfg_pt_weights.get('Suffix', 'suffix')
+    suffix = cfg_pt_weights.get('Suffix', '')
+    if suffix != '':
+        suffix = '_' + suffix
 
     # Retrieve sparse inputs
     #___________________________________________________________________________________________________________________________
@@ -79,44 +84,46 @@ def compute_pt_weights(cfg):
                 sparse_file_path = get_input_paths(sparses_cfg['files'], "AnalysisResults")[0]
 
     sparse_file = TFile.Open(sparse_file_path, "read")
-    sparseGenPromptD, axesPromptD = get_inputs_sparse(sparse_file, cfg, sparse_gen_prompt)
-    sparseGenNonPromptD, axesNonPromptD = get_inputs_sparse(sparse_file, cfg, sparse_gen_FD)
+    sparseGenPrompt, axesPrompt = get_inputs_sparse(sparse_file, cfg, sparse_gen_prompt)
+    sparseGenNonPrompt, axesNonPrompt = get_inputs_sparse(sparse_file, cfg, sparse_gen_FD)
     sparse_file.Close()
 
-    sparseGenPromptD.SetName('sparseGenPromptD')
-    sparseGenNonPromptD.SetName('sparseGenNonPromptD')
+    sparseGenPrompt.SetName('sparseGenPrompt')
+    sparseGenNonPrompt.SetName('sparseGenNonPrompt')
 
-    hPtGenPromptD = sparseGenPromptD.Projection(axesPromptD['Pt'])
-    hPtGenPromptD.SetDirectory(0)
-    hPtGenPromptD.SetName('hPtGenPromptD')
-    hPtGenPromptD.Sumw2()
-    hPtGenPromptD.Rebin(rebin)
-    hPtGenPromptD.Scale(1./hPtGenPromptD.Integral())
+    # Pt shape of generated prompt cands from MC
+    hPtGenPrompt = sparseGenPrompt.Projection(axesPrompt['Pt'])
+    hPtGenPrompt.SetDirectory(0)
+    hPtGenPrompt.SetName('hPtGenPrompt')
+    hPtGenPrompt.Sumw2()
+    hPtGenPrompt.Rebin(rebin)
+    hPtGenPrompt.Scale(1./hPtGenPrompt.Integral())
 
-    if Bspecie:
-        if Dspecie == 'Ds' and Bspecie == 'BsBmix':
+    if beautySpecie:
+        if charmSpecie == 'Ds' and beautySpecie == 'BsBmix':
             # Add LambdaB
-            sparseGenDFromLambdaB = sparseGenNonPromptD.Clone('sparseGenDFromLambdaB')
-            sparseGenDFromLambdaB.GetAxis(axesNonPromptD['FlagBHad']).SetRange(4, 4)
-            hPtGenB = sparseGenDFromLambdaB.Projection(axesNonPromptD['PtBMoth'])
+            sparseGenDFromLambdaB = sparseGenNonPrompt.Clone('sparseGenDFromLambdaB')
+            sparseGenDFromLambdaB.GetAxis(axesNonPrompt['FlagBHad']).SetRange(4, 4)
+            hPtGenB = sparseGenDFromLambdaB.Projection(axesNonPrompt['PtBMoth'])
 
             # Add B+ and B0
-            sparseGenDFromBPlusBZero = sparseGenNonPromptD.Clone('sparseGenDFromBPlusBZero')
-            sparseGenDFromBPlusBZero.GetAxis(axesNonPromptD['FlagBHad']).SetRange(1, 2)
-            hPtGenB.Add(sparseGenDFromBPlusBZero.Projection(axesNonPromptD['PtBMoth']))
+            sparseGenDFromBPlusBZero = sparseGenNonPrompt.Clone('sparseGenDFromBPlusBZero')
+            sparseGenDFromBPlusBZero.GetAxis(axesNonPrompt['FlagBHad']).SetRange(1, 2)
+            hPtGenB.Add(sparseGenDFromBPlusBZero.Projection(axesNonPrompt['PtBMoth']))
 
             # Add Bs
-            sparseGenDFromBs = sparseGenNonPromptD.Clone('sparseGenDFromBs')
-            sparseGenDFromBs.GetAxis(axesNonPromptD['FlagBHad']).SetRange(3, 3)
-            hPtGenBs = sparseGenDFromBs.Projection(axesNonPromptD['PtBMoth'])
+            sparseGenDFromBs = sparseGenNonPrompt.Clone('sparseGenDFromBs')
+            sparseGenDFromBs.GetAxis(axesNonPrompt['FlagBHad']).SetRange(3, 3)
+            hPtGenBs = sparseGenDFromBs.Projection(axesNonPrompt['PtBMoth'])
             hPtGenBs.SetDirectory(0)
             hPtGenBs.Scale(1./2 * hPtGenBs.Integral())
-            hPtGenB.Scale(1./2)
+            hPtGenB.Scale(1./2 * hPtGenB.Integral())
             hPtGenB.Add(hPtGenBs) # assuming 50% Bs and 50% B, reasonable for non-prompt Ds
         else:
             #TODO: modifications for other B mesons
-            hPtGenB = sparseGenNonPromptD.Projection(axesNonPromptD['PtBMoth'])
+            hPtGenB = sparseGenNonPrompt.Projection(axesNonPrompt['PtBMoth'])
 
+        # Pt shape of generated non-prompt cands from MC
         hPtGenB.SetName('hPtGenB')
         hPtGenB.SetDirectory(0)
         hPtGenB.Sumw2()
@@ -126,96 +133,115 @@ def compute_pt_weights(cfg):
     logger('MC input loaded', level='INFO')
     # load models predictions
     #___________________________________________________________________________________________________________________________
-    sFONLLD, _, ptMinFONLL, ptMaxFONLL = ReadFONLL(cfg_pt_weights['PtShapeFONLL_D'], True, Dspecie)
-    sFONLLB, _, ptMinFONLLB, ptMaxFONLLB = ReadFONLL(cfg_pt_weights['PtShapeFONLL_B'], True, 'B')
-    sTAMUD, _, ptMinTAMUD, ptMaxTAMUD = ReadTAMU(cfg_pt_weights['RaaTAMU_D'])
-    sTAMUB, _, ptMinTAMUB, ptMaxTAMUB = ReadTAMU(cfg_pt_weights['RaaTAMU_B'])
-    if Dspecie == 'Ds' and Bspecie == 'BsBmix' and cfg_pt_weights.get('RaaTAMU_Bs'):
-        sTAMUBs, _, ptMinTAMUBs, ptMaxTAMUBs = ReadTAMU(cfg_pt_weights['RaaTAMU_Bs'])
+    sCharmFONLL, _, ptMinCharmFONLL, ptMaxCharmFONLL = ReadFONLL(cfg_pt_weights['CharmPtShapeFONLL'], True, charmSpecie)
+    sBeautyFONLL, _, ptMinBeautyFONLL, ptMaxBeautyFONLL = ReadFONLL(cfg_pt_weights['BeautyPtShapeFONLL'], True, 'B')
+    sCharmTAMU, _, PtMinCharmTAMU, ptMaxCharmTAMU = ReadTAMU(cfg_pt_weights['CharmRaaTAMU'])
+    sBeautyTAMU, _, ptMinBeautyTAMU, ptMaxBeautyTAMU = ReadTAMU(cfg_pt_weights['BeautyRaaTAMU'])
+    if charmSpecie == 'Ds' and beautySpecie == 'BsBmix' and cfg_pt_weights.get('BsRaaTAMU'):
+        sBsTAMU, _, ptMinBsTAMU, ptMaxBsTAMU = ReadTAMU(cfg_pt_weights['BsRaaTAMU'])
 
-    histoDNames = ['hPtFONLLDcent', 'hPtFONLLDmin', 'hPtFONLLDmax']
-    histoBNames = ['hPtFONLLBcent', 'hPtFONLLBmin', 'hPtFONLLBmax']
+    histoCharmNames = ['hPtCharmFONLLcent', 'hPtCharmFONLLmin', 'hPtCharmFONLLmax']
+    histoBeautyNames = ['hPtBeautyFONLLBcent', 'hPtBeautyFONLLBmin', 'hPtBeautyFONLLBmax']
     modelPred = ['yCent', 'yMin', 'yMax']
 
-    hPtFONLLD, hPtFONLLB, hPtFONLLtimesTAMUD, hPtFONLLtimesTAMUB = [], [], [], []
-    hPtWeightsFONLLD, hPtWeightsFONLLB, hPtWeightsFONLLtimesTAMUD, hPtWeightsFONLLtimesTAMUB = [], [], [], []
+    hPtCharmFONLL, hPtBeautyFONLL, hPtCharmFONLLtimesTAMU, hPtBeautyFONLLtimesTAMU = [], [], [], []
+    hPtWeightsCharmFONLL, hPtWeightsBeautyFONLL, hPtWeightsCharmFONLLtimesTAMU, hPtWeightsBeautyFONLLtimesTAMU = [], [], [], []
     logger("Start computing pT weights", level='INFO')
 
     # D meson weights
     #___________________________________________________________________________________________________________________________
-    for histoName, pred in zip(histoDNames, modelPred):
-        hPtFONLL = hPtGenPromptD.Clone(histoName)
-        hPtFONLLtimesTAMU = hPtGenPromptD.Clone(histoName.replace("FONLL", "FONLLtimesTAMU"))
+    for histoName, pred in zip(histoCharmNames, modelPred):
+        hPtFONLL = hPtGenPrompt.Clone(histoName)
+        hPtFONLL.SetTitle("Charm FONLL #it{p_{T}} shape;#it{p_{T}} (GeV/c);Norm. Counts")
+        hPtFONLLtimesTAMU = hPtGenPrompt.Clone(histoName.replace("FONLL", "FONLLtimesTAMU"))
+        hPtFONLLtimesTAMU.SetTitle("Charm FONLL #times TAMU #it{p_{T}} shape;#it{p_{T}} (GeV/c);Norm. Counts")
 
-        fill_pt_spectrum(hPtFONLL, pp_cross_sect = sFONLLD[pred],
-                         pp_cross_sect_pt_min = ptMinFONLL, pp_cross_sect_pt_max = ptMaxFONLL)
-        hPtFONLLD.append(hPtFONLL)
+        fill_pt_spectrum(hPtFONLL, pp_cross_sect = sCharmFONLL[pred],
+                         pp_cross_sect_pt_min = ptMinCharmFONLL, pp_cross_sect_pt_max = ptMaxCharmFONLL)
+        hPtCharmFONLL.append(hPtFONLL)
         fill_pt_spectrum(hPtFONLLtimesTAMU,
-                         pp_cross_sect = sFONLLD[pred], pp_cross_sect_pt_min = ptMinFONLL, pp_cross_sect_pt_max = ptMaxFONLL,
-                         RAA = sTAMUD["yCent"], RAA_pt_min = ptMinTAMUD, RAA_pt_max = ptMaxTAMUD
-        )
-        hPtFONLLtimesTAMUD.append(hPtFONLLtimesTAMU)
+                         pp_cross_sect = sCharmFONLL[pred], pp_cross_sect_pt_min = ptMinCharmFONLL, pp_cross_sect_pt_max = ptMaxCharmFONLL,
+                         RAA = sCharmTAMU["yCent"], RAA_pt_min = PtMinCharmTAMU, RAA_pt_max = ptMaxCharmTAMU)
+        hPtCharmFONLLtimesTAMU.append(hPtFONLLtimesTAMU)
 
         hPtWeightsFONLL = hPtFONLL.Clone(histoName.replace("Pt", "PtWeights"))
-        hPtWeightsFONLL.Divide(hPtFONLL, hPtGenPromptD)
+        hPtWeightsFONLL.Divide(hPtFONLL, hPtGenPrompt)
         hPtWeightsFONLL.Smooth(smooth)
-        hPtWeightsFONLLD.append(hPtWeightsFONLL)
+        hPtWeightsFONLL.SetTitle("Charm #it{p_{T}} weights FONLL;#it{p_{T}} (GeV/c);Weights")
+        hPtWeightsCharmFONLL.append(hPtWeightsFONLL)
 
         hPtWeightsFONLLtimesTAMU = hPtFONLLtimesTAMU.Clone(hPtFONLLtimesTAMU.GetName().replace("Pt", "PtWeights"))
-        hPtWeightsFONLLtimesTAMU.Divide(hPtFONLLtimesTAMU, hPtGenPromptD)
+        hPtWeightsFONLLtimesTAMU.Divide(hPtFONLLtimesTAMU, hPtGenPrompt)
         hPtWeightsFONLLtimesTAMU.Smooth(smooth)
-        hPtWeightsFONLLtimesTAMUD.append(hPtWeightsFONLLtimesTAMU)
+        hPtWeightsFONLLtimesTAMU.SetTitle("Charm #it{p_{T}} weights FONLL #times TAMU;#it{p_{T}} (GeV/c);Weights")
+        hPtWeightsCharmFONLLtimesTAMU.append(hPtWeightsFONLLtimesTAMU)
 
     # B meson weights
     #___________________________________________________________________________________________________________________________
-    if Bspecie:
-        for histoName, pred in zip(histoBNames, modelPred):
-
+    if beautySpecie:
+        for histoName, pred in zip(histoBeautyNames, modelPred):
             hPtFONLL = hPtGenB.Clone(histoName)
+            hPtFONLL.SetTitle("Beauty FONLL #it{p_{T}} shape;#it{p_{T}} (GeV/c);Norm. Counts")
             hPtFONLLtimesTAMU = hPtGenB.Clone(histoName.replace("FONLL", "FONLLtimesTAMU"))
+            hPtFONLLtimesTAMU.SetTitle("Beauty FONLL #times TAMU #it{p_{T}} shape;#it{p_{T}} (GeV/c);Norm. Counts")
 
-            fill_pt_spectrum(hPtFONLL, pp_cross_sect = sFONLLB[pred],
-                             pp_cross_sect_pt_min = ptMinFONLL, pp_cross_sect_pt_max = ptMaxFONLL)
-            hPtFONLLB.append(hPtFONLL)
+            fill_pt_spectrum(hPtFONLL, pp_cross_sect = sBeautyFONLL[pred],
+                             pp_cross_sect_pt_min = ptMinCharmFONLL, pp_cross_sect_pt_max = ptMaxCharmFONLL)
+            hPtBeautyFONLL.append(hPtFONLL)
             fill_pt_spectrum(hPtFONLLtimesTAMU,
-                             pp_cross_sect = sFONLLB[pred], pp_cross_sect_pt_min = ptMinFONLL, pp_cross_sect_pt_max = ptMaxFONLL,
-                             RAA = sTAMUB["yCent"] if Bspecie != 'BsBmix' else (lambda pt: (sTAMUB['yCent'](pt) + sTAMUBs['yCent'](pt)) / 2),
-                             RAA_pt_min = ptMinTAMUB if Bspecie != 'BsBmix' else min([ptMinTAMUB, ptMinTAMUBs]),
-                             RAA_pt_max = ptMaxTAMUB if Bspecie != 'BsBmix' else max([ptMaxTAMUB, ptMaxTAMUBs])
+                             pp_cross_sect = sBeautyFONLL[pred], pp_cross_sect_pt_min = ptMinCharmFONLL, pp_cross_sect_pt_max = ptMaxCharmFONLL,
+                             RAA = sBeautyTAMU["yCent"] if beautySpecie != 'BsBmix' else (lambda pt: (sBeautyTAMU['yCent'](pt) + sBsTAMU['yCent'](pt)) / 2),
+                             RAA_pt_min = ptMinBeautyTAMU if beautySpecie != 'BsBmix' else min([ptMinBeautyTAMU, ptMinBsTAMU]),
+                             RAA_pt_max = ptMaxBeautyTAMU if beautySpecie != 'BsBmix' else max([ptMaxBeautyTAMU, ptMaxBsTAMU])
             )
-            hPtFONLLtimesTAMUB.append(hPtFONLLtimesTAMU)
+            hPtBeautyFONLLtimesTAMU.append(hPtFONLLtimesTAMU)
 
             hPtWeightsFONLL = hPtFONLL.Clone(histoName.replace("Pt", "PtWeights"))
             hPtWeightsFONLL.Divide(hPtFONLL, hPtGenB)
             hPtWeightsFONLL.Smooth(smooth)
-            hPtWeightsFONLLB.append(hPtWeightsFONLL)
+            hPtWeightsFONLL.SetTitle("Beauty #it{p_{T}} weights FONLL;#it{p_{T}} (GeV/c);Weights")
+            hPtWeightsBeautyFONLL.append(hPtWeightsFONLL)
 
             hPtWeightsFONLLtimesTAMU = hPtFONLLtimesTAMU.Clone(hPtFONLLtimesTAMU.GetName().replace("Pt", "PtWeights"))
             hPtWeightsFONLLtimesTAMU.Divide(hPtFONLLtimesTAMU, hPtGenB)
             hPtWeightsFONLLtimesTAMU.Smooth(smooth)
-            hPtWeightsFONLLtimesTAMUB.append(hPtWeightsFONLLtimesTAMU)
+            hPtWeightsFONLLtimesTAMU.SetTitle("Beauty #it{p_{T}} weights FONLL #times TAMU;#it{p_{T}} (GeV/c);Weights")
+            hPtWeightsBeautyFONLLtimesTAMU.append(hPtWeightsFONLLtimesTAMU)
 
     logger("B pT weights calculated", level='INFO')
 
     # save output
     #___________________________________________________________________________________________________________________________
-    outputDir = f'{work_dir}/weights/{Dspecie}/{cent}/'
+    outputDir = f'{cfg.get('outdir', work_dir)}/ptweights/{charmSpecie}/{cent}/'
     os.makedirs(outputDir, exist_ok=True)
-    outfile = TFile(f'{outputDir}/pTweight_{Dspecie}_{cent}_{suffix}.root', 'recreate')
-    hPtGenPromptD.Write()
-    if Bspecie:
+    outfile = TFile(f'{outputDir}/pTweight_{charmSpecie}_{cent}{suffix}.root', 'recreate')
+    outfile.mkdir('Generated')
+    outfile.cd('Generated')
+    hPtGenPrompt.Write()
+    if beautySpecie:
         hPtGenB.Write()
-    for iHisto, _ in enumerate(hPtFONLLD):
-        hPtFONLLD[iHisto].Write()
-        hPtWeightsFONLLD[iHisto].Write()
-        hPtFONLLtimesTAMUD[iHisto].Write()
-        hPtWeightsFONLLtimesTAMUD[iHisto].Write()
-        if Bspecie:
-            hPtFONLLB[iHisto].Write()
-            hPtWeightsFONLLB[iHisto].Write()
-            hPtFONLLtimesTAMUB[iHisto].Write()
-            hPtWeightsFONLLtimesTAMUB[iHisto].Write()
+    outfile.mkdir('FONLL')
+    outfile.mkdir('FONLL/charm')
+    outfile.mkdir('FONLL/beauty')
+    outfile.mkdir('FONLLtimesTAMU')
+    outfile.mkdir('FONLLtimesTAMU/charm')
+    outfile.mkdir('FONLLtimesTAMU/beauty')
+    for iHisto, _ in enumerate(hPtCharmFONLL):
+        outfile.cd('FONLL/charm')
+        hPtCharmFONLL[iHisto].Write()
+        hPtWeightsCharmFONLL[iHisto].Write()
+        outfile.cd('FONLLtimesTAMU/charm')
+        hPtCharmFONLLtimesTAMU[iHisto].Write()
+        hPtWeightsCharmFONLLtimesTAMU[iHisto].Write()
+        if beautySpecie:
+            outfile.cd('FONLL/beauty')
+            hPtBeautyFONLL[iHisto].Write()
+            hPtWeightsBeautyFONLL[iHisto].Write()
+            outfile.cd('FONLLtimesTAMU/beauty')
+            hPtBeautyFONLLtimesTAMU[iHisto].Write()
+            hPtWeightsBeautyFONLLtimesTAMU[iHisto].Write()
 
+    outfile.cd()
     # pT shape D
     #___________________________________________________________________________________________________________________________
     canvPtshape = TCanvas('pTshape', 'pTshape', 2000, 900)
@@ -231,14 +257,14 @@ def compute_pt_weights(cfg):
     leg.SetBorderSize(0)
     leg.SetTextSize(0.04)
 
-    SetObjectStyle(hPtGenPromptD, color=kRed, markersize=0.5)
-    leg.AddEntry(hPtGenPromptD, 'Gen Prompt', 'lp')
-    SetObjectStyle(hPtFONLLtimesTAMUD[0], color=kBlack, markersize=0.5)
-    leg.AddEntry(hPtFONLLtimesTAMUD[0], 'FONLL #times TAMU (R_{AA})', 'lp')
-    SetObjectStyle(hPtFONLLD[0], color=kAzure, markersize=0.5)
+    SetObjectStyle(hPtGenPrompt, color=kRed, markersize=0.5)
+    leg.AddEntry(hPtGenPrompt, 'Gen Prompt', 'lp')
+    SetObjectStyle(hPtCharmFONLLtimesTAMU[0], color=kBlack, markersize=0.5)
+    leg.AddEntry(hPtCharmFONLLtimesTAMU[0], 'FONLL #times TAMU (R_{AA})', 'lp')
+    SetObjectStyle(hPtCharmFONLL[0], color=kAzure, markersize=0.5)
 
-    hPtFONLLtimesTAMUD[0].Draw('same')
-    hPtGenPromptD.Draw('same')
+    hPtCharmFONLLtimesTAMU[0].Draw('same')
+    hPtGenPrompt.Draw('same')
     leg.Draw()
 
     canvPtshape.cd(2).DrawFrame(0, 0., ptD[1], 5, ';#it{p_{T}} (GeV/c);Ratio')
@@ -249,16 +275,16 @@ def compute_pt_weights(cfg):
     legR.SetBorderSize(0)
     legR.SetTextSize(0.04)
 
-    SetObjectStyle(hPtWeightsFONLLtimesTAMUD[0], color=kBlack, markersize=1)
-    legR.AddEntry(hPtWeightsFONLLtimesTAMUD[0], 'FONLL #times TAMU (R_{AA})', 'lp')
-    SetObjectStyle(hPtWeightsFONLLD[0], color=kAzure, markersize=1)
+    SetObjectStyle(hPtWeightsCharmFONLLtimesTAMU[0], color=kBlack, markersize=1)
+    legR.AddEntry(hPtWeightsCharmFONLLtimesTAMU[0], 'FONLL #times TAMU (R_{AA})', 'lp')
+    SetObjectStyle(hPtWeightsCharmFONLL[0], color=kAzure, markersize=1)
 
-    hPtWeightsFONLLtimesTAMUD[0].Draw('same')
+    hPtWeightsCharmFONLLtimesTAMU[0].Draw('same')
     legR.Draw()
 
     canvPtshape.Write()
-    canvPtshape.SaveAs(f'{outputDir}/pTweight_{Dspecie}_{cent}_{suffix}.png')
-    canvPtshape.SaveAs(f'{outputDir}/pTweight_{Dspecie}_{cent}_{suffix}.pdf')
+    canvPtshape.SaveAs(f'{outputDir}/pTweight_{charmSpecie}_{cent}{suffix}.png')
+    canvPtshape.SaveAs(f'{outputDir}/pTweight_{charmSpecie}_{cent}{suffix}.pdf')
 
     # pT shape B
     #___________________________________________________________________________________________________________________________
@@ -276,11 +302,11 @@ def compute_pt_weights(cfg):
 
     SetObjectStyle(hPtGenB, color=kRed, markersize=0.5)
     legB.AddEntry(hPtGenB, 'Gen B', 'lp')
-    SetObjectStyle(hPtFONLLtimesTAMUB[0], color=kBlack, markersize=0.5)
-    legB.AddEntry(hPtFONLLtimesTAMUB[0], 'FONLL #times TAMU (R_{AA})', 'lp')
-    SetObjectStyle(hPtFONLLB[0], color=kAzure, markersize=0.5)
+    SetObjectStyle(hPtBeautyFONLLtimesTAMU[0], color=kBlack, markersize=0.5)
+    legB.AddEntry(hPtBeautyFONLLtimesTAMU[0], 'FONLL #times TAMU (R_{AA})', 'lp')
+    SetObjectStyle(hPtBeautyFONLL[0], color=kAzure, markersize=0.5)
 
-    hPtFONLLtimesTAMUB[0].Draw('same')
+    hPtBeautyFONLLtimesTAMU[0].Draw('same')
     hPtGenB.Draw('same')
     legB.Draw()
 
@@ -292,18 +318,19 @@ def compute_pt_weights(cfg):
     legBR.SetBorderSize(0)
     legBR.SetTextSize(0.04)
 
-    SetObjectStyle(hPtWeightsFONLLtimesTAMUB[0], color=kBlack, markersize=1)
-    legBR.AddEntry(hPtWeightsFONLLtimesTAMUB[0], 'FONLL #times TAMU (R_{AA})', 'lp')
-    SetObjectStyle(hPtWeightsFONLLB[0], color=kAzure, markersize=1)
+    SetObjectStyle(hPtWeightsBeautyFONLLtimesTAMU[0], color=kBlack, markersize=1)
+    legBR.AddEntry(hPtWeightsBeautyFONLLtimesTAMU[0], 'FONLL #times TAMU (R_{AA})', 'lp')
+    SetObjectStyle(hPtWeightsBeautyFONLL[0], color=kAzure, markersize=1)
 
-    hPtWeightsFONLLtimesTAMUB[0].Draw('same')
+    hPtWeightsBeautyFONLLtimesTAMU[0].Draw('same')
     legBR.Draw()
 
     canvPtshapeB.Write()
-    canvPtshapeB.SaveAs(f'{outputDir}/pTweightB_{Dspecie}_{cent}_{suffix}.png')
-    canvPtshapeB.SaveAs(f'{outputDir}/pTweightB_{Dspecie}_{cent}_{suffix}.pdf')
+    canvPtshapeB.SaveAs(f'{outputDir}/pTweightB_{charmSpecie}_{cent}{suffix}.png')
+    canvPtshapeB.SaveAs(f'{outputDir}/pTweightB_{charmSpecie}_{cent}{suffix}.pdf')
 
     outfile.Close()
+    print(f'pT weights saved in {outputDir}/pTweight_{charmSpecie}_{cent}{suffix}.root')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Arguments')

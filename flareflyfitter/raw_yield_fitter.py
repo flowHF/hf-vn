@@ -61,6 +61,7 @@ class RawYieldFitter:
         self.bkg_pdfs = None
         self.bkg_pdfs_labels = None
         self.cfg_pars_init = None
+        self.signal_pdg_masses = []
         self.n_pdfs_bkg = 0
         self.n_pdfs_sgn = 0
         self.model = None
@@ -71,6 +72,34 @@ class RawYieldFitter:
         self.fit_counter = 0
         self.fix_sgn_to_first_fit = False
         self.first_fit_pars = None
+
+    def remove_sec_peak(self):
+        self.sgn_pdfs = [self.sgn_pdfs[0]]
+        self.sgn_pdfs_labels = [self.sgn_pdfs_labels[0]]
+        self.signal_pdg_masses = [self.signal_pdg_masses[0]]
+        for name, comp in self.fit_model.items():
+            if comp['type'] != 'sgn':
+                continue
+            if comp['idx'] == 1:
+                del self.fit_model[name]
+                break
+
+    def parameter_map(self, par_name):
+        if self.minimize_flarefly:
+            if par_name == "mean":
+                return "mu"
+            if par_name == "Alpha1":
+                return "alphal"
+            if par_name == "Alpha2":
+                return "alphar"
+            if par_name == "N1":
+                return "nl"
+            if par_name == "N2":
+                return "nr"
+            else:
+                return par_name
+        else:
+            return par_name
 
     def set_particle(self, particle_name):
         if self.verbose:
@@ -155,7 +184,7 @@ class RawYieldFitter:
                                                                 name_background_pdf=["nobkg"], label_bkg_pdf=["nobkg"])
                 # Set particle mass and sigma initial par for the main signal
                 self.fit_model[name]['mcfitter'].set_particle_mass(0, pdg_id=self.particle_pdg)
-                self.fit_model[name]['mcfitter'].set_signal_initpar(0, "sigma", 0.015, limits=[0., 0.05])
+                self.fit_model[name]['mcfitter'].set_signal_initpar(0, "sigma", 0.015, limits=[0., 0.1])
                 fit_result = self.fit_model[name]['mcfitter'].mass_zfit()
                 self.mc_pars[name] = self.fit_model[name]['mcfitter'].get_signal_pars()[0]
             else:
@@ -220,6 +249,14 @@ class RawYieldFitter:
     def add_sgn_func(self, sgn_func, label, particle):
         # Add the parameters to the dictionary
         self.add_func_to_model('sgn', sgn_func, label, particle)
+        if particle == 'Dplus':
+            self.signal_pdg_masses.append(1.869)
+        if particle == 'D0':
+            self.signal_pdg_masses.append(1.865)
+        if particle == 'Ds':
+            self.signal_pdg_masses.append(1.968)
+        if particle == 'Dstar':
+            self.signal_pdg_masses.append(2.005)
 
     def add_bkg_func(self, bkg_func, label):
         # Add the parameters to the dictionary
@@ -235,7 +272,12 @@ class RawYieldFitter:
                     self.cfg_pars_init = setting
                     break
 
-    def add_corr_bkgs(self, cfg, sel_string, pt_min, pt_max, var_name='fM'):
+    def set_fit_pars_from_config(self, cfg_pars_dict):
+        if self.verbose:
+            logger(f"Setting fit parameters from config dict: {cfg_pars_dict}\n", level="INFO")
+        self.cfg_pars_init = cfg_pars_dict
+
+    def add_corr_bkgs(self, cfg, corr_bkgs_dir, sel_string, pt_min, pt_max, var_name='fM'):
         # find correlated bkg cocktail associated to this pt-bin
         cocktail_cfg = None
         for cocktail in cfg['cocktails']:
@@ -253,57 +295,57 @@ class RawYieldFitter:
             return
 
         pt_label = f"pt_{int(pt_min*10)}_{int(pt_max*10)}"
-        corr_bkg_file = TFile.Open(f"{cfg['input_files']}_{pt_label}.root", "READ")
+        corr_bkg_file = TFile.Open(f"{corr_bkgs_dir}/templs_{pt_label}.root", "READ")
         if self.verbose:
             logger(f"Adding correlated backgrounds to the fitter for pt range {pt_min} - {pt_max} GeV/c", level="INFO")
-        self.sgn_templ_name = cfg['sgn_fin_state']
-        _, self.sgn_templ_frac = get_corr_bkg(corr_bkg_file, self.sgn_templ_name, sel_string, pt_label, cfg['templ_type'], cfg['output_type'])
+        self.sgn_templ_name = cfg['sgn_chn']
+        output_type = 'hist'
+        if self.minimize_flarefly and not self.data.get_is_binned():
+            output_type = 'df'
+        _, self.sgn_templ_frac = get_corr_bkg(corr_bkg_file, self.sgn_templ_name, sel_string, pt_label, 'raw', output_type)
         count_sgn_templs, count_bkg_templs = 0, 0
-        for chn in cocktail_cfg['channels']:
+        for i_chn, chn in enumerate(cocktail_cfg['channels']):
 
             if self.verbose:
-                logger(f"Setting correlated bkg source {chn['name']}\n", "INFO")
+                logger(f"Setting correlated bkg source {chn}\n", "INFO")
             # Correlated bkgs that are functions
-            if chn.get('sgn_func'):
-                self.add_func_to_model('sgn', chn['sgn_func'], chn['name'])
+            if cocktail_cfg.get('sgn_funcs'):
+                self.add_func_to_model('sgn', cocktail_cfg['sgn_funcs'][i_chn], chn)
                 continue
 
-            name = chn['name']
-            output_type = 'hist'
-            if self.minimize_flarefly and not self.data.get_is_binned():
-                output_type = 'df'
-            templ, frac = get_corr_bkg(corr_bkg_file, name, sel_string, pt_label, cfg['templ_type'], output_type)
+            # name = chn['name']
+            templ, frac = get_corr_bkg(corr_bkg_file, chn, sel_string, pt_label, 'raw', output_type)
             if frac < 1e-10:
                 if self.verbose:
-                    logger(f"Skipping correlated bkg source {name} with negligible fraction {frac}", level="WARNING")
+                    logger(f"Skipping correlated bkg source {chn} with negligible fraction {frac}", level="WARNING")
                 continue
 
-            self.fit_model[name] = {}
+            self.fit_model[chn] = {}
             if self.minimize_flarefly:
-                self.fit_model[name]['frac'] = frac
+                self.fit_model[chn]['frac'] = frac
             else:
-                self.fit_model[name]['frac'] = ROOT.RooRealVar(f"frac_{name}", f"frac_{name}", frac)
-            self.fit_model[name]['type'] = 'bkg'
-            self.fit_model[name]['idx'] = self.n_pdfs_bkg
+                self.fit_model[chn]['frac'] = ROOT.RooRealVar(f"frac_{chn}", f"frac_{chn}", frac)
+            self.fit_model[chn]['type'] = 'bkg'
+            self.fit_model[chn]['idx'] = self.n_pdfs_bkg
             self.n_pdfs_bkg += 1
-            self.fit_model[name]['data'] = templ
-            self.fit_model[name]['label'] = name
-            self.fit_model[name]['name'] = name
-            if chn.get('fix_to'):
-                self.fit_model[name]['anchor_fix'] = chn.get('fix_to', None)
-            elif chn.get('init_to'):
-                self.fit_model[name]['anchor_init'] = chn.get('init_to', None)
+            self.fit_model[chn]['data'] = templ
+            self.fit_model[chn]['label'] = chn
+            self.fit_model[chn]['chn'] = chn
+            if cocktail_cfg.get('fix_to'):
+                self.fit_model[chn]['anchor_fix'] = cocktail_cfg['fix_to'][i_chn]
+            elif cocktail_cfg.get('init_to'):
+                self.fit_model[chn]['anchor_init'] = cocktail_cfg['init_to'][i_chn]
             else:
                 if self.verbose:
-                    logger(f"Correlated bkg source {self.fit_model[name]['label']} without 'fix_to' or 'init_to' key", level="WARNING")
+                    logger(f"Correlated bkg source {self.fit_model[chn]['label']} without 'fix_to' or 'init_to' key", level="WARNING")
 
             if self.minimize_roofit:
-                self.fit_model[name]['RooDataSet'] = ROOT.RooDataHist(f"dataset_{name}", f"dataset_{name}",
-                                                     ROOT.RooArgList(self.roofit_fit_var), self.fit_model[name]['data'])
-                self.fit_model[name]['pdf'] = ROOT.RooHistPdf(name, name, ROOT.RooArgSet(self.roofit_fit_var), self.fit_model[name]['RooDataSet'])
-                self.fit_model[name]['yield'] = ROOT.RooRealVar(f"yield_{name}", f"yield_{name}", 5000, 0, 1e7)
+                self.fit_model[chn]['RooDataSet'] = ROOT.RooDataHist(f"dataset_{chn}", f"dataset_{chn}",
+                                                     ROOT.RooArgList(self.roofit_fit_var), self.fit_model[chn]['data'])
+                self.fit_model[chn]['pdf'] = ROOT.RooHistPdf(chn, chn, ROOT.RooArgSet(self.roofit_fit_var), self.fit_model[chn]['RooDataSet'])
+                self.fit_model[chn]['yield'] = ROOT.RooRealVar(f"yield_{chn}", f"yield_{chn}", 5000, 0, 1e7)
             else:
-                self.fit_model[name]['pdf'] = 'hist' if self.data.get_is_binned() else 'kde_grid'
+                self.fit_model[chn]['pdf'] = 'hist' if self.data.get_is_binned() else 'kde_grid'
 
         corr_bkg_file.Close()
 
@@ -372,13 +414,29 @@ class RawYieldFitter:
         # Revert bkg lists to have the comb bkg at the end and adjust indices in fit model accordingly
         self.bkg_pdfs = self.bkg_pdfs[::-1]
         self.bkg_pdfs_labels = self.bkg_pdfs_labels[::-1]
+
+        # for label, comp in self.fit_model.items():
+        #     if comp['type'] != 'bkg':
+        #         continue
+        #     if 'data' in comp:
+        #         comp['idx'] = comp['idx'] - 1
+        #     else: # comb bkg
+        #         comp['idx'] = self.n_pdfs_bkg - 1
+
+        bkg_idx = 0
+        comb_key = None
         for label, comp in self.fit_model.items():
+            print(f"Component {label} with type {comp['type']} and idx {comp['idx']}")
             if comp['type'] != 'bkg':
                 continue
             if 'data' in comp:
-                comp['idx'] = comp['idx'] - 1
-            else: # comb bkg
-                comp['idx'] = self.n_pdfs_bkg - 1
+                comp['idx'] = bkg_idx
+                bkg_idx += 1
+            else:  # combinatorial bkg
+                comb_key = label
+        # put combinatorial background last
+        if comb_key is not None:
+            self.fit_model[comb_key]['idx'] = bkg_idx # self.n_pdfs_bkg - 1
 
         self.fitter = F2MassFitter(self.data, name=self.fit_name,
                                    label_signal_pdf=self.sgn_pdfs_labels, name_signal_pdf=self.sgn_pdfs,
@@ -420,28 +478,28 @@ class RawYieldFitter:
         if self.cfg_pars_init.get("init_pars_sgn"):
             for sett in self.cfg_pars_init["init_pars_sgn"]:
                 sgn_func_idx, par_name, par_val, par_lims = sett[0], sett[1], sett[2], sett[3]
-                self.set_sgn_par(sgn_func_idx, par_name, par_val, par_lims)
+                self.set_sgn_par(sgn_func_idx, self.parameter_map(par_name), par_val, par_lims)
                 if self.verbose:
                     logger(f"---> setting sgn par {par_name} to value {par_val}, limits {par_lims}\n", "INFO")
 
         if self.cfg_pars_init.get("init_pars_bkg"):
             for sett in self.cfg_pars_init["init_pars_bkg"]:
                 par_name, par_val, par_lims = sett[0], sett[1], sett[2]
-                self.set_bkg_par(len(self.bkg_pdfs)-1, par_name, par_val, par_lims)
+                self.set_bkg_par(len(self.bkg_pdfs)-1, self.parameter_map(par_name), par_val, par_lims)
                 if self.verbose:
                     logger(f"---> setting bkg par {par_name} to value {par_val}, limits {par_lims}\n", "INFO")
 
         if self.cfg_pars_init.get("fix_pars_sgn"):
             for sett in self.cfg_pars_init["fix_pars_sgn"]:
                 sgn_func_idx, par_name, par_val = sett[0], sett[1], sett[2]
-                self.set_sgn_par(sgn_func_idx, par_name, par_val, fix=True)
+                self.fix_sgn_par(sgn_func_idx, self.parameter_map(par_name), par_val)
                 if self.verbose:
                     logger(f"---> fixing sgn par {par_name} to value {par_val}", "INFO")
 
         if self.cfg_pars_init.get("fix_pars_bkg"):
             for sett in self.cfg_pars_init["fix_pars_bkg"]:
                 par_name, par_val = sett[0], sett[1]
-                self.set_bkg_par(len(self.bkg_pdfs)-1, par_name, par_val, fix=True)
+                self.set_bkg_par(len(self.bkg_pdfs)-1, self.parameter_map(par_name), par_val, fix=True)
                 if self.verbose:
                     logger(f"---> fixing bkg par {par_name} to value {par_val}", "INFO")
 
@@ -463,7 +521,7 @@ class RawYieldFitter:
                         # TODO: Shift the mean or add smearing to compensate data-MC discrepancies
                         if self.verbose:
                             logger(f"---> fixing signal parameter {par_name} to value {par_val}, shift {shift}, smear {smear}", "INFO")
-                        self.fix_sgn_par(sgn_func_idx, par_name, par_val)
+                        self.fix_sgn_par(sgn_func_idx, self.parameter_map(par_name), par_val)
                     except Exception as e:
                         if self.verbose:
                             logger(f"        Parameter {par_name} not present!", "WARNING")
@@ -474,8 +532,11 @@ class RawYieldFitter:
 
         # Set particle mass and sigma initial par for the main signal
         # function here, so they can be overridden later if needed
-        self.fitter.set_particle_mass(len(self.sgn_pdfs)-1, pdg_id=self.particle_pdg)
-        self.fitter.set_signal_initpar(len(self.sgn_pdfs)-1, "sigma", 0.015, limits=[0.005, 0.05])
+        for i_sgn_mass, pdg_mass in enumerate(self.signal_pdg_masses):
+            print(f"Setting particle mass for signal function index {i_sgn_mass} to PDG mass {pdg_mass}")
+            # self.fitter.set_particle_mass(i_sgn_mass, pdg_id=pdg_mass)
+            self.fitter.set_signal_initpar(i_sgn_mass, "mu", pdg_mass, limits=[pdg_mass - 0.03, pdg_mass + 0.03])
+        self.fitter.set_signal_initpar(0, "sigma", 0.015, limits=[0.005, 0.7])
         self.fitter.set_background_initpar(len(self.bkg_pdfs)-1, "c0", 1000.0, limits=[0.0, 1e6])         # Resonable value for c0
         self.fitter.set_background_initpar(len(self.bkg_pdfs)-1, "c1", 0.0, limits=[-1000.0, 1000.0])     # Resonable value for c1
         self.fitter.set_background_initpar(len(self.bkg_pdfs)-1, "c2", 0.0, limits=[-1000.0, 1000.0])     # Resonable value for c2
@@ -555,7 +616,7 @@ class RawYieldFitter:
             if self.verbose:
                 logger(f"Stored signal params of the first fit!\n", "WARNING")
         self.fit_counter += 1
-        return self.fit_result.status, self.fit_result.converged
+        return self.fit_result.valid, self.fit_result.converged
 
     def plot_mc_prefit(self, logy, show_extra_info, loc=None, path=None, out_file=None):
         os.makedirs(path, exist_ok=True)
@@ -652,7 +713,7 @@ class RawYieldFitter:
             self.data.plotOn(
                 frame,
                 RooFit.Range("fit"),
-                RooFit.Binning(int(1000 * (self.fit_range_max - self.fit_range_min))),
+                RooFit.Binning(int(1000 * (self.fit_range_max - self.fit_range_min) / self.rebin)),
                 RooFit.MarkerStyle(ROOT.kFullCircle),
                 RooFit.MarkerSize(0.8),
                 RooFit.LineColor(ROOT.kBlack),
@@ -703,11 +764,11 @@ class RawYieldFitter:
                 frame,
                 RooFit.Range("fit"),
                 RooFit.LineColor(ROOT.kAzure + 4),
-                RooFit.LineWidth(6)
+                RooFit.LineWidth(4)
             )
             dummy = TLine(0,0,1,1)
             dummy.SetLineColor(ROOT.kAzure + 4)
-            dummy.SetLineWidth(6)
+            dummy.SetLineWidth(4)
             self.legend.AddEntry(dummy, "Total fit", "l")
             legend_dummies.append(dummy)  # keep reference
 
@@ -733,13 +794,12 @@ class RawYieldFitter:
             frame.Draw()
             self.legend.Draw()
 
-                # --- Optional: Canvas title using TLatex ---
+            # --- Optional: Canvas title using TLatex ---
             # canva_title = f"{self.pt_min} < #it{{p}}_{{T}} < {self.pt_max} GeV/#it{{c}}, " \
             #               f"{self.sp_range_min:.2f} < SP < {self.sp_range_max:.2f}" \
             #               if self.sp_range_min != -4. or self.sp_range_max != 4. \
             #               else f"{self.pt_min} < #it{{p}}_{{T}} < {self.pt_max} GeV/#it{{c}}"
-            canva_title = f"{self.pt_min} < #it{{p}}_{{T}} < {self.pt_max} GeV/#it{{c}}, " \
-                             f"{self.pt_min} < #it{{p}}_{{T}} < {self.pt_max} GeV/#it{{c}}"
+            canva_title = f"{self.pt_min} < #it{{p}}_{{T}} < {self.pt_max} GeV/#it{{c}}"
             latex = ROOT.TLatex()
             latex.SetNDC()
             latex.SetTextAlign(22)
@@ -759,17 +819,18 @@ class RawYieldFitter:
                 out_file.cd()
                 canvas.Write(f"fit_canvas_{self.fit_name}")
 
+            frame.Print("v")
             if self.verbose:
                 logger(f"Plot saved to {path}", "INFO")
 
-    def plot_raw_residuals(self):
+    def plot_raw_residuals(self, path):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         fig_res = self.fitter.plot_raw_residuals(style="ATLAS",
                                                  figsize=(8, 8),
                                                  axis_title=self.x_axis_label)
         return fig_res
 
-    def plot_std_residuals(self):
+    def plot_std_residuals(self, path):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         fig_pulls = self.fitter.plot_std_residuals(style="ATLAS",
                                                    figsize=(8, 8),
@@ -934,6 +995,7 @@ class RawYieldFitter:
         self.n_pdfs_bkg = 0
         self.n_pdfs_sgn = 0
         self.model = None
+        self.signal_pdg_masses = []
 
     def init_sgn_pars(self, pars_dict, sgn_func_label):
         # Init mean and sigma, tail parameters are always taken from MC prefit
@@ -942,7 +1004,7 @@ class RawYieldFitter:
         sgn_func_idx = self.fit_model[sgn_func_label]['idx']
         if self.minimize_flarefly:
             self.fitter.set_signal_initpar(sgn_func_idx, "mu", pars_dict["mu"], limits=[1.8, 2.0])
-            self.fitter.set_signal_initpar(sgn_func_idx, "sigma", pars_dict["sigma"], limits=[0.005, 0.05])
+            self.fitter.set_signal_initpar(sgn_func_idx, "sigma", pars_dict["sigma"], limits=[0.005, 0.1])
         else:
             self.fit_model[sgn_func_label]["par_mu"].setVal(pars_dict["mu"])
             self.fit_model[sgn_func_label]["par_sigma"].setVal(pars_dict["sigma"])
@@ -1103,7 +1165,7 @@ class RawYieldFitter:
                 logger(f"Adding Gaussian signal function", "INFO")
             if self.minimize_roofit:
                 mu = ROOT.RooRealVar(f"mu_{label}", f"mean_{label}", init_mass, init_mass - 0.02, init_mass + 0.02)
-                sigma = ROOT.RooRealVar(f"sigma_{label}", f"sigma_{label}", 0.015, 0.005, 0.05)
+                sigma = ROOT.RooRealVar(f"sigma_{label}", f"sigma_{label}", 0.015, 0.005, 0.1)
                 self.fit_model[label]['par_mu'] = mu
                 self.fit_model[label]['par_sigma'] = sigma
                 self.fit_model[label]['pdf'] = ROOT.RooGaussian(label, label, self.roofit_fit_var, mu, sigma)
@@ -1112,12 +1174,12 @@ class RawYieldFitter:
                 self.fit_model[label]['par_mu'] = init_mass
                 self.fit_model[label]['par_sigma'] = 0.015
                 self.fit_model[label]['pdf'] = "gaussian"
-        elif func == 'kDoubleSidedAsymmCB':
+        elif func == 'kDoubleCBAsymm':
             if self.verbose:
                 logger(f"Adding Double-Sided Asymm CB signal function", "INFO")
             if self.minimize_roofit:
                 mu = ROOT.RooRealVar(f"mu_{label}", f"mean_{label}", init_mass, init_mass - 0.02, init_mass + 0.02)
-                sigma = ROOT.RooRealVar(f"sigma_{label}", f"sigma_{label}", 0.015, 0.005, 0.05)
+                sigma = ROOT.RooRealVar(f"sigma_{label}", f"sigma_{label}", 0.015, 0.005, 0.1)
                 alphaL = ROOT.RooRealVar(f"alphaL_{label}", f"alphaL_{label}", 1.885, 0.5, 5.0)
                 nL = ROOT.RooRealVar(f"nL_{label}", f"nL_{label}", 1.90, 0.5, 10.0)
                 alphaR = ROOT.RooRealVar(f"alphaR_{label}", f"alphaR_{label}", 1.391, 0.5, 5.0)
@@ -1209,124 +1271,3 @@ class RawYieldFitter:
             self.n_pdfs_sgn += 1
         else:
             self.n_pdfs_bkg += 1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        #     self.rebin = 2 if self.rebin is None else self.rebin
-        #     bin_width = int(1000/self.rebin)  # in MeV/c^2
-        #     frame = self.roofit_fit_var.frame(
-        #         RooFit.Bins(int(bin_width*(self.fit_range_max - self.fit_range_min))),
-        #         RooFit.Title(";M(#pi K#pi) (GeV/#it{c}^{2});"
-        #                      f"Counts per {self.rebin} " 
-        #                      "MeV/#it{c}^{2}"
-        #         )
-        #     )
-        #     legend = ROOT.TLegend(0.20, 0.77-0.05*len(self.fit_model), 0.45, 0.82)
-        #     legend.SetBorderSize(0)
-        #     legend.SetFillStyle(0)
-        #     legend.SetTextSize(0.035)
-        #     self.data_sp_cut.plotOn(
-        #         frame, RooFit.Range("fit"),
-        #         RooFit.Binning(int(1000 * (self.fit_range_max - self.fit_range_min))),
-        #         RooFit.MarkerStyle(ROOT.kFullCircle),
-        #         RooFit.MarkerSize(0.8),
-        #         RooFit.LineColor(ROOT.kBlack),
-        #         RooFit.DrawOption("PE0")
-        #     )
-
-        #     legend.AddEntry(self.data_sp_cut, "Data", "pe")
-        #     for name, pdf_dict in self.fit_model.items():
-        #         label = pdf_dict['label']
-        #         # Print yield of this component
-        #         if self.fit_model[name].get('yieldRooLinearVar'):
-        #             yield_var = self.fit_model[name]['yieldRooLinearVar']
-        #             if self.verbose:
-        #                 logger(f"Yield of component {label}: {yield_var.getVal()}", "INFO")
-        #         else:
-        #             yield_var = self.fit_model[name]['yield']
-        #             if self.verbose:
-        #                 logger(f"Yield of component {label}: {yield_var.getVal()} +/- {yield_var.getError()}", "INFO")
-        #         if pdf_dict['type'] == 'bkg' and pdf_dict.get('data') is None:
-        #             curve = self.model.plotOn(frame, RooFit.Components(label),
-        #                                       RooFit.LineColor(ROOT.kOrange + 1),
-        #                                       RooFit.Range("fit"),
-        #                                       RooFit.LineWidth(4),
-        #                                       RooFit.LineStyle(9))
-        #             legend.AddEntry(curve, label, "l")
-        #         elif pdf_dict['type'] == 'bkg' and pdf_dict.get('data') is not None:
-        #             curve = self.model.plotOn(frame, RooFit.Components(label),
-        #                                       RooFit.LineColor(ROOT.kGreen + 2*pdf_dict['idx']),
-        #                                       RooFit.Range("fit"))
-        #             legend.AddEntry(curve, label, "l")
-        #         else:
-        #             color = ROOT.TColor.GetColorTransparent(ROOT.kAzure + 4 + 2*pdf_dict['idx'], 0.6)
-        #             curve = self.model.plotOn(frame, RooFit.Components(label),
-        #                                       RooFit.FillColor(color),
-        #                                       RooFit.FillStyle(3145),
-        #                                       RooFit.DrawOption("F"),
-        #                                       RooFit.Range("fit"))
-        #             legend.AddEntry(curve, label, "f")
-        #     total_curve = self.model.plotOn(frame, RooFit.Range("fit"),
-        #                                     RooFit.LineColor(ROOT.kAzure + 4),
-        #                                     RooFit.LineWidth(6))
-        #     legend.AddEntry(total_curve, "Total fit", "l")
-        #     canvas = ROOT.TCanvas("fit_canvas", "Fit Canvas", 600, 600)
-        #     # Reduce canvas margins and set axes labels offsets
-        #     canvas.SetLeftMargin(0.14)
-        #     canvas.SetTopMargin(0.12)
-        #     canvas.SetBottomMargin(0.12)
-        #     canvas.SetTicks(1, 1)
-        #     frame.GetXaxis().SetTitleOffset(1.20)
-        #     frame.GetYaxis().SetTitleOffset(1.35)
-        #     frame.GetXaxis().SetTitleSize(0.042)
-        #     frame.GetYaxis().SetTitleSize(0.042)
-        #     # Force scientific notation on Y-axis and set number of digits to 2 significant figures
-        #     frame.GetYaxis().SetMoreLogLabels()        # optional, nicer labels if many decades
-        #     frame.GetYaxis().SetNoExponent(False)      # allow exponent
-        #     frame.GetYaxis().SetTitleOffset(1.3)
-        #     frame.GetYaxis().SetLabelSize(0.04)
-        #     frame.GetYaxis().SetLabelFont(42)
-        #     frame.GetYaxis().SetMaxDigits(3)           # ROOT counts total digits, e.g., 1.23e4
-        #     frame.Draw()
-        #     canvas.Update()
-
-        #     # Create a TLatex for the canvas title
-        #     canva_title = f"{self.pt_min} < #it{{p}}_{{T}} < {self.pt_max}, {self.sp_range_min:.2f} < SP < {self.sp_range_max:.2f}" \
-        #                  if self.sp_range_min != -4. or self.sp_range_max != 4. else f"{self.pt_min} < #it{{p}}_{{T}} < {self.pt_max}"
-        #     latex = ROOT.TLatex()
-        #     latex.SetNDC()                # normalized coordinates (0 to 1)
-        #     latex.SetTextAlign(22)        # center-aligned
-        #     latex.SetTextFont(42)         # standard font
-        #     latex.SetTextSize(0.045)      # adjust size
-        #     latex.DrawLatex(0.5, 0.94, canva_title)  # x=0.5 center, y=0.92 near top
-        #     canvas.Update()
-
-        #     legend.Draw()
-        #     canvas.Update()
-        #     canvas.SaveAs(path)
-        #     if out_file is not None:
-        #         if self.verbose:
-        #             logger(f"Writing fit canvas to output file with name fit_canvas_{self.fit_name}", "INFO")
-        #         out_file.cd()
-        #         canvas.Write(f"fit_canvas_{self.fit_name}")
-
-        # if self.verbose:
-        #     logger(f"Plot saved to {path}", "INFO")

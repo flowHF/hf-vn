@@ -233,9 +233,8 @@ def run_trial_worker(data, cfg_trial_path, cfg_cutsets_paths, pt_min, pt_max, i_
         t9 = time.perf_counter()
         logger(f"Time for performing sp-integrated fit for cutset {i_cutset} in pt bin {pt_label}: {t9 - t8} s", "INFO")
         stats[i_cutset] = sp_scan_pt_bin(fitter, data_cutset, sgn_func_label, pt_label, resolution, sp_intervals,
-                                         f"{outdir}/scan_{i_cutset:02d}", mass_intervals=cfg_trial['projections']['inv_mass_bins'][i_pt],
+                                         f"{outdir}/scan_{i_cutset:02d}", mass_intervals=cfg_trial['projections']['VnVsMassBins'][i_pt],
                                          save_plots=True, is_multitrial=is_multitrial)
-                                         # save_plots=not is_multitrial, is_multitrial=is_multitrial)
         t10 = time.perf_counter()
         logger(f"Time for sp scan for cutset {i_cutset} in pt bin {pt_label}: {t10 - t9} s", "INFO")
         stats[i_cutset]['SpIntervals'] = sp_intervals
@@ -311,11 +310,11 @@ if __name__ == "__main__":
             cutset_files[main_cfg_path].sort(key=lambda x: int(re.search(r'(\d+)', os.path.basename(x)).group(1)))
     else:
         try:
-            cutsets_dir = os.path.join(cfg_flow['outdir'], f"cutvar_{cfg_flow['suffix']}_combined/cutsets")
+            cutsets_dir = os.path.join(cfg_flow['outdir'], f"vn_extr_{cfg_flow['suffix']}_combined/cutsets")
             cutset_files[args.input_config] = [os.path.join(cutsets_dir, f) for f in os.listdir(cutsets_dir) if f.endswith('.yml')]
         except Exception as e:
             logger(f"Could not find combined cutsets, trying correlated cutsets ... ", level="WARNING")
-            cutsets_dir = os.path.join(cfg_flow['outdir'], f"cutvar_{cfg_flow['suffix']}_correlated/cutsets")
+            cutsets_dir = os.path.join(cfg_flow['outdir'], f"vn_extr_{cfg_flow['suffix']}_correlated/cutsets")
             cutset_files[args.input_config] = [os.path.join(cutsets_dir, f) for f in os.listdir(cutsets_dir) if f.endswith('.yml')]
         cutset_files[args.input_config].sort(key=lambda x: int(re.search(r'(\d+)', os.path.basename(x)).group(1)))
 
@@ -378,8 +377,8 @@ if __name__ == "__main__":
                 for var, vals in cutset_vals.items():
                     if isinstance(vals, list):
                         if "VnVsMassBkg" in var:
-                            summaries[config_path][cutset][f"{pt_label}/{var}"] = TH1F(f"hist_{var}", f"hist_{var}", len(cfg_flow['projections']['inv_mass_bins'][i_pt]) - 1,
-                                                                        array.array('f', cfg_flow['projections']['inv_mass_bins'][i_pt]))
+                            summaries[config_path][cutset][f"{pt_label}/{var}"] = TH1F(f"hist_{var}", f"hist_{var}", len(cfg_flow['projections']['VnVsMassBins'][i_pt]) - 1,
+                                                                        array.array('f', cfg_flow['projections']['VnVsMassBins'][i_pt]))
                         else:
                             summaries[config_path][cutset][f"{pt_label}/{var}"] = TH1F(f"hist_{var}", f"hist_{var}", len(cutset_vals['SpIntervals']) - 1,
                                                                         array.array('f', cutset_vals['SpIntervals']))

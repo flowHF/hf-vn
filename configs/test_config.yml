@@ -1,186 +1,408 @@
 operations:
-    preprocess: true
-    make_yaml: true
-    proj_data: true
-    proj_mc: true
-    efficiencies: true
-    get_vn_vs_mass: true
-    do_cut_variation: false
-    data_driven_fraction: false
-    get_v2_vs_frac: false
+    preprocess: False
+    make_yaml: False
+    proj_data: False
+    proj_mc: False
+    efficiencies: False
+    get_vn_vs_mass: False
+    do_cut_variation: False
+    data_driven_fraction: True
+    get_v2_vs_frac: True
 
-outdir: '/home/mdicosta/alice/hf-vn/test_output'
-# outdirPrep: '/home/wuct/ALICE/local/dev/d0_v2'
-suffix: 'test'
+outdir: '/home/mdicosta/FlowDplus/PaperVerify'
+suffix: 'verify'
 centrality: 'k3050'
 Dmeson: 'Dplus'
 
 # pt bins
 ptbins: [
-        #    1.0,
-        #    1.5,
-        #    2.0,
-           2.5,
-           3.0,
-        #    3.5,
-        #    4.0,
-        #    5.0,
-        #    6.0,
-        #    7.0,
-        #    8.0,
-        #    10.0,
-        #    12.0,
-        #    16.0,
-        #    24.0
-       ]
+    1.0,
+    1.5,
+    2.0,
+    2.5,
+    3.0,
+    3.5,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0,
+    10.0,
+    12.0,
+    16.0,
+    24.0,
+]
+
+minimisation:
+    skip_cuts: [
+        [1,2,3,4],   # pt 1
+        [1,2,3],   # pt 2
+        [1,2,3],   # pt 3
+        [1,2],   # pt 4
+        [1,2],   # pt 5
+        [1,2],   # pt 6
+        [1,2],  # pt 7
+        [1,2,3,4,5], # pt 8
+        [0,1,2,3,4,5,35,36,37], # pt 9
+        [1,2,3,4,5,35,36,37], # pt 10
+        [0,1,2,3,4,5,35,36,37], # pt 11
+        [0,1,2,3,14,18,30,31,32,33,34,35,36,37], # pt 12
+        [1,25,26,27,28,29,30,31,32,33,34,35,36,37], # pt 13
+        [0,1,2,9,14,15,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37], # pt 14
+    ]
+    systematics: ['even', 'random', 'odd', 'minus3low', '1in3', '1in4', 'minus3high', 'minus3']
 
 # cut variation
 cut_variation:
     corr_bdt_cut:
-        bkg_max: [0.004, 0.004, 0.015, 0.015, 0.02, 0.02, 0.015, 0.015, 0.007, 0.01, 0.006, 0.006, 0.02, 0.02]
+        bkg_max:  [0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.002, 0.004, 0.002, 0.002, 0.002, 0.008, 0.008]
         sig: # the max value is not contained in the range
-            min: [0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.04, 0.04]
-            max: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.60, 0.60]
-            step: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-        skip_cuts: [    # index of the specific cuts to skip for each pt bin
-                [18,19,20,21,22,23,24,25], # pt 1
-                [26], # pt 2
-                [24,25,26], # pt 3
-                [], # pt 4
-                [], # pt 5
-                [], # pt 6
-                [], # pt 7
-                [], # pt 8
-                [], # pt 9
-                [22,23,24,25,26], # pt 10
-                [22,23,24,25,26], # pt 11
-                [22,23,24,25,26], # pt 12
-                [21,22,23,24,25,26], # pt 13
-                [21,22,23,24,25,26], # pt 14
-                [5,9], # pt 15
-            ]
+            min:  [0.010, 0.010, 0.010, 0.010, 0.010, 0.010, 0.010, 0.010, 0.010, 0.010, 0.010, 0.010, 0.010, 0.010]
+            max:  [0.95,  0.95,  0.95,  0.95,  0.95,  0.95,  0.95,  0.95,  0.95,  0.95,  0.95,  0.95,  0.95,  0.95]
+            step: [0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.025, 0.030, 0.030, 0.030]
     uncorr_bdt_cut:
         bkg_max: # max probability for bkg, one for each pt bin
-            - [0.01, 0.02, 0.008, 0.002] # pt 1
-            - [0.04, 0.02, 0.02, 0.002] # pt 2
-            - [0.03, 0.03, 0.01, 0.006, 0.002] # pt 3
-            - [0.06, 0.06, 0.01, 0.006, 0.004] # pt 4
-            - [0.06, 0.06, 0.03, 0.01, 0.004] # pt 5
-            - [0.1, 0.07, 0.03, 0.004, 0.006] # pt 6
-            - [0.03, 0.01, 0.006, 0.006, 0.004] # pt 7
-            - [0.03, 0.1, 0.04, 0.01, 0.004] # pt 8
-            - [0.02, 0.02, 0.02, 0.006, 0.002] # pt 9
-            - [0.024, 0.024, 0.024, 0.004, 0.002] # pt 10
-            - [0.006, 0.006, 0.002, 0.002] # pt 11
-            - [0.006, 0.006, 0.002, 0.002] # pt 12
-            - [0.15, 0.15, 0.15, 0.05] # pt 13
-            - [0.09, 0.06, 0.06] # pt 14
+            - [0.004, 0.004, 0.002, 0.002] # pt 1
+            - [0.008, 0.006, 0.004, 0.002] # pt 2
+            - [0.012, 0.014, 0.004, 0.002, 0.006] # pt 3, 5th bkg cutset not optimized
+            - [0.006, 0.006, 0.004, 0.002, 0.006] # pt 4
+            - [0.004, 0.004, 0.004, 0.002, 0.006] # pt 5
+            - [0.004, 0.004, 0.004, 0.002, 0.010] # pt 6
+            - [0.002, 0.008, 0.004, 0.002, 0.006] # pt 7
+            - [0.004, 0.008, 0.008, 0.004, 0.006] # pt 8
+            - [0.004, 0.006, 0.006, 0.002, 0.006] # pt 9
+            - [0.004, 0.006, 0.006, 0.004, 0.006] # pt 10
+            - [0.004, 0.004, 0.004, 0.004] # pt 11
+            - [0.004, 0.004, 0.002, 0.002] # pt 12
+            - [0.054, 0.018, 0.022, 0.020] # pt 13
+            - [0.036, 0.022, 0.012] # pt 14
         sig:
-            - [0.00, 0.40, 0.70, 0.90, 1.00] # pt 1
-            - [0.00, 0.50, 0.70, 0.90, 1.00] # pt 2
-            - [0.00, 0.20, 0.45, 0.75, 0.90, 1.00] # pt 3
-            - [0.00, 0.30, 0.50, 0.75, 0.90, 1.00] # pt 4
-            - [0.00, 0.30, 0.50, 0.70, 0.85, 1.00] # pt 5
-            - [0.00, 0.25, 0.40, 0.70, 0.90, 1.00] # pt 6
-            - [0.00, 0.25, 0.45, 0.65, 0.85, 1.00] # pt 7
-            - [0.00, 0.25, 0.45, 0.65, 0.85, 1.00] # pt 8
-            - [0.00, 0.25, 0.45, 0.65, 0.85, 1.00] # pt 9
-            - [0.00, 0.25, 0.45, 0.65, 0.85, 1.00] # pt 10
-            - [0.00, 0.30, 0.50, 0.75, 1.00] # pt 11
-            - [0.00, 0.40, 0.60, 0.75, 1.00] # pt 12
-            - [0.00, 0.40, 0.60, 0.75, 1.00] # pt 13
-            - [0.00, 0.50, 0.70, 1.00] # pt 14
+            - [0.00, 0.40, 0.70, 0.90, 1.00]        # pt 1
+            - [0.00, 0.50, 0.70, 0.90, 1.00]        # pt 2
+            - [0.00, 0.30, 0.50, 0.75, 0.90, 1.00]  # pt 3
+            - [0.00, 0.30, 0.50, 0.75, 0.90, 1.00]  # pt 4
+            - [0.00, 0.30, 0.50, 0.70, 0.85, 1.00]  # pt 5
+            - [0.00, 0.25, 0.40, 0.70, 0.90, 1.00]  # pt 6
+            - [0.00, 0.25, 0.45, 0.65, 0.85, 1.00]  # pt 7
+            - [0.00, 0.25, 0.45, 0.65, 0.85, 1.00]  # pt 8
+            - [0.00, 0.25, 0.45, 0.65, 0.85, 1.00]  # pt 9
+            - [0.00, 0.25, 0.45, 0.65, 0.85, 1.00]  # pt 10
+            - [0.00, 0.30, 0.50, 0.75, 1.00]        # pt 11
+            - [0.00, 0.40, 0.60, 0.75, 1.00]        # pt 12
+            - [0.00, 0.40, 0.60, 0.75, 1.00]        # pt 13
+            - [0.00, 0.50, 0.70, 1.00]              # pt 14
 
-minimisation:
-    skip_cuts: [
-        [],
-        [],
-        [1, 3, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53],
-        [1], #, 30, 31, 32, 33, 34, 35],
-        [45, 46, 47, 48, 49, 50, 51, 52, 53], #[37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53],
-        [1, 2, 3, 4, 45, 46, 47, 48, 49, 50, 51, 52, 53],
-        [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53],
-        [30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57], # [33, 35, 37, 39, 41, 43, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]
-    ]
-    apply_suggested_skips: True
-    systematics: ['even', 'random', 'odd', 'minus3low', '1in3', '1in4', 'minus3high', 'minus3']
-
-
-ptWeights:
-    Bspecie: Ball # Ball or BsBmix, if empty no B pt weights
-    Rebin: 1
-    Smooth: 100
-    PtShapeFONLL_D: /home/mdicosta/FlowDplus/MLanalysis/PtWeights/fonll_pythia_beautyFFee_charmhadrons_5dot5tev_y0dot5.root
-    RaaTAMU_D: /home/mdicosta/alice/DmesonAnalysis/models/tamu/PromptD0_TAMU_RAA_5TeV_3050.txt
-    PtShapeFONLL_B: /home/mdicosta/FlowDplus/MLanalysis/PtWeights/fonll_pythia_beautyFFee_charmhadrons_5dot5tev_y0dot5.root
-    RaaTAMU_B: /home/mdicosta/alice/DmesonAnalysis/models/tamu/B_TAMU_RAA_5TeV_3050.txt
-
-pt_center:
-    downsample_fracs: [
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        0.5,
-        0.5,
-        0.5,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0
-    ]
+corr_bkgs:
+    sgn_chn: 'DplusToPiKPi'
+    anchor_mode: 2
+    cocktails:
+        -   pt_ranges: [
+                [1.0, 1.5],
+            ]
+            channels: ['DplusToPiKK']
+            fix_to: ['DplusToPiKPi']
+        -   pt_ranges: [
+                [1.5, 2.0],
+                [2.0, 2.5],
+                [2.5, 3.0],
+                [3.0, 3.5],
+                [3.5, 4.0],
+                [4.0, 5.0],
+                [5.0, 6.0],
+                [6.0, 7.0],
+                [7.0, 8.0],
+                [8.0, 10.0],
+                [10.0, 12.0],
+                [12.0, 16.0],
+                [16.0, 24.0],
+            ]
+            channels: ['DsToPiKK', 'DplusToPiKK']
+            fix_to: ['DplusToPiKPi', 'DplusToPiKPi']
 
 projections:
-    # PtWeightsFile: '/home/mdicosta/alice/hf-vn/ptweights/weights/Dplus/k3050/pTweight_Dplus_k3050_test_Dplus.root'
-    ApplyPtWeightsD: False
-    ApplyPtWeightsB: False
+    PtWeightsFile: '/home/mdicosta/FlowDplus/PaperVerify/ptweights/Dplus/k3050/pTweight_Dplus_k3050.root'
+    ApplyPtWeightsD: True
+    ApplyPtWeightsB: True
     ApplyBSpeciesWeights: False
     Resolution: '/home/mdicosta/alice/hf-vn/datasets/resosp3050l_PASS4_full_PbPb_Reso.root'
-    ProjVars: ['Pt', 'Cent', 'ScoreBkg', 'ScoreFD'] # Potentially everything that you have in the sparse
-    CentDiffBinsMCYieldsStep: 2  # step for centrality bins in MC yields projections for centrality-differential efficiency
-    inv_mass_bins: [
-                    [1.70,1.72,1.73,1.74,1.75,1.78,1.81,1.83,1.85,1.87,1.89,1.92,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
-                    [1.70,1.72,1.73,1.74,1.75,1.78,1.81,1.83,1.85,1.87,1.89,1.92,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
-                    [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
-                    [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
-                    [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
-                    [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
-                    [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
-                    [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
-                    [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
-                    [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
-                    [1.65,1.66,1.67,1.68,1.69,1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
-                    [1.65,1.69,1.73,1.77,1.81,1.83,1.85,1.87,1.89,1.91,1.93,1.97,2.01,2.05],
-                    [1.65,1.69,1.73,1.77,1.81,1.83,1.85,1.87,1.89,1.91,1.93,1.97,2.01,2.05,2.09,2.13,2.17],
-                    [1.65,1.69,1.73,1.77,1.81,1.83,1.85,1.87,1.89,1.91,1.93,1.97,2.01,2.05,2.09,2.13,2.17],
-                    ]
+    ProjVars: ['ScoreBkg', 'ScoreFD', 'Cent', 'Pt']
+    VnVsMassBins: [
+        [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
+        [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
+        [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
+        [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
+        [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
+        [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
+        [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
+        [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05],
+        [1.66,1.70,1.73,1.76,1.79,1.81,1.83,1.85,1.87,1.89,1.91,1.93,1.97,2.01,2.05,2.09,2.13,2.19],
+        [1.66,1.70,1.73,1.76,1.79,1.81,1.83,1.85,1.87,1.89,1.91,1.93,1.97,2.01,2.05,2.09,2.13,2.19],
+        [1.66,1.70,1.73,1.76,1.79,1.81,1.83,1.85,1.87,1.89,1.91,1.93,1.97,2.01,2.05,2.09,2.13,2.19],
+        # [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05,2.09,2.13,2.19],
+        # [1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05,2.09,2.13,2.19],
+        # [1.66,1.67,1.68,1.69,1.70,1.72,1.73,1.74,1.75,1.76,1.77,1.78,1.79,1.80,1.81,1.82,1.83,1.84,1.85,1.86,1.87,1.88,1.89,1.90,1.91,1.92,1.93,1.94,1.95,1.96,1.97,1.98,1.99,2.00,2.01,2.02,2.03,2.04,2.05,2.09,2.13,2.19],
+        [1.66,1.69,1.73,1.76,1.79,1.81,1.83,1.85,1.87,1.89,1.91,1.93,1.97,2.01,2.05,2.09,2.13,2.19],
+        [1.66,1.69,1.73,1.76,1.79,1.81,1.83,1.85,1.87,1.89,1.91,1.93,1.97,2.01,2.05,2.09,2.13,2.19],
+        [1.66,1.69,1.73,1.76,1.79,1.81,1.83,1.85,1.87,1.89,1.91,1.93,1.97,2.01,2.05,2.09,2.13,2.19],
+    ]
+
+v2extraction:
+    FixVnSecPeakToSgn: False
+    ParsFromFile: [
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        '/home/mdicosta/FlowDplus/PaperVerify/high_purity_fits/vn_extr_high_purity_combined/raw_yields/raw_yields_00.root',
+        False
+    ]
+    FixFromFile: True
+    FixFromConfig: False
+    # InitFitPars:
+    # -   pt_ranges: [
+    #         [16.0, 24.0],
+    #     ]
+    #     pars:
+    #     -   Alpha1: [1.301, 1.301, 1.301, 0] # The last is the index of the signal pdf
+    #     -   N1: [100, 100, 100, 0]
+    #     -   Alpha2: [1.121, 1.121, 1.121, 0]
+    #     -   N2: [35.04, 35.04, 35.04, 0]
+    Sigma: [
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+    ]
+    MassFitRanges: [
+        [1.77, 1.93],
+        [1.75, 1.95],
+        [1.75, 1.95],
+        [1.75, 1.95],
+        [1.75, 1.95],
+        [1.75, 1.95],
+        [1.75, 1.95],
+        [1.75, 1.95],
+        [1.70, 2.19],
+        [1.70, 2.19],
+        [1.70, 2.19],
+        [1.66, 2.19],
+        [1.66, 2.19],
+        [1.66, 2.19],
+    ]
+    BkgFunc: ['kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo', 'kExpo']
+    SgnFunc: 'kDoubleCBAsymm' # signal function. If a single value is provided, it will be used for all pt bins.
+    BkgFuncVn: 'kLin' # background function for vn. If a single value is provided, it will be used for all pt bins.
+    Rebin: [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+    ]
+    SgnFuncLabel: 'DplusToPiKPi'
+    # FixFromMC: True
+    # InitFromMC: True
+    InclSecPeak: [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1, #0,
+        1, #0,
+        1, #0,
+        1, #0,
+        1, #0,
+        0, #0,
+    ] # 0: do not include secondary peak, 1: include secondary peak, default: 0
+    FracSecPeak: [1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3]
+    FixFracSigmaSecPeak: [True, True, True, True, True, True, True, True, True, True, True, True, True, True]
+    SigmaSecPeak: [0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03]
+    SgnFuncSecPeak: 'kGaus'
+    SgnFuncSecPeakLabel: 'DstarToPiKPi'
+    MinCountsSecPeak: 300
+    MassMinSecPeak: 2.00
+    MassMaxSecPeak: 2.04
+
+ptCenter:
+    # ptBinsToKeep: [10]
+    MaxSecPeakSigma: 0.06
+    PrepDir: '/home/mdicosta/FlowDplus/PaperVerify/ptcenter_preprocess'
+    downsample_fracs: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+ptWeights:
+    BeautySpecie: Ball # Ball or BsBmix, if empty no B pt weights
+    Rebin: 1
+    Smooth: 100
+    CharmPtShapeFONLL: /home/mdicosta/alice/hf-vn/ptweights/models/fonll/fonll_pythia_beautyFFee_charmhadrons_5dot5tev_y0dot5.root
+    CharmRaaTAMU: /home/mdicosta/alice/hf-vn/ptweights/models/tamu/Dzero/RAA_TAMU_Dzero_k3050.txt
+    BeautyPtShapeFONLL: /home/mdicosta/alice/hf-vn/ptweights/models/fonll/fonll_pythia_beautyFFee_charmhadrons_5dot5tev_y0dot5.root
+    BeautyRaaTAMU: /home/mdicosta/alice/hf-vn/ptweights/models/tamu/B/RAA_TAMU_B_k3050.txt
 
 preprocess:
-    bkg_cuts: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    mass_ranges: [
-        [1.7, 2.1],
-        [1.7, 2.1],
-        [1.7, 2.1],
-        [1.7, 2.1],
-        [1.7, 2.1],
-        [1.7, 2.1],
-        [1.7, 2.1],
-        [1.7, 2.1],
-        [1.65, 2.2],
-        [1.65, 2.2],
-        [1.65, 2.2],
-        [1.65, 2.2],
-        [1.65, 2.2],
-        [1.65, 2.2],
-        [1.65, 2.2],
-    ]
+    bkg_cuts: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # max probability for bkg, one for each pt bin
     inputs:
+    # -   files: "/data/mdicosta/DplusFlow/PbPb/3050/Train558625/runs/compressed"
+    #     outdir: 'TreesPtCenterSp'
+    #     final_table_name: 'ptcentersp'
+    #     trees:
+    #     -   table: 'O2hfcandflowinfo'
+    #         cols: ['Mass', 'Pt', 'ScoreBkg', 'ScoreFD', 'Cent', 'Sp']
     -   files: [
-          "/data/mdicosta/DplusFlow/3050/Train558625/merged_runs/AnalysisResults/AnalysisResults_544028.root",
+            "/data/mdicosta/DplusFlow/Templates/529478/AO2DHF_LHC25e3_2P3PDstar_2050.root"
+        ]
+        outdir: 'CorrBkgs'
+        final_table_name: 'corrbkgs'
+        trees:
+        -   table: 'O2hfcanddplite'
+            cols: ['Mass', 'Pt', 'Cent', 'FlagMcMatchRec', 'FlagOriginMcRec']
+        -   table: 'O2hfcanddpml'
+            cols: ['ScoreBkg', 'ScoreFD']
+    -   files: [
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293381/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293382/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293383/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293384/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293385/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293386/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293387/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293388/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293389/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293390/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293391/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293392/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293393/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293394/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293395/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293396/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293397/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293398/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293399/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293400/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293401/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293402/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293403/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293404/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293405/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293406/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293407/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293408/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293409/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293410/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293411/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293412/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293413/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293414/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293415/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293416/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293417/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293418/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293419/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293420/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293421/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293422/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293423/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293424/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293425/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293426/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293427/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293428/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293429/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293430/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293431/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293432/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293433/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293434/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293435/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293436/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293437/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293438/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293439/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293440/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293446/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293447/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293448/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293449/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293450/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293451/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293452/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293453/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293454/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293455/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293456/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293457/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293458/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293459/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293460/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293461/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293722/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293723/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293724/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293725/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293726/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293727/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293728/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293729/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293730/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293731/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293732/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293733/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293734/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293735/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293736/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293737/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293746/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293747/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293748/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293749/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293750/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293751/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293752/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293753/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293754/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293755/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293756/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293757/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293758/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293759/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293760/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293761/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293762/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293763/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293764/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293765/AnalysisResults.root",
+            "/data/mdicosta/DplusFlow/PbPb/3050/Train337930/runs/1293766/AnalysisResults.root",
         ]
         outdir: 'FlowSP'
         sparses:
@@ -191,7 +413,7 @@ preprocess:
               rebin: [1, 1, 1, 1, 1, 1]
             }
     -   files: [
-          "/data/mdicosta/DplusFlow/eff/MC/Train559859/AnalysisResults_LHC25a5_allruns.root",
+          "/data/mdicosta/DplusFlow/PbPb/3050/Efficiency/Train627341/AnalysisResults_HF_LHC25a5_2P3PDstar_2050.root",
         ]
         outdir: 'MC'
         sparses:
@@ -219,109 +441,3 @@ preprocess:
               names: ['Pt', 'Cent'],
               rebin: [1, 1]
             }
-    -   files: [
-            /home/mdicosta/DFlowOO/Correlations/020_SE/oldalljobs/001/AnalysisResults_001.root,
-            # /path/to/anres/for/SE/AnalysisResults.root,
-        ]
-        outdir: 'DataSE'
-        sparses:
-        -   name: 'CorrelMaps'
-            path: 'hf-correlator-flow-charm-hadrons-reduced/hSparseCorrelationsSECharmHad'
-            axes: {
-                names: ['PoolBin', 'PtTrig', 'PtAssoc', 'DeltaEta', 'DeltaPhi', 'Mass'],
-                rebin: [1, 1, 1, 1, 1, 1]
-            }
-        -   name: 'CorrelTrig'
-            path: 'hf-correlator-flow-charm-hadrons-reduced/hSparseTrigCandsCharm'
-            axes: {
-                names: ['Mass', 'PtTrig', 'ScoreBkg', 'ScoreFD'],
-                rebin: [1, 1, 1, 1]
-            }
-    -   files: [
-            /home/mdicosta/DFlowOO/Correlations/1920_ME/AnalysisResults.root
-            # /path/to/anres/for/ME/AnalysisResults.root,
-        ]
-        outdir: 'DataME'
-        sparses:
-        -   name: 'CorrelMaps'
-            path: 'hf-correlator-flow-charm-hadrons-reduced/hSparseCorrelationsMECharmHad'
-            axes: {
-                names: ['PoolBin', 'PtTrig', 'PtAssoc', 'DeltaEta', 'DeltaPhi', 'Mass', 'ScoreBkg', 'ScoreFD'],
-                rebin: [1, 1, 1, 1, 1, 1, 1, 1]
-            }
-
-v2extraction:
-    Sigma: [0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02]
-    MassFitRanges: [
-        [1.75, 2.05],
-        [1.75, 2.05],
-        [1.75, 2.05],
-        [1.75, 2.05],
-        [1.75, 2.05],
-        [1.75, 2.05],
-        [1.75, 2.05],
-        [1.75, 2.05],
-        [1.70, 2.05],
-        [1.70, 2.05],
-        [1.66, 1.97],
-        [1.66, 2.04],
-        [1.66, 2.17],
-        [1.66, 2.17],
-    ]
-    BkgFunc: 'kExpo' # background function. If a single value is provided, it will be used for all pt bins.
-    SgnFunc: 'kGaus' # signal function. If a single value is provided, it will be used for all pt bins.
-    BkgFuncVn: 'kLin' # background function for vn. If a single value is provided, it will be used for all pt bins.
-
-working_point:
-    n_jobs: 3
-    scan:
-        ScoreBkg:
-            min:    0.0
-            max:    [0.01, 0.01, 0.01, 0.02, 0.03, 0.05, 0.05, 0.07, 0.07, 0.1, 0.1, 0.3, 0.3, 0.5, 0.5]
-            nsteps: 10
-        ScoreFD:
-            # Strategy: 'sequential' scans lower thresholds, cut keeps [x, 1.0]
-            # Strategy: 'slices' fits each window [edges[i], edges[i+1]] independently
-            strategy: 'slices'
-            edges: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-            # ScoreFD min/max define the range of minimum thresholds scanned, not a cut window
-            min:    [0.1, 0.2, 0.2]
-            max:    [0.9, 0.5, 0.5]
-            nsteps: 10
-    
-    #_________________________________________________________________________________________________________________________
-    # Optional fit configurations, if not set, the default values will be used. If single value is provided, it will be used for all pt bins.
-    #FixMean: 0 # 0: do not fix mean, 1: fix mean, default: 0
-    #MeanFile: '' # default: ''
-    #BoundMean: 0 # 0: Do not set limits on mean range, 1: the mean is set to be between MassMin[i] and MassMax[i]
-    #FixSigma: 0 # default: 0
-    #FixSigmaFromFile: '' # default: ''
-    #SigmaFile: '' # default: ''
-    #SigmaMultFactor: 1. # default: 1
-    #FixSigmaRatio: 0 # default: 0
-    #SigmaRatioFile: "" # default: ""
-    #NSigma4SB: 3 # optional
-    #Rebin: 1 # optional, default: 1
-    #InclSecPeak: 0 # 0: do not include secondary peak, 1: include secondary peak, default: 0
-    #SigmaSecPeak: [0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02] # optional, default: []. If InclSecPeak = 1, then SigmaSecPeak must be provided.
-    #SigmaFileSecPeak: '' # optional, default: ''
-    #SigmaMultFactorSecPeak: 1. # optional, default: 1
-    #FixSigmaToFirstPeak: 0 # 0: do not fix sigma to the first peak, 1: fix sigma to the first peak, default: 0
-    #enableRef: false #reflection for D0. 
-    #ReflFunc: "2gaus" # reflection function, default: "2gaus". D0 specific, not available for others
-    #reflFile: ''
-    # if `enableRef` is set to `true`,  and `ReflFile` is empty, then `ReflFile` will be aotumatically filled.
-    # if `ReflFile` is filled, then it will use the filled one
-    #__________________________________________________________________________________________________________________________
-
-# minmissation settings
-minimisation:
-    #skip_cuts: [    # index of the specific cuts to skip for each pt bin in case of broken cuts
-    #            [], # pt 1
-    #            [], # pt 2
-    #            [], # pt 3
-    #            [], # pt 4
-    #            [], # pt 5
-    #            [], # pt 6
-    #]
-    #systematics: ['even', 'random', 'odd', 'minus3low', '1in3', '1in4', 'minus3high', 'minus3']
