@@ -1,6 +1,13 @@
 final_states = {
     "DzeroToPiK": {
       "flag_mc_rec": 1,
+      "reflected": False,
+      "br_sim_pbpb": 2.0e-1,
+      "br_pdg": 3.936e-2
+    },
+    "DzeroToPiKReflected": {
+      "flag_mc_rec": 1,
+      "reflected": True,
       "br_sim_pbpb": 2.0e-1,
       "br_pdg": 3.936e-2
     },

@@ -255,6 +255,7 @@ def get_vnfitter_results(vnFitter, secPeak, useRefl, useTempl):
         vn_results['fMassBkgRflFunc'] = vnFitter.GetMassBkgRflFunc()
     
     if useTempl:
+        vn_results['fMassTemplFuncts'] = list(vnFitter.GetMassTemplFuncts())
         vn_results['vnTemplates'] = list(vnFitter.GetVnTemplates())
         vn_results['vnTemplatesUncs'] = list(vnFitter.GetVnTemplatesUncertainties())
 

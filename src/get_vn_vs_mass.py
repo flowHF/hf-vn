@@ -61,6 +61,9 @@ from StyleFormatter import SetGlobalStyle, SetObjectStyle
 from fit_utils import RebinHisto
 from utils import logger, get_centrality_bins, get_vnfitter_results, get_refl_histo, get_particle_info
 
+TEMPL_COLOR_CYCLE = [ROOT.kRed+2, ROOT.kRed, ROOT.kRed-4, ROOT.kOrange+7, ROOT.kOrange-3,
+                     ROOT.kMagenta+1, ROOT.kGreen+2, ROOT.kCyan+2]
+
 def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
     #______________________________________________________
     # Read configuration file
@@ -99,6 +102,22 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
     useRefl = configfit.get('enableRef', False)
     reflFile = configfit.get('ReflFile', '')
     reflFuncStr = configfit.get('ReflFunc', '2Gaus')
+
+    corrBkgCfg = configfit.get('CorrBkgTempls', {})
+    useTempl = bool(corrBkgCfg)
+    templOrder = corrBkgCfg.get('Channels', [])
+    templLabels = {c: c.replace('Dzero', 'D0').replace('Dplus', 'D+') for c in templOrder}
+    templColors = {c: TEMPL_COLOR_CYCLE[i % len(TEMPL_COLOR_CYCLE)] for i, c in enumerate(templOrder)}
+    cutSetCfg = None
+    if useTempl:
+        from correlated_bkgs import get_corr_bkg, get_corr_bkg_tf1
+        cutSetFileName = corrBkgCfg.get('CutSetFile', inFileName.replace('projs', 'cutsets').replace('proj_', 'cutset_').replace('.root', '.yml'))
+        if os.path.exists(cutSetFileName):
+            with open(cutSetFileName, 'r') as ymlCutSet:
+                cutSetCfg = yaml.load(ymlCutSet, yaml.FullLoader)
+        else:
+            logger(f'Cutset {cutSetFileName} not found, disabling correlated bkg templates', level='WARNING')
+            useTempl = False
 
     if not isinstance(rebins, list):
         rebins = [rebins] * len(ptmins)
@@ -308,6 +327,13 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
     #_____________________________________________________
     # Vn estimation with Scalar Product
     vnFitter = []
+    templKdesAll = []
+    templNamesPerPt = []
+    legends = []
+    hPulls = []
+    pullLines = []
+    pads = []
+    hMassDraws = []
     for iPt, (hM, hV, ptMin, ptMax, reb, sgnEnum, bkgEnum, bkgVnEnum, secPeak, massMin, massMax) in enumerate(
             zip(hMass, hVn, ptmins, ptmaxs, rebins, SgnFunc, BkgFunc, BkgFuncVn, inclSecPeak, massFitLows, massFitHighs)):
         iCanv = iPt
@@ -383,8 +409,50 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
             if configfit['InitBkg'][iPt] != []:
                 vnFitter[iPt].SetBkgPars(list(itertools.chain(*configfit['InitBkg'][iPt])))
 
+        # Correlated bkg templates
+        templTf1s, templRatios, templKdes, templNames = [], [], [], []
+        if useTempl:
+            bkgMin, bkgMax = cutSetCfg['ScoreBkg']['min'][iPt], cutSetCfg['ScoreBkg']['max'][iPt]
+            fdMin, fdMax = cutSetCfg['ScoreFD']['min'][iPt], cutSetCfg['ScoreFD']['max'][iPt]
+            selString = (f"fMlScore0 > {bkgMin} && fMlScore0 < {bkgMax} && "
+                         f"fMlScore1 > {fdMin} && fMlScore1 < {fdMax}")
+            selStringMass = f"{selString} && fM > {massMin} && fM < {massMax}"
+            ptLabel = f"pt_{int(ptMin*10)}_{int(ptMax*10)}"
+            corrBkgFile = TFile.Open(f"{corrBkgCfg['InputFiles']}_{ptLabel}.root", "READ")
+            _, fracSgn = get_corr_bkg(corrBkgFile, corrBkgCfg['SgnFinState'], selStringMass, ptLabel, 'raw', 'hist')
+            for chn in corrBkgCfg['Channels']:
+                kde, tf1, frac, integ = get_corr_bkg_tf1(corrBkgFile, chn, selString, selStringMass, ptLabel,
+                                                         massMin, massMax,
+                                                         min_entries=corrBkgCfg.get('MinEntries', 50))
+                if tf1 is None:
+                    continue
+                templKdes.append(kde)
+                templKdesAll.append(kde)
+                templTf1s.append(tf1)
+                templNames.append(chn)
+                templRatios.append(frac / fracSgn / integ)
+            corrBkgFile.Close()
+            logger(f"pt {ptMin}-{ptMax}: built {len(templTf1s)} templates, ratios {[f'{r:.4f}' for r in templRatios]}", level='INFO')
+        templNamesPerPt.append(templNames)
+
         # Collect fit results
         isfitGood = vnFitter[iPt].SimultaneousFit(False)
+
+        # Second pass with correlated bkg templates anchored to the prefit signal yield
+        if useTempl and isfitGood and templTf1s:
+            rawYieldPrefit = vnFitter[iPt].GetRawYield()
+            binWidth = hMassForFit[iPt].GetBinWidth(1)
+            vecTempls = ROOT.std.vector('TF1')()
+            for tf1 in templTf1s:
+                vecTempls.push_back(tf1)
+            vecNames = ROOT.std.vector('int')(range(len(templTf1s)))
+            initW = ROOT.std.vector('double')([r * rawYieldPrefit * binWidth for r in templRatios])
+            minW = ROOT.std.vector('double')([1.] * len(templTf1s))   # min > max -> fixed
+            maxW = ROOT.std.vector('double')([0.] * len(templTf1s))
+            vnFitter[iPt].SetKDETemplates(vecTempls, vecNames, initW, minW, maxW,
+                                          initW, minW, maxW, corrBkgCfg.get('SameVnAsSignal', True))
+            logger(f"pt {ptMin}-{ptMax}: refit with templates, prefit S = {rawYieldPrefit:.0f}, weights {[f'{w:.1f}' for w in initW]}", level='INFO')
+            isfitGood = vnFitter[iPt].SimultaneousFit(False)
 
         # Try recovering fit if it failed for disappearing second peak
         if not isfitGood and secPeak:
@@ -413,7 +481,7 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
                 return
 
         if isfitGood:
-            vnResults = get_vnfitter_results(vnFitter[iPt], secPeak, useRefl, False)
+            vnResults = get_vnfitter_results(vnFitter[iPt], secPeak, useRefl, useTempl and bool(templTf1s))
             hSigmaSimFit.SetBinContent(iPt+1, vnResults['sigma'])
             hSigmaSimFit.SetBinError(iPt+1, vnResults['sigmaUnc'])
             hMeanSimFit.SetBinContent(iPt+1, vnResults['mean'])
@@ -482,14 +550,54 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
 
             # Draw upper pad
             cSimFit[iPt].cd(1)
-            hMassForFit[iPt].GetYaxis().SetRangeUser(0.2*hMassForFit[iPt].GetMinimum(),
-                                                     1.8*hMassForFit[iPt].GetMaximum())
-            hMassForFit[iPt].GetYaxis().SetMaxDigits(3)
-            hMassForFit[iPt].GetXaxis().SetRangeUser(massMin, massMax)
-            hMassForFit[iPt].Draw('E')
+            padMass = ROOT.TPad(f'padMass_{iPt}', '', 0., 0.22, 1., 1.)
+            padMass.SetBottomMargin(0.02)
+            padMass.Draw()
+            padPull = ROOT.TPad(f'padPull_{iPt}', '', 0., 0., 1., 0.22)
+            padPull.SetTopMargin(0.015)
+            padPull.SetBottomMargin(0.32)
+            padPull.Draw()
+            pads += [padMass, padPull]
+
+            padMass.cd()
+            hMassDraw = hMassForFit[iPt].Clone(f'hMassDraw_{iPt}')
+            hMassDraw.SetDirectory(0)
+            hMassDraws.append(hMassDraw)
+            hMassDraw.GetYaxis().SetRangeUser(0., 1.8*hMassDraw.GetMaximum())
+            hMassDraw.GetYaxis().SetMaxDigits(3)
+            hMassDraw.GetXaxis().SetRangeUser(massMin, massMax)
+            hMassDraw.GetXaxis().SetLabelSize(0)
+            hMassDraw.GetXaxis().SetTitleSize(0)
+            hMassDraw.Draw('E')
             fSgnFuncMass[iPt].Draw('fc same')
             fBkgFuncMass[iPt].Draw('same')
             fTotFuncMass[iPt].Draw('same')
+            legend = ROOT.TLegend(0.64, 0.46, 0.94, 0.84)
+            legend.SetBorderSize(0)
+            legend.SetFillStyle(0)
+            legend.SetTextSize(0.028)
+            legend.SetMargin(0.25)
+            templFuncts = vnResults.get('fMassTemplFuncts', [])
+            templsByName = {templNamesPerPt[iPt][i]: f for i, f in enumerate(templFuncts)}
+            for templName in templOrder:
+                templFunc = templsByName.get(templName)
+                if templFunc is None:
+                    continue
+                templFunc.SetLineColor(templColors.get(templName, ROOT.kMagenta))
+                templFunc.SetLineStyle(2)
+                templFunc.SetLineWidth(2)
+                templFunc.Draw('same')
+                legend.AddEntry(templFunc, templLabels.get(templName, templName), 'l')
+            vnResults['fBkgFuncMass'].SetLineStyle(2)
+            vnResults['fBkgFuncMass'].SetLineColor(ROOT.kOrange-4)
+            legend.AddEntry(vnResults['fBkgFuncMass'], 'Comb. background', 'l')
+            vnResults['fSgnFuncMass'].SetFillColorAlpha(ROOT.kAzure-9, 0.7)
+            vnResults['fSgnFuncMass'].SetFillStyle(1001)
+            legend.AddEntry(vnResults['fSgnFuncMass'], decay, 'f')
+            legend.AddEntry(fTotFuncMass[iPt], 'Total fit function', 'l')
+            legend.AddEntry(hMassForFit[iPt], 'Data', 'pe')
+            legend.Draw()
+            legends.append(legend)
             if secPeak:
                 fMassSecPeakFunc[-1].Draw('fc same')
             if useRefl:
@@ -510,6 +618,41 @@ def get_vn_vs_mass(fitConfigFileName, inFileName, batch, isMultitrial):
                                 f'#sigma ({secPeakLabel}) = {vnResults["secPeakSigmaMass"]:.3f} #pm {vnResults["secPeakSigmaMassUnc"]:.3f} GeV/c^{2}')
 
             # Draw lower pad
+            padPull.cd()
+            hPull = hMassForFit[iPt].Clone(f'hPull_{iPt}')
+            hPull.SetDirectory(0)
+            hPull.Reset()
+            hPull.SetStats(0)
+            hPull.SetTitle('')
+            for iBin in range(1, hMassForFit[iPt].GetNbinsX()+1):
+                binCent = hMassForFit[iPt].GetBinCenter(iBin)
+                unc = hMassForFit[iPt].GetBinError(iBin)
+                if binCent < massMin or binCent > massMax or unc <= 0:
+                    continue
+                hPull.SetBinContent(iBin, (hMassForFit[iPt].GetBinContent(iBin)
+                                           - fTotFuncMass[iPt].Eval(binCent)) / unc)
+                hPull.SetBinError(iBin, 0)
+            hPull.GetXaxis().SetRangeUser(massMin, massMax)
+            hPull.GetYaxis().SetRangeUser(-6, 6)
+            hPull.GetYaxis().SetTitle('Pull')
+            hPull.GetYaxis().SetNdivisions(505)
+            hPull.GetYaxis().SetTitleSize(0.15)
+            hPull.GetYaxis().SetTitleOffset(0.35)
+            hPull.GetYaxis().CenterTitle()
+            hPull.GetYaxis().SetLabelSize(0.13)
+            hPull.GetXaxis().SetTitleSize(0.15)
+            hPull.GetXaxis().SetTitleOffset(1.0)
+            hPull.GetXaxis().SetLabelSize(0.13)
+            hPull.SetFillColor(kAzure+4)
+            hPull.SetLineColor(kAzure+4)
+            hPull.Draw('HIST')
+            pullLine = ROOT.TLine(massMin, 0., massMax, 0.)
+            pullLine.SetLineColor(ROOT.kBlack)
+            pullLine.SetLineWidth(1)
+            pullLine.Draw()
+            hPulls.append(hPull)
+            pullLines.append(pullLine)
+
             cSimFit[iPt].cd(2)
             hVnForFit[iPt].GetXaxis().SetRangeUser(massMin, massMax)
             hVnForFit[iPt].GetYaxis().SetTitle(f'#it{{v}}_{{{harmonic}}} (SP)')

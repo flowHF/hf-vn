@@ -13,7 +13,7 @@ outdir: '/home/mdicosta/alice/hf-vn/test_output'
 # outdirPrep: '/home/wuct/ALICE/local/dev/d0_v2'
 suffix: 'test'
 centrality: 'k3050'
-Dmeson: 'Dplus'
+Dmeson: 'Dzero'
 
 # pt bins
 ptbins: [
@@ -271,6 +271,16 @@ v2extraction:
     BkgFunc: 'kExpo' # background function. If a single value is provided, it will be used for all pt bins.
     SgnFunc: 'kGaus' # signal function. If a single value is provided, it will be used for all pt bins.
     BkgFuncVn: 'kLin' # background function for vn. If a single value is provided, it will be used for all pt bins.
+    Rebin: 5
+    CorrBkgTempls:
+        # Correlated background templates for the mass fit.
+        # Delete/comment it out to disable and fall back to the fit without templates.
+        InputFiles: '/home/nbeniusi/analysis/corr_bkgs/Dzero/corr_bkgs_dzero'
+        CutSetFile: '/home/nbeniusi/analysis/cutset.yml'
+        SgnFinState: 'DzeroToPiK'
+        Channels: ['DzeroToPiKReflected', 'DzeroToPiKPi0', 'DzeroToPiPi', 'DzeroToPiPiPi0', 'DzeroToKK']
+        SameVnAsSignal: true
+        MinEntries: 100
 
 working_point:
     n_jobs: 3

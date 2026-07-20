@@ -18,6 +18,7 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_dir, '..', 'utils'))
 from utils import logger, get_centrality_bins, make_dir_root_file
 from corr_bkgs_brs import final_states
+from data_model import get_corr_bkg_rename
 from ROOT import RooRealVar, RooDataSet, RooArgSet, RooKeysPdf, TFile, TH3F, TH1F
 
 def get_corr_bkg(corr_bkg_file, corr_bkg_chn, sel_string, pt_label, templ_type, output_type,
@@ -71,6 +72,26 @@ def get_corr_bkg(corr_bkg_file, corr_bkg_chn, sel_string, pt_label, templ_type, 
         if kwargs.get("verbose", False):
             logger(f"Output type {output_type} not recognized. Choose between 'hist' or 'tree'.", "ERROR")
         sys.exit(1)
+
+def get_corr_bkg_tf1(corr_bkg_file, corr_bkg_chn, sel_string, sel_string_mass, pt_label,
+                     mass_min, mass_max, min_entries=50, **kwargs):
+    '''
+    Get correlated background TF1 template and normalization factor
+    '''
+    _, frac = get_corr_bkg(corr_bkg_file, corr_bkg_chn, sel_string_mass, pt_label, 'raw', 'hist', **kwargs)
+    h_raw = corr_bkg_file.Get(f"{pt_label}/{corr_bkg_chn}/raw/hMassRaw")
+    kde_min, kde_max = h_raw.GetXaxis().GetXmin(), h_raw.GetXaxis().GetXmax()
+    rdf = ROOT.RDataFrame(f"{pt_label}/{corr_bkg_chn}/raw/treeFracMassScoresBkgFD", corr_bkg_file.GetName())
+    masses = rdf.Filter(sel_string).AsNumpy(['fM'])['fM'].astype(np.float64)
+    if len(masses) < min_entries:
+        logger(f"Correlated bkg {corr_bkg_chn}: only {len(masses)} entries after selection, skipping template", "WARNING")
+        return None, None, frac, 0.
+    kde = ROOT.TKDE(len(masses), masses, kde_min, kde_max)
+    ROOT.SetOwnership(kde, False)
+    tf1 = kde.GetFunction(1000)
+    ROOT.SetOwnership(tf1, False)
+    integral = tf1.Integral(mass_min, mass_max)
+    return kde, tf1, frac, integral
 
 def fill_smooth_histo(df, histo, n_points_for_sample, n_points_for_kde):
 
@@ -225,8 +246,19 @@ def produce_corr_bkgs_templs(cfg):
             full_dfs.append(full_table_df)
     full_df = pd.concat(full_dfs, axis=1)
 
+    for table_name in cfg["table_names"]:
+        rename_map = get_corr_bkg_rename(table_name)
+        if rename_map:
+            logger(f"Renaming columns of {table_name}: {rename_map}", "INFO")
+            full_df = full_df.rename(columns=rename_map)
+
     ### Centrality selection
-    _, (centMin, centMax) = get_centrality_bins(config["centrality"])
+    _, (centMin, centMax) = get_centrality_bins(cfg["centrality"])
+
+    if "fCentrality" not in full_df.columns:
+        logger(f"No centrality column in input, assuming the sample is already restricted "
+               f"to {centMin}-{centMax}%", "WARNING")
+        full_df["fCentrality"] = 0.5 * (centMin + centMax)
 
     cent_sel_df = full_df.query(f"fCentrality >= {centMin} and fCentrality < {centMax}")
     logger(f"Initial candidates: {len(full_df)} ----> after cent selection: {len(cent_sel_df)}", "INFO")
@@ -234,7 +266,18 @@ def produce_corr_bkgs_templs(cfg):
     # Precompute final-state masks for all entries
     decay_masks = {}
     for fin_state, info in final_states.items():
-        decay_masks[fin_state] = (abs(cent_sel_df["fFlagMcMatchRec"]) == info["flag_mc_rec"])
+        if fin_state not in cfg.get("fin_states", final_states.keys()):
+            continue
+        decay_mask = (abs(cent_sel_df["fFlagMcMatchRec"]) == info["flag_mc_rec"])
+
+        if "reflected" in info:
+            hypothesis_matches = (
+                ((cent_sel_df["fCandidateSelFlag"] == 1) & (cent_sel_df["fFlagMcMatchRec"] ==  1)) |
+                ((cent_sel_df["fCandidateSelFlag"] == 2) & (cent_sel_df["fFlagMcMatchRec"] == -1))
+            )
+            decay_mask = decay_mask & (~hypothesis_matches if info["reflected"] else hypothesis_matches)
+
+        decay_masks[fin_state] = decay_mask
 
     # Loop over pt bins
     for pt_min, pt_max in cfg["pt_bins"]:
@@ -257,8 +300,7 @@ def produce_corr_bkgs_templs(cfg):
             decay_pt_mask = decay_mask_full[pt_mask].reset_index(drop=True)
 
             # Apply pt mask
-            mask = pt_mask & decay_pt_mask
-            n_candidates = mask.sum()
+            n_candidates = decay_pt_mask.sum()
             if n_candidates <= cfg.get("min_entries", 0):
                 logger(f"----> No candidates for final state: {fin_state}!", "WARNING")
                 continue

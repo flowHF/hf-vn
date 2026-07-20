@@ -231,6 +231,8 @@ VnVsMassFitter::~VnVsMassFitter() {
 
 //________________________________________________________________
 Bool_t VnVsMassFitter::SimultaneousFit(Bool_t drawFit) {
+  fVnCompsDraw.clear();
+  fKDEMassTemplatesDraw.clear();
   if (fSuppressOutput) {
     gErrorIgnoreLevel = kFatal;
   }

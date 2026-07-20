@@ -80,6 +80,18 @@ def get_tree_dict(tree_name):
             'ScoreBkg': 'fScoreBkg',
             'ScoreFD': 'fScoreFD',
         }
+    if tree_name == "O2hfcandd0lite":
+        return {
+            'Mass': 'fM',
+            'Pt': 'fPt',
+            'FlagMcMatchRec': 'fFlagMc',
+            'FlagOriginMcRec': 'fOriginMcRec',
+        }
+    if tree_name == "O2hfcandd0ml":
+        return {
+            'ScoreBkg': 'fBdtOutputBkg',
+            'ScoreFD': 'fBdtOutputNonPrompt',
+        }
     if tree_name == "O2hfcanddplite":
         return {
             'Mass': 'fM',
@@ -242,3 +254,22 @@ def get_sparse_dict(sparse_name, dmeson):
                 logger(f"Unknown sparse type for Ds {sparse_name}", level='ERROR')
         else:
             logger(f"Sparse dictionary {data_type} not defined for Dmeson type {dmeson}", level='ERROR')
+
+CORR_BKG_COLUMNS = {
+    'Cent': 'fCentrality',
+    'ScoreBkg': 'fMlScore0',
+    'ScoreFD': 'fMlScore1',
+    'FlagMcMatchRec': 'fFlagMcMatchRec',
+}
+
+def get_corr_bkg_rename(tree_name):
+    """
+    Map TTree columns onto the names used in correlated_bkgs.py
+    """
+
+    tree_dict = get_tree_dict(tree_name)
+    if tree_dict is None:
+        return {}
+    return {column: CORR_BKG_COLUMNS[variable]
+            for variable, column in tree_dict.items()
+            if variable in CORR_BKG_COLUMNS and column != CORR_BKG_COLUMNS[variable]}
