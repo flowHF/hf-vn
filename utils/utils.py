@@ -3,8 +3,176 @@ import os
 import sys
 import ROOT
 import ctypes
-from ROOT import TH1, TH2, TH3, TFile
+from ROOT import TH1, TH1D, TH2, TH3, TFile
 import numpy as np
+from pypdf import PdfReader, PdfWriter, Transformation
+from pathlib import Path
+import yaml
+
+
+def merge_cutsets_fits(fits_dir, verbose=True):
+
+    all_fit_pdfs = sorted(
+        [p for p in fits_dir.glob("*.pdf") if "AllFits" not in p.name],
+        key=lambda p: int(p.stem.split('_')[2])
+    )
+
+    if not all_fit_pdfs:
+        print("No fit PDFs found.")
+        return
+
+    # Load all PDFs
+    readers = [PdfReader(p) for p in all_fit_pdfs]
+
+    writer = PdfWriter()
+
+    # Determine grouping
+    group_size = 5 if len(all_fit_pdfs) > 5 else len(all_fit_pdfs)
+
+    max_pages = max(len(r.pages) for r in readers)
+
+    # ---- FIRST LOOP OVER PT BINS ----
+    for page_idx in range(max_pages):
+
+        # ---- THEN LOOP OVER FIT CHUNKS ----
+        for batch_start in range(0, len(readers), group_size):
+
+            batch_readers = readers[batch_start:batch_start + group_size]
+
+            pages_to_merge = [
+                r.pages[page_idx]
+                for r in batch_readers
+                if page_idx < len(r.pages)
+            ]
+
+            if not pages_to_merge:
+                continue
+
+            widths = [
+                float(p.cropbox.right) - float(p.cropbox.left)
+                for p in pages_to_merge
+            ]
+
+            heights = [
+                float(p.cropbox.top) - float(p.cropbox.bottom)
+                for p in pages_to_merge
+            ]
+
+            total_width = sum(widths)
+            max_height = max(heights)
+
+            new_page = writer.add_blank_page(
+                width=total_width,
+                height=max_height
+            )
+
+            current_x = 0
+
+            for page, width in zip(pages_to_merge, widths):
+
+                box = page.cropbox
+
+                shift_x = -float(box.left)
+                shift_y = -float(box.bottom)
+
+                transform = Transformation().translate(
+                    tx=shift_x + current_x,
+                    ty=shift_y
+                )
+
+                new_page.merge_transformed_page(page, transform)
+
+                current_x += width
+
+        if verbose:
+            print(f"Merged pt bin idx {page_idx+1}")
+
+    output_path = fits_dir / "AllCutsetsFits.pdf"
+
+    with open(output_path, "wb") as f:
+        writer.write(f)
+
+    if verbose:
+        print(f"All fit cutsets grouped into: {output_path}")
+
+def produce_pt_bins_fit_summary(fits_dir, config_path):
+
+    with open(config_path, "r") as f:
+        cfg = yaml.safe_load(f)
+    pt_bins = cfg['ptbins']
+
+    all_fit_root_files = sorted(
+        [p for p in fits_dir.glob("*.root")],
+        key=lambda p: int(p.stem.split('_')[2])
+    )
+
+    total_cutsets = len(all_fit_root_files)
+
+    summary = {}
+    for pt_min, pt_max in zip(pt_bins[:-1], pt_bins[1:]):
+        pt_str = f"pt_{int(pt_min*10)}_{int(pt_max*10)}"
+        summary[pt_str] = {}
+
+    # Pick first ROOT file, so that the structure of the dictionaries
+    # can be defined (the fit function can change)
+
+    # print(f"Opened first fit file: {first_fit_file}")
+    for pt_min, pt_max in zip(pt_bins[:-1], pt_bins[1:]):
+        pt_str = f"pt_{int(pt_min*10)}_{int(pt_max*10)}"
+        try:
+            input_file = TFile(str(all_fit_root_files[0]), "READ")
+            hist_fit_pars = input_file.Get(f"{pt_str}/hist_sim_fit")
+        except:
+            print(f"Could not retrieve histogram from first fit file for pt bin {pt_str}, trying the others ...")
+            for fit_file_path in all_fit_root_files[1:]:
+                try:
+                    input_file = TFile(str(fit_file_path), "READ")
+                    hist_fit_pars = input_file.Get(f"{pt_str}/hist_sim_fit")
+                    break
+                except:
+                    print(f"Could not retrieve histogram from fit file {fit_file_path}")
+            else:
+                print(f"Could not retrieve histogram for pt bin {pt_str} from any fit file")
+                continue
+
+        hist_fit_pars.SetDirectory(0)
+        for i_bin in range(hist_fit_pars.GetNbinsX()):
+            par_name = hist_fit_pars.GetXaxis().GetBinLabel(i_bin + 1)
+            summary[pt_str][f"Hist{par_name}"] = \
+                TH1D(f"{pt_str}_{par_name}", f"{pt_str}_{par_name}", total_cutsets + 1, -0.5, total_cutsets + 0.5)
+            summary[pt_str][f"Hist{par_name}"].SetDirectory(0)
+            summary[pt_str][f"Hist{par_name}Unc"] = \
+                TH1D(f"{pt_str}_{par_name}Unc", f"{pt_str}_{par_name} Uncertainty;Cutset;Fit Unc.", total_cutsets + 1, -0.5, total_cutsets + 0.5)
+            summary[pt_str][f"Hist{par_name}Unc"].SetDirectory(0)
+        input_file.Close()
+
+    for i_cutset, fit_file_path in enumerate(all_fit_root_files):
+        fit_file = TFile(str(fit_file_path), "READ")
+        for pt_min, pt_max in zip(pt_bins[:-1], pt_bins[1:]):
+            pt_str = f"pt_{int(pt_min*10)}_{int(pt_max*10)}"
+            try:
+                hist_fit_pars = fit_file.Get(f"{pt_str}/hist_sim_fit")
+                for i_bin in range(hist_fit_pars.GetNbinsX()):
+                    par_name = hist_fit_pars.GetXaxis().GetBinLabel(i_bin + 1)
+                    par_value = hist_fit_pars.GetBinContent(i_bin + 1)
+                    par_unc = hist_fit_pars.GetBinError(i_bin + 1)
+                    summary[pt_str][f"Hist{par_name}"].SetBinContent(i_cutset + 1, par_value)
+                    summary[pt_str][f"Hist{par_name}"].SetBinError(i_cutset + 1, par_unc)
+                    summary[pt_str][f"Hist{par_name}Unc"].SetBinContent(i_cutset + 1, par_unc)
+            except Exception as e:
+                print(f"[{fit_file_path}] Pt bin {pt_str} did not converge!")
+                summary[pt_str][f"Hist{par_name}"].SetBinContent(i_cutset + 1, -1)
+                summary[pt_str][f"Hist{par_name}"].SetBinError(i_cutset + 1, 0)
+                summary[pt_str][f"Hist{par_name}Unc"].SetBinContent(i_cutset + 1, 0)
+
+    summary_file = TFile.Open(f"{fits_dir}/FitSummary.root", "RECREATE")
+    for pt_bin, pt_summary in summary.items():
+        summary_file.mkdir(pt_bin)
+        summary_file.cd(pt_bin)
+        for hist_name, hist in pt_summary.items():
+            hist.Write(hist_name)
+
+    summary_file.Close()
 
 def check_dir(dir):
 
@@ -53,13 +221,13 @@ def make_dir_root_file(directory, file, verbose=True):
         if verbose:
             logger(f"Directory {directory} already exists in file {file.GetName()}", level='WARNING')
 
-def profile_mass_sp(hist_mass_sp, inv_mass_bins, resolution):
+def profile_mass_sp(hist_mass_sp, vn_vs_mass_bins, resolution):
     '''
     Profile the mass sparse to get vn versus mass
     Input:
         - hist_mass_sp:
             THnSparse, input THnSparse object (already projected in centrality and pt)
-        - inv_mass_bins:
+        - vn_vs_mass_bins:
             list of floats, bin edges for the mass axis
         - resolution:
             float, resolution to normalize the vn values
@@ -67,11 +235,11 @@ def profile_mass_sp(hist_mass_sp, inv_mass_bins, resolution):
         - hist_vn_vs_mass:
             TH1D, histogram with vn as a function of mass
     '''
-    hist_vn_vs_mass = ROOT.TH1D('hist_vn_vs_mass', 'hist_vn_vs_mass', len(inv_mass_bins)-1, np.array(inv_mass_bins))
+    hist_vn_vs_mass = ROOT.TH1D('hist_vn_vs_mass', 'hist_vn_vs_mass', len(vn_vs_mass_bins)-1, np.array(vn_vs_mass_bins))
     hist_vn_vs_mass.SetDirectory(0)
     for i in range(hist_vn_vs_mass.GetNbinsX()):
-        bin_low = hist_mass_sp.GetXaxis().FindBin(inv_mass_bins[i])
-        bin_high = hist_mass_sp.GetXaxis().FindBin(inv_mass_bins[i+1])
+        bin_low = hist_mass_sp.GetXaxis().FindBin(vn_vs_mass_bins[i])
+        bin_high = hist_mass_sp.GetXaxis().FindBin(vn_vs_mass_bins[i+1])
         profile = hist_mass_sp.ProfileY(f'profile_{bin_low}_{bin_high}', bin_low, bin_high)
         mean_sp = profile.GetMean()
         mean_sp_err = profile.GetMeanError()
@@ -79,14 +247,14 @@ def profile_mass_sp(hist_mass_sp, inv_mass_bins, resolution):
         hist_vn_vs_mass.SetBinError(i+1, mean_sp_err / resolution)
     return hist_vn_vs_mass
 
-def get_vn_versus_mass(sparse, inv_mass_bins, mass_axis, vn_axis, debug=False):
+def get_vn_versus_mass(sparse, vn_vs_mass_bins, mass_axis, vn_axis, debug=False):
     '''
     Project vn versus mass
 
     Input:
         - sparse:
             THnSparse, input THnSparse object (already projected in centrality and pt)
-        - inv_mass_bins:
+        - vn_vs_mass_bins:
             list of floats, bin edges for the mass axis
         - mass_axis:
             int, axis number for mass
@@ -105,7 +273,7 @@ def get_vn_versus_mass(sparse, inv_mass_bins, mass_axis, vn_axis, debug=False):
 
     hist_mass_proj = sparse.Projection(mass_axis)
     hist_mass_proj.Reset()
-    vn_vs_mass_bins = np.array(inv_mass_bins)
+    vn_vs_mass_bins = np.array(vn_vs_mass_bins)
     hist_mass_proj = ROOT.TH1D('hist_mass_proj', 'hist_mass_proj', len(vn_vs_mass_bins)-1, vn_vs_mass_bins)
 
     for i in range(hist_mass_proj.GetNbinsX()):
@@ -125,7 +293,7 @@ def get_vn_versus_mass(sparse, inv_mass_bins, mass_axis, vn_axis, debug=False):
 
     return hist_mass_proj
 
-def get_vnfitter_results(vnFitter, secPeak, useRefl, useTempl):
+def get_vnfitter_results(vnFitter, useRefl, useTempl, secPeak, secPeakWidthFrac=None):
     '''
     Get vn fitter results:
     0: BkgInt
@@ -203,17 +371,32 @@ def get_vnfitter_results(vnFitter, secPeak, useRefl, useTempl):
     vn_results['fBkgFuncMass'] = vnFitter.GetMassBkgFitFunc()
     vn_results['fBkgFuncVn'] = vnFitter.GetVnVsMassBkgFitFunc()
     vn_results['fSgnFuncMass'] = vnFitter.GetMassSignalFitFunc()
-
-    bkg_pars_with_uncs = vnFitter.GetBkgPars()
-    vn_results['bkgPars'] = bkg_pars_with_uncs[:len(bkg_pars_with_uncs)//2]
-    vn_results['bkgParsUncs'] = bkg_pars_with_uncs[len(bkg_pars_with_uncs)//2:]
+    vn_results['pulls'] = vnFitter.GetPullDistribution()
+    try:
+        vn_results['hParsMCPrefit'] = vnFitter.GetPrefitParsHisto()
+    except:
+        vn_results['hParsMCPrefit'] = None
+    try:
+        vn_results['hParsSignalFunc'] = vnFitter.GetSignalParsHisto()
+    except:
+        vn_results['hParsSignalFunc'] = None
+    try:
+        vn_results['hParsSimFit'] = vnFitter.GetSimFitParsHisto()
+    except:
+        vn_results['hParsSimFit'] = None
 
     vn_results['fVnCompsFuncts'] = {}
-    vn_comps = vnFitter.GetVnCompsFuncts()
-    vn_results['fVnCompsFuncts']['vnSgn'] = vn_comps[0]
-    vn_results['fVnCompsFuncts']['vnBkg'] = vn_comps[1]
-    if secPeak:
-        vn_results['fVnCompsFuncts']['vnSecPeak'] = vn_comps[2]
+    vnComps = vnFitter.GetVnCompsFuncts()
+    vn_results['fVnCompsFuncts']['vnSgn'] = vnComps[0]
+    vn_results['fVnCompsFuncts']['vnBkg'] = vnComps[1]
+    if secPeak is not None:
+        vn_results['fVnCompsFuncts']['vnSecPeak'] = vnComps[2]
+    vn_results['fMassTemplTotFunc'] = vnFitter.GetMassTemplFitFunc()
+    vn_results['fMassTemplFuncts'] = vnFitter.GetMassTemplFuncts()
+    if useTempl:
+        for iTempl in range(len(vn_results['fMassTemplFuncts'])):
+            vn_results['fVnCompsFuncts'][f'vnTempl{iTempl}'] = vnComps[2+1+iTempl] if secPeak is not None \
+                                                               else vnComps[2+iTempl]
 
     bkg, bkgUnc = ctypes.c_double(), ctypes.c_double()
     vnFitter.Background(3, bkg, bkgUnc)
@@ -227,28 +410,48 @@ def get_vnfitter_results(vnFitter, secPeak, useRefl, useTempl):
     vnFitter.Significance(3, signif, signifUnc)
     vn_results['signif'] = signif.value
     vn_results['signifUnc'] = signifUnc.value
+    bkg_pars_with_uncs = vnFitter.GetBkgPars()
+    vn_results['bkgPars'] = bkg_pars_with_uncs[:len(bkg_pars_with_uncs)//2]
+    vn_results['bkgParsUncs'] = bkg_pars_with_uncs[len(bkg_pars_with_uncs)//2:]
 
     massSgnPars = vnFitter.GetNMassSgnPars()
     massBkgPars = vnFitter.GetNMassBkgPars()
     massSecPeakPars = vnFitter.GetNMassSecPeakPars()
     massReflPars = vnFitter.GetNMassReflPars()
-    totMassPars = massSgnPars + massBkgPars + massSecPeakPars +  massReflPars
+    massTemplPars = 0 # len(vn_results['fMassTemplFuncts'])
+    totMassPars = massSgnPars + massBkgPars + massSecPeakPars + massReflPars + massTemplPars
     vnSgnPars = vnFitter.GetNVnSgnPars()
     vnBkgPars = vnFitter.GetNVnBkgPars()
 
-    if secPeak:
+    if secPeak is not None:
         vn_results['fMassSecPeakFunc'] = vnFitter.GetMassSecPeakFunc()
         vn_results['fVnSecPeakFunct'] = vnFitter.GetVnSecPeakFunc()
         vn_results['secPeakMeanMass'] = vn_results['fTotFuncMass'].GetParameter(vn_results['fTotFuncMass'].GetParName(massSgnPars + massBkgPars + 1))
         vn_results['secPeakMeanMassUnc'] = vn_results['fTotFuncMass'].GetParError(massSgnPars + massBkgPars + 1)
-        vn_results['secPeakSigmaMass'] = vn_results['fTotFuncMass'].GetParameter(vn_results['fTotFuncMass'].GetParName(massSgnPars + massBkgPars + 2))
-        vn_results['secPeakSigmaMassUnc'] = vn_results['fTotFuncMass'].GetParError(massSgnPars + massBkgPars + 2)
-        vn_results['secPeakMeanVn'] = vn_results['fTotFuncVn'].GetParameter(vn_results['fTotFuncVn'].GetParName(totMassPars + vnSgnPars + vnBkgPars + 1))
-        vn_results['secPeakMeanVnUnc'] = vn_results['fTotFuncVn'].GetParError(vnSgnPars + vnBkgPars + 1)
-        vn_results['secPeakSigmaVn'] = vn_results['fTotFuncVn'].GetParameter(vn_results['fTotFuncVn'].GetParName(totMassPars + vnSgnPars + vnBkgPars + 2))
-        vn_results['secPeakSigmaVnUnc'] = vn_results['fTotFuncVn'].GetParError(vnSgnPars + vnBkgPars + 2)
-        vn_results['vnSecPeak'] = vn_results['fTotFuncVn'].GetParameter(vn_results['fTotFuncVn'].GetParName(totMassPars + vnSgnPars + vnBkgPars))
-        vn_results['vnSecPeakUnc'] = vn_results['fTotFuncVn'].GetParError(totMassPars + vnSgnPars + vnBkgPars)
+        if 'FixedSigmaFrac' in secPeak:
+            vn_results['secPeakSigmaMass'] = secPeakWidthFrac*vn_results['fTotFuncMass'].GetParameter(vn_results['fTotFuncMass'].GetParName(massBkgPars + 2))
+            vn_results['secPeakSigmaMassUnc'] = secPeakWidthFrac*vn_results['fTotFuncMass'].GetParError(massBkgPars + 2)
+        else:
+            vn_results['secPeakSigmaMass'] = vn_results['fTotFuncMass'].GetParameter(vn_results['fTotFuncMass'].GetParName(massSgnPars + massBkgPars + 2))
+            vn_results['secPeakSigmaMassUnc'] = vn_results['fTotFuncMass'].GetParError(massSgnPars + massBkgPars + 2)
+        if 'VnFree' in secPeak:
+            print("Getting vn of secondary peak free")
+            vn_results['secPeakMeanVn'] = vn_results['fTotFuncVn'].GetParameter(vn_results['fTotFuncVn'].GetParName(totMassPars + vnSgnPars + vnBkgPars + 1))
+            vn_results['secPeakMeanVnUnc'] = vn_results['fTotFuncVn'].GetParError(vnSgnPars + vnBkgPars + 1)
+            vn_results['secPeakSigmaVn'] = vn_results['fTotFuncVn'].GetParameter(vn_results['fTotFuncVn'].GetParName(totMassPars + vnSgnPars + vnBkgPars + 2))
+            vn_results['secPeakSigmaVnUnc'] = vn_results['fTotFuncVn'].GetParError(vnSgnPars + vnBkgPars + 2)
+            # vn_results['vnSecPeak'] = vn_results['fTotFuncVn'].GetParameter(vn_results['fTotFuncVn'].GetParName(vnBkgPars + 1))
+            vn_results['vnSecPeak'] = vn_results['fTotFuncVn'].GetParameter(totMassPars + vnBkgPars)
+            vn_results['vnSecPeakUnc'] = vn_results['fTotFuncVn'].GetParError(totMassPars + vnBkgPars)
+        if 'VnFixedToSgn' in secPeak:
+            print("Getting vn of secondary peak fixed to signal vn")
+            vn_results['secPeakMeanVn'] = vn_results['fTotFuncVn'].GetParameter(vn_results['fTotFuncVn'].GetParName(totMassPars + 1))
+            vn_results['secPeakMeanVnUnc'] = vn_results['fTotFuncVn'].GetParError(vnSgnPars + 1)
+            vn_results['secPeakSigmaVn'] = vn_results['fTotFuncVn'].GetParameter(vn_results['fTotFuncVn'].GetParName(totMassPars + 2))
+            vn_results['secPeakSigmaVnUnc'] = vn_results['fTotFuncVn'].GetParError(vnSgnPars + 2)
+            vn_results['vnSecPeak'] = vn_results['fTotFuncVn'].GetParameter(vn_results['fTotFuncVn'].GetParName(totMassPars))
+            vn_results['vnSecPeakUnc'] = vn_results['fTotFuncVn'].GetParError(totMassPars)
+        print(f"vnSecPeak: {vn_results['vnSecPeak']} +/- {vn_results['vnSecPeakUnc']}, iPar: {totMassPars}")
 
     if useRefl:
         vn_results['fMassRflFunc'] = vnFitter.GetMassRflFunc()

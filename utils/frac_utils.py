@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 def GetMinimisation(effPromptList, effFDList, rawYieldList, effPromptUncList, effFDUncList,
-                                          rawYieldUncList, corr=True, precision=1.e-8, nMaxIter=100):
+                    rawYieldUncList, corr=True, precision=1.e-8, nMaxIter=100):
     '''
     Method to retrieve prompt and FD corrected yields with an analytic system minimisation
 
@@ -107,7 +107,7 @@ def GetMinimisation(effPromptList, effFDList, rawYieldList, effPromptUncList, ef
         #     break
         # NumPy > 2.0
         if (mCorrYield[0]-mCorrYieldOld[0]) / mCorrYield[0] < precision and \
-            (mCorrYield[1]-mCorrYieldOld[1]) / mCorrYield[1] < precision:
+           (mCorrYield[1]-mCorrYieldOld[1]) / mCorrYield[1] < precision:
             break
 
         mCorrYieldOld = np.copy(mCorrYield)

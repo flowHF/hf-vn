@@ -2,7 +2,7 @@
 Module with function definitions and fit utils
 '''
 
-from ROOT import TMath, TF1, kBlue, kGreen, TDatabasePDG, TH1D # pylint: disable=import-error,no-name-in-module
+from ROOT import TMath, TF1, kBlue, kGreen, TDatabasePDG, TH1D, TH1F # pylint: disable=import-error,no-name-in-module
 
 def SingleGaus(x, par):
     '''
@@ -342,6 +342,7 @@ class BkgFitFuncCreator:
         funcBkg.SetLineColor(kGreen+2)
         return funcBkg
 
+
 def RebinHisto(h_orig, reb, show_print, first_use = 0):
     '''
     Rebin histogram, from bin firstUse to lastUse
@@ -350,7 +351,7 @@ def RebinHisto(h_orig, reb, show_print, first_use = 0):
     the bin width is kept as reb*original width
     and the range of rebinned histogram is adapted
     '''
-    
+
     n_bin_orig = h_orig.GetNbinsX()
     first_bin_orig = 1
     last_bin_orig = n_bin_orig
@@ -373,7 +374,12 @@ def RebinHisto(h_orig, reb, show_print, first_use = 0):
         print(f"Rebin from {n_bin_orig} bins to {n_bin_final} bins -- Used bins = {n_bin_orig_used} in range {first_bin_orig}-{last_bin_orig}\n")
     low_lim = h_orig.GetXaxis().GetBinLowEdge(first_bin_orig)
     hi_lim = h_orig.GetXaxis().GetBinUpEdge(last_bin_orig)
-    hRebin = TH1D(f"{h_orig.GetName()}-rebin", h_orig.GetTitle(), n_bin_final, low_lim, hi_lim)
+    if isinstance(h_orig, TH1D):
+        hRebin = TH1D(f"{h_orig.GetName()}-rebin", h_orig.GetTitle(), n_bin_final, low_lim, hi_lim)
+    elif isinstance(h_orig, TH1F):
+        hRebin = TH1F(f"{h_orig.GetName()}-rebin", h_orig.GetTitle(), n_bin_final, low_lim, hi_lim)
+    else:
+        raise TypeError("h_orig is not a TH1D or TH1F")
     last_summed = first_bin_orig-1
     
     for iBin in range(1, n_bin_final+1):
@@ -386,5 +392,6 @@ def RebinHisto(h_orig, reb, show_print, first_use = 0):
             
         hRebin.SetBinContent(iBin, sum)
         hRebin.SetBinError(iBin, TMath.Sqrt(sume2))
-    
+
+    hRebin.SetDirectory(0)
     return hRebin

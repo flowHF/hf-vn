@@ -1,5 +1,73 @@
 #!/bin/bash
 
+# Default flags
+do_compile_fitter=false
+do_cutset_generation=false
+do_fits=false
+do_plots=false
+workers=1
+
+# --- Command Line Argument Handling ---
+if [ "$#" -lt 3 ]; then
+    echo "Usage:"
+    echo "  $0 <config_modifies_fit> <config_default> <output_dir> [--do_configs] [--do_fits] [--do_plots] [--workers <workers>]"
+    exit 1
+fi
+# if [ "$#" -ne 3 ]; then
+#     echo "Usage: $0 <config_modifies_fit> <config_default> <output_dir>"
+#     exit 1
+# fi
+
+export config_modifies_fit="$1"
+export config_default="$2"
+export output_dir="$3"
+
+shift 3
+
+# ------------------------------------------------------------
+# Parse optional flags
+# ------------------------------------------------------------
+
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        --do_configs)
+            do_cutset_generation=true
+            ;;
+        --do_fits)
+            do_fits=true
+            ;;
+        --do_plots)
+            do_plots=true
+            ;;
+        --do_compile)
+            do_compile_fitter=true
+            ;;
+        --workers)
+            workers="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+
+# Normalize working directories
+SCRIPT_HOME=$(pwd)
+OUTPUT_DIR=$(realpath "$output_dir")
+BASE_ROOT=$(realpath "$OUTPUT_DIR/syst/multitrial/bdt")
+
+export OUTPUT_DIR
+export BASE_ROOT
+
+### Examples
+# export config_modifies_fit="/home/mdicosta/DFlowOO/SP_bdt_OO/Preliminary/syst_multitrial_bdt_scan.yml"
+# export config_default="/home/mdicosta/DFlowOO/SP_bdt_OO/Preliminary/config_020.yml"
+# export output_dir="/home/mdicosta/DFlowOO/SP_bdt_OO/Preliminary/cutvar_020_combined"
+
 generate_cutset() {
     local yaml_file="$1"
     local pt_dir="$2"
@@ -38,22 +106,6 @@ generate_cutset() {
     fi
 }
 
-perform_projections() {
-    local yaml_file="$1"
-    trial_num=$(basename "$yaml_file" | sed -E 's/config_trial_([0-9]+)\.yml/\1/')
-    echo "[$trial_num] Projections for file $yaml_file"
-    config_cutset="$(dirname "$yaml_file")/cutsets/cutset_00.yml"
-    python3 $path_to_src/src/proj_thn.py $yaml_file --cutsetConfig $config_cutset
-}
-
-compute_efficiencies() {
-    local yaml_file="$1"
-    trial_num=$(basename "$yaml_file" | sed -E 's/config_trial_([0-9]+)\.yml/\1/')
-    echo "[$trial_num] Computing efficiencies for file $yaml_file"
-    proj_file="$(dirname "$yaml_file")/projs/proj_00.root"
-    python3 $path_to_src/src/compute_efficiencies.py $yaml_file $proj_file
-}
-
 export OMP_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
@@ -62,41 +114,9 @@ export ROOT_MAX_THREADS=1
 
 # Export function and necessary variables
 export -f generate_cutset
-export -f perform_projections
-export -f compute_efficiencies
-export dir  # make sure $dir is visible inside the function
-
-export n_parallel=50
-export n_trials=2000
 export path_to_src="/home/mdicosta/alice/hf-vn/"
-export config_modifies_fit="/home/mdicosta/DFlowOO/SP_bdt_OO/020_correct_ev_sels/syst_multitrial_bdt_scan.yml"
-export config_default="/home/mdicosta/DFlowOO/SP_bdt_OO/020_correct_ev_sels/config_020_remove_outliars.yml"
-export output_dir="/home/mdicosta/DFlowOO/SP_bdt_OO/020_correct_ev_sels/cutvar_020_remove_outliars_combined"
-export do_cms_fits=false
-export do_compile_fitter=false
-export do_cutset_generation=true
-export do_projections=true
-export do_efficiencies=true
-export do_sim_fits=true
-export produce_scan_plots=true
-# export do_move_and_rename=false
-# export do_df_frac=false
-# export do_vn_vs_frac=false
-# export produce_trials_plots=false
 
-mkdir -p "$output_dir/syst/multitrial/bdt"
-
-# Sanity check
-if [ "$do_cms_fits" = true ] && [ "$do_sim_fits" = true ]; then
-    echo "Error: Cannot perform both CMS fits and simulation fits in the same run. Please choose only one."
-    exit 1
-fi
-
-if [ "$do_cutset_generation" = true ]; then
-    # Generate YAML file list with indices
-    python3 $path_to_src/syst/multitrial/make_configs_multitrial.py $config_default -m $config_modifies_fit -bm -o $output_dir > "$output_dir/syst/multitrial/bdt/log_make_cutsets.txt" 2>&1
-    echo "Yaml files generated!"
-fi
+mkdir -p "$OUTPUT_DIR/syst/multitrial/bdt"
 
 if [ "$do_compile_fitter" = true ]; then
     echo "Compiling InvMassFitter and VnVsMassFitter ..."
@@ -109,147 +129,63 @@ if [ "$do_compile_fitter" = true ]; then
     echo "Compilation done!"
 fi
 
-pt_dirs=($(ls -d "$output_dir"/syst/multitrial/bdt/pt_*))
+if [ "$do_cutset_generation" = true ]; then
+    echo "Generating YAML files for BDT multitrial ..."
+    # Generate YAML file list with indices
+    python3 $path_to_src/syst/multitrial/make_configs_multitrial.py $config_default -m $config_modifies_fit -bm -o $OUTPUT_DIR > "$OUTPUT_DIR/syst/multitrial/bdt/log_make_cutsets.txt" 2>&1
+    echo "Yaml files generated!"
+fi
 
-# Find YAML files, sort numerically by trial number, one per line
-for dir in "${pt_dirs[@]}"; do
-    find "$dir" -maxdepth 3 -type f -name "config_trial_*.yml" \
-    | sort -V \
-    > "$dir/multitrial_configs.txt"
-done
+if [ "$do_fits" = true ]; then
 
-# Loop over pt_dirs for cutset generation, projections, fitting with simultaneous fits
-for dir in "${pt_dirs[@]}"; do
-    echo -e "\nProcessing directory $dir"
+    export path_to_src
+    export output_dir
 
-    # Record start time for directory
-    dir_start=$(date +%s)
+    process_pt_bin() {
 
-    # Find YAML files in the current directory
-    yaml_files=($(find "$dir" -maxdepth 3 -type f -name "config_trial_*.yml"))
+        local pt_dir
+        pt_dir=$(realpath "$1")
 
-    # Count them
-    echo "----> Number of yaml files found in $dir: $(wc -l < "$dir/multitrial_configs.txt")"
+        echo "Processing PT bin → ${pt_dir##*/}"
 
-    # --- Perform cutset generation ---
-    if [ "$do_cutset_generation" = true ]; then
-        log_file_cutset="$dir/log_cutset_generation.txt"
-        start=$(date +%s)
-        parallel -j "$n_parallel" generate_cutset ::: "${yaml_files[@]}" ::: "$dir" > "$log_file_cutset" 2>&1
-        end=$(date +%s)
-        echo -e "✅ Cutset generation done in $((end - start)) seconds. Starting projections ..."
-    fi
+        # Sequential execution inside pt bin
+        find "$pt_dir" -type f -name "config_trial_*.yml" | sort | while read -r file; do
 
-    # --- Perform projections ---
-    if [ "$do_projections" = true ]; then
-        log_file_projections="$dir/log_projections.txt"
-        start=$(date +%s)
-        parallel -j "$n_parallel" perform_projections ::: "${yaml_files[@]}" > "$log_file_projections" 2>&1
-        end=$(date +%s)
-        echo -e "✅ Projections performed in $((end - start)) seconds. Starting fitting ..."
-    fi
+            [[ -z "$file" ]] && continue
 
-    # --- Compute efficiencies ---
-    if [ "$do_efficiencies" = true ]; then
-        log_file_efficiencies="$dir/log_efficiencies.txt"
-        start=$(date +%s)
-        parallel -j "$n_parallel" compute_efficiencies ::: "${yaml_files[@]}" > "$log_file_efficiencies" 2>&1
-        end=$(date +%s)
-        echo -e "✅ Efficiencies calculated in $((end - start)) seconds. Starting fitting ..."
-    fi
+            log_file="${file%.yml}.log"
+            mkdir -p "$(dirname "$log_file")"
 
-    # --- Perform fitting ---
-    if [ "$do_sim_fits" = true ]; then
-        log_file_fits="$dir/log_simfits.txt"
-        start=$(date +%s)
-        python3 $path_to_src/syst/multitrial/run_fits.py "${yaml_files[@]}" --nproc $n_parallel > "$log_file_fits" 2>&1
-        end=$(date +%s)
-        echo -e "✅ Fitting done in $((end - start)) seconds."
-    fi
-done
+            echo "  -> Processing $file"
 
-pt_dirs=("$output_dir"/syst/multitrial/bdt/pt_*)
+            python3 "$path_to_src/run_analysis.py" "$file" --combined \
+                > "$log_file" 2>&1
 
-if [ "$do_cms_fits" = true ]; then
-    log_file_fits="$dir/log_yieldfits.txt"
-    start=$(date +%s)
-    parallel -j "$n_parallel" \
-        python3 "$path_to_src/src/get_vn_by_yield_extraction.py" "$config_default" \
-        --multitrial \
-        --multitrial_configs "{}/multitrial_configs.txt" \
-        '>' "{}/log_yieldfits.txt" '2>&1' \
-        ::: "${pt_dirs[@]}"
+        done
 
-    end=$(date +%s)
-    echo -e "----> CMS Fitting done in $((end - start)) seconds. Starting v2 vs frac extraction ..."
+        echo "Finished PT bin → ${pt_dir##*/}"
+    }
+
+    export -f process_pt_bin
+
+    base_dir=$(realpath "$output_dir/syst/multitrial/bdt")
+
+    # Print command that will be launched for debugging
+    echo "Launching parallel execution with workers=$workers on PT bins in $base_dir"
+    echo "Command: find \"$base_dir\" -maxdepth 1 -type d -name \"pt_*\" -print0 | xargs -0 -P \"$workers\" -I {} bash -c 'process_pt_bin \"\$@\"' _ {}"
+
+    # Print output of find \"$base_dir\" -maxdepth 1 -type d -name \"pt_*\" -print0
+    echo "PT bins found:"
+    find "$base_dir" -maxdepth 1 -type d -name "pt_*" -print0 | xargs -0 -I {} echo "  {}"
+
+    find "$base_dir" -maxdepth 1 -type d -name "pt_*" -print0 | \
+    xargs -0 -P "$workers" -I {} bash -c 'process_pt_bin "$@"' _ {}
+
 fi
 
 # --- Produce final plots ---
-if [ "$produce_scan_plots" = true ]; then
+if [ "$do_plots" = true ]; then
     echo "Producing final systematic plots ..."
-    python3 $path_to_src/syst/multitrial/produce_bdt_multitrial_syst_plots.py "$config_default" "$output_dir" > "$output_dir/syst/multitrial/bdt/log_produce_scan_plots.txt" 2>&1
-    echo "Final plots produced!"
-fi
-
-echo -e "\n--- Starting Vn vs fraction extraction ---"
-# Run Vn vs fraction extraction if requested
-if [ "$do_vn_vs_frac" = true ] || [ "$do_move_and_rename" = true ] || [ "$do_df_frac" = true ]; then
-    for dir in "${pt_dirs[@]}"; do
-        echo -e "\nProcessing directory $dir for Vn vs fraction extraction"
-        log_file_vn_vs_frac="$dir/log_vn_vs_frac.txt"
-
-        echo "Extracting Vn vs fraction for directory $dir"
-        start=$(date +%s)
-
-        # Build flags dynamically
-        flags=()
-        [ "$do_move_and_rename" = true ] && flags+=(--move_files)
-        [ "$do_df_frac" = true ] && flags+=(--do_df_frac)
-
-        [ "$do_vn_vs_frac" = true ] && flags+=(--do_vn_vs_frac)
-
-        echo "DEBUG CMD:"
-        echo python3 "$path_to_src/syst/multitrial/run_vn_vs_frac.py" \
-            "$config_default" "$dir" "${flags[@]}"
-
-        echo "Running with flags: ${flags[*]}"
-        # Set niceness to 19
-        nice -n 19 python3 "$path_to_src/syst/multitrial/run_vn_vs_frac.py" \
-                           "$config_default" "$dir" --n_trials $n_trials "${flags[@]}" > "$log_file_vn_vs_frac" 2>&1
-
-        end=$(date +%s)
-        echo "✅ Vn vs fraction extraction done in $((end - start)) seconds."
-
-
-        # {
-        #     echo "Extracting Vn vs fraction for directory $dir"
-        #     start=$(date +%s)
-
-        #     # Build flags dynamically
-        #     flags=()
-        #     [ "$do_move_and_rename" = true ] && flags+=(--move_files)
-        #     [ "$do_df_frac" = true ] && flags+=(--do_df_frac)
-
-        #     [ "$do_vn_vs_frac" = true ] && flags+=(--do_vn_vs_frac)
-
-        #     echo "DEBUG CMD:"
-        #     echo python3 "$path_to_src/syst/multitrial/run_vn_vs_frac.py" \
-        #         "$config_default" "$dir" "${flags[@]}"
-
-        #     echo "Running with flags: ${flags[*]}"
-        #     python3 "$path_to_src/syst/multitrial/run_vn_vs_frac.py" \
-        #         "$config_default" "$dir" "${flags[@]}"
-
-        #     end=$(date +%s)
-        #     echo "✅ Vn vs fraction extraction done in $((end - start)) seconds."
-        # } > "$log_file_vn_vs_frac" 2>&1
-    done
-fi
-
-
-# --- Produce final plots ---
-if [ "$produce_trials_plots" = true ]; then
-    echo "Producing final systematic plots ..."
-    python3 $path_to_src/syst/multitrial/produce_fit_multitrial_syst_plots.py "$config_default" "$output_dir" --multitrial_type bdt > "$output_dir/syst/multitrial/bdt/log_produce_trial_plots.txt" 2>&1
+    python3 $path_to_src/syst/multitrial/produce_bdt_multitrial_syst_plots.py "$config_default" "$OUTPUT_DIR" > "$OUTPUT_DIR/syst/multitrial/bdt/log_produce_scan_plots.txt" 2>&1
     echo "Final plots produced!"
 fi

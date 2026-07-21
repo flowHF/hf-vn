@@ -234,7 +234,7 @@ def data_prep(inputCfg, iBin, PtBin, OutPutDirPt, PromptDf, FDDf, BkgDf, nCandSu
         sys.exit()
 
     # plots
-    VarsToDraw = inputCfg['plots']['plotting_columns']
+    VarsToDraw = inputCfg['plot_cols']
     LegLabels = [inputCfg['output']['leg_labels']['Bkg'],
                  inputCfg['output']['leg_labels']['Prompt']]
     if inputCfg['output']['leg_labels']['FD'] is not None:
@@ -339,7 +339,7 @@ def train_test(inputCfg, PtBin, OutPutDirPt, TrainTestData, iBin): #pylint: disa
     #_____________________________________________
     plt.rcParams["figure.figsize"] = (10, 7)
     MLOutputFig = plot_utils.plot_output_train_test(ModelHandl, TrainTestData, 80, inputCfg['ml']['raw_output'],
-                                                    LegLabels, inputCfg['plots']['train_test_log'], density=True)
+                                                    LegLabels, inputCfg['log_scale_plots'], density=True)
     if n_classes > 2:
         for Fig, Lab in zip(MLOutputFig, OutputLabels):
             Fig.savefig(f'{OutPutDirPt}/MLOutputDistr{Lab}_pT_{PtBin[0]}_{PtBin[1]}.pdf')
@@ -473,7 +473,7 @@ def main(): #pylint: disable=too-many-statements
     for iBin, PtBin in enumerate(PtBins):
         logger(f'Starting ML analysis --- {PtBin[0]} < pT < {PtBin[1]} GeV/c', 'INFO')
 
-        OutPutDirPt = os.path.join(os.path.expanduser(inputCfg['output']['dir']), f'pt{PtBin[0]}_{PtBin[1]}')
+        OutPutDirPt = os.path.join(os.path.expanduser(inputCfg['output']['dir']), f'pt_{PtBin[0]}_{PtBin[1]}')
         if os.path.isdir(OutPutDirPt):
             logger(f'Output directory \'{OutPutDirPt}\' already exists, overwrites possibly ongoing!', 'WARNING')
         else:

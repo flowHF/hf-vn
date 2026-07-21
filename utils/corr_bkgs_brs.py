@@ -113,6 +113,12 @@ final_states = {
       "br_sim_oo":1.25e-1,
       "br_pdg": 1.44e-1,
     },
+    "DstarD0ToPiKK": {
+      "flag_mc_rec": 13,
+      "br_sim_ppref": 1.25e-1,
+      "br_sim_pbpb": 2.0e-1,
+      "br_pdg": 4.08e-3,
+    },
     "DstarD0ToPiPiPi": {
       "flag_mc_rec": 15,
       "br_sim_ppref": 1.25e-1,

@@ -4,6 +4,7 @@ the cut variation analysis in the combined and correlated cases
 python3 make_cutsets_cfgs.py config_flow.yml -o path/to/output [--correlated]
 Without --correlated, the script will create yaml files for the combined case
 '''
+
 import yaml
 import argparse
 import os
@@ -25,7 +26,7 @@ def pad_to_length(list, target_len):
     len_offset = target_len - list_length
     return list + [list[-1]] * len_offset if list_length < target_len else list
 
-def make_yaml(flow_config, outputdir, correlated):
+def make_yaml_sp(flow_config, outputdir, correlated):
     '''
         Function to create a yaml file with a set of cuts for ML
         Args:
@@ -84,11 +85,56 @@ def make_yaml(flow_config, outputdir, correlated):
 
     print(f'Cutsets saved in {outputdir}/cutsets')
 
+def make_yaml_correl(flow_config, outputdir):
+
+    with open(flow_config, 'r') as f:
+        cfg = yaml.safe_load(f)
+
+    # For each delta eta gap, generate the associated HM and LM configs
+    for deta_min, deta_max in cfg['DeltaEtaRanges']:
+        cfg_mod = cfg.copy()
+
+        cfg_mod['deltaEtaBins'] = [
+            [-deta_max, -deta_min],
+             [deta_min,  deta_max]
+        ]
+
+        cfg_mod['suffix'] = f'{deta_min}_{deta_max}_{cfg_mod["method"]}'
+        cfg_mod['outdir'] = f"{cfg_mod['outdir']}/{cfg_mod['suffix']}/"
+        os.makedirs(cfg_mod['outdir'], exist_ok=True)
+        deta_cfg_path = f"{cfg_mod['outdir']}/config_{cfg_mod['suffix']}.yml"
+        with open(deta_cfg_path, 'w') as f:
+            yaml.dump(cfg_mod, f, default_flow_style=False)
+        make_yaml_sp(deta_cfg_path, cfg_mod['outdir'], correlated=False)
+
+        if cfg["task_LM"] is not None:
+            cfg_mod['outdir']        = f"{cfg_mod['outdir']}/low_mult/"
+            cfg_mod['pathFileSE']    = cfg["task_LM"]['pathFileSE']
+            cfg_mod['pathFileME']    = cfg["task_LM"]['pathFileME']
+            cfg_mod['pathFileMass']  = cfg["task_LM"]['pathFileMass']
+            cfg_mod['nDeltaPhiBins'] = cfg["task_LM"]['nDeltaPhiBins']
+            cfg_mod['rebinDeltaEta'] = cfg["task_LM"]['rebinDeltaEtaLM']
+            cfg_mod['rebinDeltaPhi'] = cfg["task_LM"]['rebinDeltaPhiLM']
+
+        os.makedirs(cfg_mod['outdir'], exist_ok=True)
+        deta_cfg_path = f"{cfg_mod['outdir']}/config_{cfg_mod['suffix']}_low_mult.yml"
+        with open(deta_cfg_path, 'w') as f:
+            yaml.dump(cfg_mod, f, default_flow_style=False)
+        make_yaml_sp(deta_cfg_path, cfg_mod['outdir'], correlated=False)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Arguments')
     parser.add_argument('flow_config', metavar='text', default='config_flow.yml')
     parser.add_argument("--outputdir", "-o", metavar="text", default=".", help="output directory")
-    parser.add_argument("--correlated", "-c", action="store_true", help="Produce yml files for correlated cuts")
+    parser.add_argument("--sp_correlated", "-spcr", action="store_true", help="Produce yml files for correlated cuts")
+    parser.add_argument("--sp_combined", "-spcb", action="store_true", help="Produce yml files for correlated cuts")
+    parser.add_argument("--correlations", "-2pc", action="store_true", help="Produce yml files for correlated cuts")
     args = parser.parse_args()
 
-    make_yaml(args.flow_config, args.outputdir, args.correlated)
+    if args.sp_correlated or args.sp_combined:
+        print("Producing yml files for correlated cuts")
+        make_yaml_sp(args.flow_config, args.outputdir, args.sp_correlated)
+    elif args.correlations:
+        print("Producing yml files for combined cuts")
+        make_yaml_correl(args.flow_config, args.outputdir)

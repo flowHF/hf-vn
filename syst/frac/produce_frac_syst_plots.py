@@ -47,6 +47,8 @@ def get_division_panels(nplots):
         return 3, 3
     if nplots == 10:
         return 5, 2
+    if nplots == 14:
+        return 4, 4
     else:
         logger(f'Number of plots {nplots} too high, defaulting to 4x4 grid', level='FATAL')
 

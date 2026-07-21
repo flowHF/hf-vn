@@ -8,7 +8,7 @@ from os.path import join
 import argparse
 import numpy as np
 import yaml
-from ROOT import TCanvas, TFile, TLegend, TLine, gROOT # pylint: disable=import-error,no-name-in-module
+from ROOT import TCanvas, TFile, TLegend, TLine, gROOT, gPad # pylint: disable=import-error,no-name-in-module
 sys.path.append('..')
 from StyleFormatter import SetGlobalStyle, SetObjectStyle, GetROOTColor, GetROOTMarker #pylint: disable=wrong-import-position,import-error
 from analysis_utils import ComputeRatioDiffBins, ScaleGraph, ComputeRatioGraph #pylint: disable=wrong-import-position,import-error
@@ -324,6 +324,9 @@ for ext in outExtensions:
                 histo.Write()
         outFile.Close()
     else:
+        if inputCfg.get('DrawGrid'):
+            gPad.SetGrid()
         cOut.SaveAs(f'{outFileName}.{ext}')
 
-input("Press enter to exit")
+if not args.b:
+    input("Press enter to exit")
