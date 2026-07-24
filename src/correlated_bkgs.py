@@ -5,11 +5,9 @@
 '''
 
 import pandas as pd
-import matplotlib.pyplot as plt
 import uproot
 import numpy as np
 import ROOT
-from array import array
 import os
 import sys
 import argparse
@@ -20,7 +18,7 @@ from utils import logger, get_centrality_bins, make_dir_root_file
 from corr_bkgs_brs import final_states
 from data_model import get_corr_bkg_rename
 from fit_utils import RebinHisto
-from ROOT import TFile, RooRealVar, RooDataSet, RooArgSet, RooKeysPdf, TFile, TH3F, TH1F
+from ROOT import TFile, RooRealVar, RooDataSet, RooArgSet, RooKeysPdf, TH1F
 
 def get_rebinned_mass_sel_histo(histo, mass_min, mass_max, rebin):
     '''
@@ -28,7 +26,7 @@ def get_rebinned_mass_sel_histo(histo, mass_min, mass_max, rebin):
     '''
     n_bins = int((mass_max - mass_min)*1000)
     # n_bins = int((mass_max - mass_min)*1000)+1
-    new_histo = TH1F("histo_temp", "histo_temp", n_bins, mass_min, mass_max)
+    new_histo = TH1F(f"histo_temp_{histo.GetName()}", "histo_temp", n_bins, mass_min, mass_max)
     for i_bin_new in range(1, new_histo.GetNbinsX()+1):
         bin_center = new_histo.GetBinCenter(i_bin_new)
         for i_bin_orig in range(1, histo.GetNbinsX()+1):
@@ -39,13 +37,16 @@ def get_rebinned_mass_sel_histo(histo, mass_min, mass_max, rebin):
     new_histo.SetDirectory(0)
     new_histo = RebinHisto(new_histo, rebin, True)
     integral = new_histo.Integral("width")
+    if integral <= 0:
+        logger(f"Empty template histogram {histo.GetName()} in [{mass_min}, {mass_max}], cannot normalize", "ERROR")
+        sys.exit(1)
     new_histo.Scale(1.0 / integral)
     return new_histo
 
 def get_corr_bkgs_from_reference(corr_bkgs_dict, raw_yields_file, pt_label, massMin, massMax, reb):
 
     ry_file = TFile(raw_yields_file, "READ")
-    templ_dir = f"{pt_label}/templs/"
+    templ_dir = f"{pt_label}/templs"
     hist_fracs = ry_file.Get(f"{templ_dir}/hTemplFracs")
     for i_bin in range(1, hist_fracs.GetNbinsX()+1):
         chn = hist_fracs.GetXaxis().GetBinLabel(i_bin)
@@ -66,21 +67,17 @@ def get_corr_bkg(corr_bkg_file, corr_bkg_chn, sel_string, pt_label, templ_type, 
     input_folder = f"{pt_label}/{corr_bkg_chn}"
     if kwargs.get("verbose", False):
         logger(f"Using correlated bkg file {corr_bkg_file.GetName()} for correlated bkg source {corr_bkg_chn} from folder {input_folder}\n", "INFO")
-    try:
-        hist_pdg_mc_brs = corr_bkg_file.Get(f"{input_folder}/hBRs")
-    except:
-        if kwargs.get("verbose", False):
-            logger(f"Could not retrieve hBRs histogram from {input_folder} in file {corr_bkg_file}", "ERROR")
+    hist_pdg_mc_brs = corr_bkg_file.Get(f"{input_folder}/hBRs")
+    if not hist_pdg_mc_brs:
+        logger(f"Could not retrieve hBRs histogram from {input_folder} in file {corr_bkg_file.GetName()}", "ERROR")
         sys.exit(1)
     br_pdg = hist_pdg_mc_brs.GetBinContent(2)
     br_mc = hist_pdg_mc_brs.GetBinContent(1)
     if kwargs.get("verbose", False):
         logger(f"Branching ratios: PDG = {br_pdg}, MC = {br_mc}", "INFO")
-    try:
-        templ_tree_mass = corr_bkg_file.Get(f"{input_folder}/{templ_type}/treeMass")
-    except:
-        if kwargs.get("verbose", False):
-            logger(f"Could not retrieve treeMass from {input_folder}/{templ_type} in file {corr_bkg_file}", "ERROR")
+    templ_tree_mass = corr_bkg_file.Get(f"{input_folder}/{templ_type}/treeMass")
+    if not templ_tree_mass:
+        logger(f"Could not retrieve treeMass from {input_folder}/{templ_type} in file {corr_bkg_file.GetName()}", "ERROR")
         sys.exit(1)
     templ_tree_mass.SetDirectory(0)
     templ_histo_mass = corr_bkg_file.Get(f"{input_folder}/{templ_type}/hMass{'Smooth' if get_smoothed else 'Raw'}")
@@ -107,32 +104,12 @@ def get_corr_bkg(corr_bkg_file, corr_bkg_chn, sel_string, pt_label, templ_type, 
         return templ_tree_mass, frac
     elif output_type == "df":
         rdf_mass = ROOT.RDataFrame(f"{input_folder}/{templ_type}/treeMass", corr_bkg_file.GetName())
-        df_mass = pd.DataFrame(ROOT.RDataFrame(rdf_mass).AsNumpy())
+        df_mass = pd.DataFrame(rdf_mass.AsNumpy())
         return df_mass, frac
     else:
         if kwargs.get("verbose", False):
             logger(f"Output type {output_type} not recognized. Choose between 'hist' or 'tree'.", "ERROR")
         sys.exit(1)
-
-def get_corr_bkg_tf1(corr_bkg_file, corr_bkg_chn, sel_string, sel_string_mass, pt_label,
-                     mass_min, mass_max, min_entries=50, **kwargs):
-    '''
-    Get correlated background TF1 template and normalization factor
-    '''
-    _, frac = get_corr_bkg(corr_bkg_file, corr_bkg_chn, sel_string_mass, pt_label, 'raw', 'hist', **kwargs)
-    h_raw = corr_bkg_file.Get(f"{pt_label}/{corr_bkg_chn}/raw/hMassRaw")
-    kde_min, kde_max = h_raw.GetXaxis().GetXmin(), h_raw.GetXaxis().GetXmax()
-    rdf = ROOT.RDataFrame(f"{pt_label}/{corr_bkg_chn}/raw/treeFracMassScoresBkgFD", corr_bkg_file.GetName())
-    masses = rdf.Filter(sel_string).AsNumpy(['fM'])['fM'].astype(np.float64)
-    if len(masses) < min_entries:
-        logger(f"Correlated bkg {corr_bkg_chn}: only {len(masses)} entries after selection, skipping template", "WARNING")
-        return None, None, frac, 0.
-    kde = ROOT.TKDE(len(masses), masses, kde_min, kde_max)
-    ROOT.SetOwnership(kde, False)
-    tf1 = kde.GetFunction(1000)
-    ROOT.SetOwnership(tf1, False)
-    integral = tf1.Integral(mass_min, mass_max)
-    return kde, tf1, frac, integral
 
 def fill_smooth_histo(df, histo, n_points_for_sample, n_points_for_kde):
 
@@ -192,7 +169,7 @@ def smear_templs(cfg_corrbkgs, cutset_sel_df, pt_min, pt_max):
     # Copy the dataframe to avoid modifying the original one
     df = cutset_sel_df.copy(deep=True)
     
-    mass_smear = 0.
+    sigma_smear = 0.
     if isinstance(cfg_corrbkgs["smear_mass"], float):
         sigma_smear = cfg_corrbkgs["smear_mass"]
     else:
@@ -206,12 +183,13 @@ def smear_templs(cfg_corrbkgs, cutset_sel_df, pt_min, pt_max):
                 break
         smear_histo.SetDirectory(0)
         smear_file.Close()
-        if sigma_smear > 0:
-            mass_smear = np.random.normal(0.0, sigma_smear, size=len(df)).astype("float32")
-            logger(f"Smearing mass by sigma = {mass_smear[:10]} GeV/c^2", "INFO")
-            df.loc[:, "fM"] = df["fM"] + mass_smear
-        else:
-            logger(f"Mass smearing value is {sigma_smear}, no smearing applied.", "WARNING")
+
+    if sigma_smear > 0:
+        mass_smear = np.random.normal(0.0, sigma_smear, size=len(df)).astype("float32")
+        logger(f"Smearing mass by sigma = {sigma_smear} GeV/c^2", "INFO")
+        df.loc[:, "fM"] = df["fM"] + mass_smear
+    else:
+        logger(f"Mass smearing value is {sigma_smear}, no smearing applied.", "WARNING")
     return df
 
 def produce_chn_corrbkg(cfg_corrbkgs, df, outfile, chn_dir, templ_type='raw'):
@@ -329,13 +307,13 @@ def produce_corr_bkgs_templs(cfg):
         decay_masks[fin_state] = decay_mask
 
     # Loop over pt bins
+    os.makedirs(os.path.dirname(cfg['outfile']), exist_ok=True)
     for pt_min, pt_max in cfg["pt_bins"]:
         pt_key = f"pt_{int(pt_min*10)}_{int(pt_max*10)}"
         pt_mask = (cent_sel_df.fPt >= pt_min) & (cent_sel_df.fPt < pt_max)
         df_pt = cent_sel_df[pt_mask].reset_index(drop=True)  # pt-selected DataFrame
 
         logger(f"Processing pt bin: {pt_key}\n", "INFO")
-        os.makedirs(os.path.dirname(cfg['outfile']), exist_ok=True)
         outfile = TFile(f"{cfg['outfile']}_{pt_key}.root", "RECREATE")
 
         # Precompute smeared/shifted DataFrames once per pt bin

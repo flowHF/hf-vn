@@ -126,7 +126,6 @@ VnVsMassFitter::VnVsMassFitter()
   ,fFixFracSecWidth(kFALSE)
   ,fIsMassSidebandFit(kFALSE)
   ,fIsVnSidebandFit(kFALSE)
-  // ,fInitFuncPars()
   {
     //default constructor
 }
@@ -233,7 +232,6 @@ VnVsMassFitter::VnVsMassFitter(std::string name, TH1F* hMass, TH1F* hvn, Double_
   ,fFixFracSecWidth(kFALSE)
   ,fIsMassSidebandFit(kFALSE)
   ,fIsVnSidebandFit(kFALSE)
-  // ,fInitFuncPars()
   {
 
     //standard constructor
@@ -291,8 +289,6 @@ Int_t VnVsMassFitter::RunPrefits() {
   if(!prefitbkg) {printf("Impossible to perform the prefit of comb. bkg.\n"); return kFALSE;}
   // Prefit the invariant mass spectrum to get initial values for the simultaneous fit
 
-  // std::cout << "fNParsTotMass: " << fNParsTotMass << ", fNParsMassBkg: " << fNParsMassBkg << ", fNParsMassSgn: " << fNParsMassSgn << ", fNParsTotVn: " << fNParsTotVn << std::endl;
-  double parLowLim{0.}, parUpLim{0.};
   for (Int_t iPar = 0; iPar < fNParsMassBkg; iPar++) {
     fMassTotFunc->SetParName(iPar, fMassBkgFunc->GetParName(iPar));
     fVnTotFunc->SetParName(iPar, fMassBkgFunc->GetParName(iPar));
@@ -563,19 +559,7 @@ Int_t VnVsMassFitter::SimultaneousFit() {
 
   // create before the parameter settings in order to fix or set range on them
   double parLowLim{0.}, parUpLim{0.};
-  std::vector<Double_t> initpars;
-  for(Int_t iPar=0; iPar<fMassTotFunc->GetNpar(); iPar++) {
-    initpars.push_back(fMassTotFunc->GetParameter(iPar));
-  }
-  for(Int_t iVnBkgPar=0; iVnBkgPar<fNParsVnBkg; iVnBkgPar++) {
-    initpars.push_back(fVnBkgFunc->GetParameter(iVnBkgPar));
-    // if(vnprefit) {initpars.push_back(fVnBkgFunc->GetParameter(iVnBkgPar));}
-    // else {initpars.push_back(0.05);}
-  }
-  initpars.push_back(0.10);                                       // initial parameter for signal vn
-  if(fSecondPeak && fDoSecondPeakVn) {initpars.push_back(0.10);}  // initial parameter for second peak vn
-
-  fitter.Config().SetParamsSettings(fNParsTotVn,initpars.data());     // set initial parameters from prefits
+  fitter.Config().SetParamsSettings(fNParsTotVn, std::vector<Double_t>(fNParsTotVn, 0.).data());
   for (int iPar = 0; iPar < fNParsTotVn; ++iPar) {
     fVnTotFunc->GetParLimits(iPar, parLowLim, parUpLim);
     fitter.Config().ParSettings(iPar).SetValue(fVnTotFunc->GetParameter(iPar));
@@ -1237,11 +1221,6 @@ Double_t VnVsMassFitter::GetHigherPolFuncPDF(Double_t x, Double_t *pars, Int_t N
 //________________________________________________________________
 void VnVsMassFitter::SetFuncParNames() {
 
-  // For mass comb bkg parameter initialization
-  Double_t integral = fMassHisto->Integral("width");
-  // Initial slope estimate: difference between last and first bin
-  Double_t slopeEst = (fMassHisto->GetBinContent(fMassHisto->GetNbinsX()) - fMassHisto->GetBinContent(1)) / (fMassMax - fMassMin);
-
   fMassSgnFunc->SetParName(0, "SgnNorm");
   fMassSgnFunc->SetParName(1, "Mean");
 
@@ -1258,6 +1237,7 @@ void VnVsMassFitter::SetFuncParNames() {
       fMassSgnFunc->SetParName(2, "Sigma");
       fMassSgnFunc->SetParName(3, "Alpha");
       fMassSgnFunc->SetParName(4, "N");
+      break;
     case 3: //asymmetric crystalball
       fMassSgnFunc->SetParName(2, "Sigma");
       fMassSgnFunc->SetParName(3, "Alpha1");
@@ -1395,10 +1375,11 @@ void VnVsMassFitter::SetParInitValsAndNames() {
       fInitFuncPars["Sigma2"] = {0.015, 0, 0.2};
       fInitFuncPars["Frac"] = {0.1, 0, 1};
       break;
-    case 2: //symmetric crystalball
+    case 2: //left-sided crystalball
       fInitFuncPars["Sigma"] = {0.015, 0, 0.2};
       fInitFuncPars["Alpha"] = {2, 0.8, 20};
       fInitFuncPars["N"] = {20, 1.05, 100};
+      break;
     case 3: //asymmetric crystalball
       fInitFuncPars["Sigma"] = {0.015, 0, 0.2};
       fInitFuncPars["Alpha1"] = {2, 0.8, 20};
@@ -1472,16 +1453,16 @@ void VnVsMassFitter::SetParInitValsAndNames() {
   // Setting Vn parameter names
   switch(fVnBkgFuncType) {
     case 1:
-      fInitFuncPars["ConstVnBkg"] = {0.05, 0, 1};
+      fInitFuncPars["ConstVnBkg"] = {0.0, -1, 1};
       fInitFuncPars["SlopeVnBkg"] = {0.0, -1, 1};
       break;
     case 2:
-      fInitFuncPars["ConstVnBkg"] = {0.05, 0, 1};
+      fInitFuncPars["ConstVnBkg"] = {0.0, -1, 1};
       fInitFuncPars["Coef1VnBkg"] = {0.0, -1, 1};
       fInitFuncPars["Coef2VnBkg"] = {0.0, -1, 1};
       break;
     case 3:
-      fInitFuncPars["ConstVnBkg"] = {0.05, 0, 1};
+      fInitFuncPars["ConstVnBkg"] = {0.0, -1, 1};
       break;
     default:
       printf("Error in setting vn bkg par names: check fVnBkgFuncType\n");
@@ -1593,13 +1574,10 @@ void VnVsMassFitter::DefineFunctions() {
   fMassTotFunc = new TF1(Form("fMassTotFunc_%s", fName.c_str()),this,&VnVsMassFitter::MassFunc,fMassMin,fMassMax,fNParsTotMass,"VnVsMassFitter","MassFunc");
   fVnTotFunc = new TF1(Form("fVnTotFunc_%s", fName.c_str()),this,&VnVsMassFitter::vnFunc,fMassMin,fMassMax,fNParsTotVn,"VnVsMassFitter","vnFunc");
 
-  // SetParInitValsAndNames();
   SetFuncParNames();
   InitFunctionPars("VnBkg");
   InitFunctionPars("MassBkg");
   InitFunctionPars("MassSgn");
-  if(fReflections) {InitFunctionPars("MassRfl");}
-  if(fReflections) {InitFunctionPars("MassBkgRfl");}
   if(fSecondPeak)  {InitFunctionPars("MassSecPeak");}
 }
 
@@ -1775,10 +1753,8 @@ void VnVsMassFitter::Background(Double_t min, Double_t max, Double_t &background
 
   if(!fMassBkgFunc) {background=-1; errbackground=0; return;}
 
-  Double_t intB=fMassBkgFunc->GetParameter(0);
-  Double_t intBerr=fMassBkgFunc->GetParError(0);
   //relative error evaluation: from histo
-
+  Double_t intB, intBerr;
   Int_t leftBand=fMassHisto->FindBin(fMean-4*fSigma);
   Int_t rightBand=fMassHisto->FindBin(fMean+4*fSigma);
   intB=fMassHisto->Integral(1,leftBand)+fMassHisto->Integral(rightBand,fMassHisto->GetNbinsX());
@@ -1850,7 +1826,7 @@ TH1F* VnVsMassFitter::GetPullDistribution() {
       }
   }
   TH1F *histoPulls = new TH1F("hPulls", "hPulls;M (GeV/c); Data - fit", pulls.size(), this->fMassMin, this->fMassMax);
-  for(int iBin=0; iBin<this->fMassHisto->GetNbinsX(); iBin++) {
+  for(size_t iBin=0; iBin<pulls.size(); iBin++) {
       histoPulls->SetBinContent(iBin+1, pulls[iBin]);
   }
 

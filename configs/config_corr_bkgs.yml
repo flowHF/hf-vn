@@ -1,5 +1,5 @@
 centrality: 'k0100'
-input_file: "/path/to/input/AO2D.root"
+input_files: ["/path/to/input/AO2D.root"]
 table_names: ["O2hfcandd0lite", "O2hfcandd0ml"]
 table_cols_to_keep: [['fM', 'fPt', 'fCentrality', 'fFlagMcMatchRec', 'fOriginMcRec'], ['fMlScore0', 'fMlScore1']]
 sgn_fin_state: "DzeroToPiK"

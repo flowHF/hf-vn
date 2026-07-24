@@ -94,7 +94,8 @@ cut_variation:
 
 corr_bkgs:
     sgn_chn: 'DplusToPiKPi'
-    anchor_mode: 2
+    templs_prefix: '/home/nbeniusi/analysis/output/corr_bkgs/Dzero/corr_bkgs_dzero'
+    anchor_mode: 2 # AnchorToFirst=1, AnchorToSgn=2
     cocktails:
         -   pt_ranges: [
                 [1.0, 1.5],
@@ -145,6 +146,23 @@ projections:
         [1.66,1.69,1.73,1.76,1.79,1.81,1.83,1.85,1.87,1.89,1.91,1.93,1.97,2.01,2.05,2.09,2.13,2.19],
         [1.66,1.69,1.73,1.76,1.79,1.81,1.83,1.85,1.87,1.89,1.91,1.93,1.97,2.01,2.05,2.09,2.13,2.19],
     ]
+
+working_point:
+    n_jobs: 3
+    scan:
+        ScoreBkg:
+            min:    0.0
+            max:    [0.01, 0.01, 0.01, 0.02, 0.03, 0.05, 0.05, 0.07, 0.07, 0.1, 0.1, 0.3, 0.3, 0.5, 0.5]
+            nsteps: 10
+        ScoreFD:
+            # Strategy: 'sequential' scans lower thresholds, cut keeps [x, 1.0]
+            # Strategy: 'slices' fits each window [edges[i], edges[i+1]] independently
+            strategy: 'sequential'
+            edges: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+            # ScoreFD min/max define the range of minimum thresholds scanned, not a cut window
+            min:    [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+            max:    [0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95]
+            nsteps: 10
 
 v2extraction:
     FixVnSecPeakToSgn: False
@@ -254,6 +272,7 @@ v2extraction:
     MinCountsSecPeak: 300
     MassMinSecPeak: 2.00
     MassMaxSecPeak: 2.04
+    DrawSingleTempls: true
 
 ptCenter:
     # ptBinsToKeep: [10]

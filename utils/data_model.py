@@ -253,7 +253,7 @@ def get_sparse_dict(sparse_name, dmeson):
             else:
                 logger(f"Unknown sparse type for Ds {sparse_name}", level='ERROR')
         else:
-            logger(f"Sparse dictionary {data_type} not defined for Dmeson type {dmeson}", level='ERROR')
+            logger(f"Sparse dictionary {sparse_name} not defined for Dmeson type {dmeson}", level='ERROR')
 
 CORR_BKG_COLUMNS = {
     'Cent': 'fCentrality',
