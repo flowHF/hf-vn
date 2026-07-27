@@ -10,7 +10,7 @@ import ctypes
 import subprocess
 import sys
 from ROOT import TLatex, TFile, TCanvas, TLegend, TH1D, TH1F, TGraphAsymmErrors
-from ROOT import gROOT, gPad, kBlack, kRed, kAzure, kOrange, kGreen, kFullCircle, kFullSquare, kOpenCircle
+from ROOT import gROOT, gPad, kBlack, kRed, kAzure, kOrange, kGreen, kFullCircle, kOpenCircle
 script_dir = os.path.dirname(os.path.realpath(__file__))
 import ROOT
 ROOT.gErrorIgnoreLevel = ROOT.kError  # Only show errors and above
@@ -248,6 +248,23 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
         SetObjectStyle(hVn[iPt], color=kBlack, markerstyle=kFullCircle)
     infile.Close()
 
+    hSigmaToFix = None
+    if configfit.get('FixSigmaRatio'):
+        # Load sigma of first gaussian
+        infileSigma = TFile.Open(configfit['SigmaRatioFile'])
+        if not infileSigma:
+            logger(f'File "{configfit["SigmaRatioFile"]}" cannot be opened. Exit.', level='ERROR')
+        hSigmaToFix = infileSigma.Get('hRawYieldsSigma')
+        hSigmaToFix.SetDirectory(0)
+        if hSigmaToFix.GetNbinsX() != nPtBins:
+            logger('Different number of bins for this analysis and histo for fix sigma', level='WARNING')
+        # Load sigma of second gaussian
+        hSigmaToFix2 = infileSigma.Get('hRawYieldsSigma2')
+        hSigmaToFix2.SetDirectory(0)
+        if hSigmaToFix2.GetNbinsX() != nPtBins:
+            logger('Different number of bins for this analysis and histo for fix sigma', level='WARNING')
+        infileSigma.Close()
+
     # Check reflections
     if particleName == 'Dzero' and useRefl:
         if reflFile == '':
@@ -264,6 +281,8 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
     hSigmaSecPeakFitVn = TH1D('hSigmaSecondPeakFitVn', f';{ptTit};width second peak vn fit', nPtBins, ptBinsArr)
     hRawYieldsSimFit = TH1D('hRawYieldsSimFit', f';{ptTit};raw yield', nPtBins, ptBinsArr)
     hRawYieldsTrueSimFit = TH1D('hRawYieldsTrueSimFit', f';{ptTit};raw yield true', nPtBins, ptBinsArr)
+    hRawYieldsSecPeakSimFit = TH1D('hRawYieldsSecondPeakSimFit',
+                                   f';{ptTit};raw yield second peak', nPtBins, ptBinsArr)
     hRawYieldsSignificanceSimFit = TH1D('hRawYieldsSignificanceSimFit',
                                         f';{ptTit};significance', nPtBins, ptBinsArr)
     hRawYieldsSoverBSimFit = TH1D('hRawYieldsSoverBSimFit', f';{ptTit};S/B', nPtBins, ptBinsArr)
@@ -280,6 +299,7 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
     SetObjectStyle(hSigmaSecPeakFitVn, color=kBlack, markerstyle=kFullCircle)
     SetObjectStyle(hRawYieldsSimFit, color=kBlack, markerstyle=kFullCircle)
     SetObjectStyle(hRawYieldsTrueSimFit, color=kBlack, markerstyle=kFullCircle)
+    SetObjectStyle(hRawYieldsSecPeakSimFit, color=kBlack, markerstyle=kFullCircle)
     SetObjectStyle(hRawYieldsSignificanceSimFit, color=kBlack, markerstyle=kFullCircle)
     SetObjectStyle(hRawYieldsSoverBSimFit, color=kBlack, markerstyle=kFullCircle)
     SetObjectStyle(hRedChi2SimFit, color=kBlack, markerstyle=kFullCircle)
@@ -593,12 +613,9 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
             fBkgFuncVn[iPt] = vnRes[iPt]['fBkgFuncVn']
 
             SetObjectStyle(fTotFuncMass[iPt], color=kAzure+4, linewidth=3)
-            fSgnFuncMass[iPt].SetFillColorAlpha(ROOT.kAzure-9, 0.7)
-            fSgnFuncMass[iPt].SetFillStyle(1001)
-            fSgnFuncMass[iPt].SetLineWidth(0)
-            fBkgFuncMass[iPt].SetLineColor(ROOT.kOrange-4)
-            fBkgFuncMass[iPt].SetLineStyle(2)
-            fBkgFuncMass[iPt].SetLineWidth(2)
+            SetObjectStyle(fSgnFuncMass[iPt], fillcolor=kAzure-9, fillstyle=1001,
+                           linewidth=0, fillalpha=0.7)
+            SetObjectStyle(fBkgFuncMass[iPt], color=kOrange-4, linestyle=2, linewidth=2)
             SetObjectStyle(fBkgFuncVn[iPt], color=kOrange+1, linestyle=7, linewidth=2)
             SetObjectStyle(fTotFuncVn[iPt], color=kAzure+4, linewidth=3)
 
@@ -908,6 +925,7 @@ def get_vn_vs_mass(fitConfigFileName, cutsetFileName, inFileName, batch, isMulti
     hSigmaSecPeakFitVn.Write()
     hRawYieldsSimFit.Write()
     hRawYieldsTrueSimFit.Write()
+    hRawYieldsSecPeakSimFit.Write()
     hRawYieldsSignificanceSimFit.Write()
     hRawYieldsSoverBSimFit.Write()
     hRedChi2SimFit.Write()

@@ -309,9 +309,19 @@ if __name__ == "__main__":
         det_C = config["projections"].get('detC', 'TPCtot')
         logger(f"Getting resolution histogram from file {config['projections']['Resolution']} for triplet {det_A}_{det_B}_{det_C}",  "WARNING")
         ese_sel = config["projections"].get("EseSelection", "Inclusive")
-        reso_hist = reso_file.Get(f'{ese_sel}/{det_A}_{det_B}_{det_C}/histo_reso_delta_cent')
+        reso_paths = [
+            f'{ese_sel}/{det_A}_{det_B}_{det_C}/histo_reso_delta_cent',
+            f'{det_A}_{det_B}_{det_C}/histo_reso_delta_cent',
+        ]
+        reso_hist = None
+        for reso_path in reso_paths:
+            reso_hist = reso_file.Get(reso_path)
+            if reso_hist:
+                logger(f"Found resolution histogram at {reso_path}", "INFO")
+                break
         if not reso_hist:
-            logger(f"Resolution histogram not found: {ese_sel}/{det_A}_{det_B}_{det_C}", "FATAL")
+            logger(f"Resolution histogram not found in {config['projections']['Resolution']}. "
+                   f"Tried: {', '.join(reso_paths)}", "ERROR")
             sys.exit(1)
         resolution = reso_hist.GetBinContent(1)
         reso_hist.SetDirectory(0)
