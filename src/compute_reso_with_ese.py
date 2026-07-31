@@ -191,16 +191,9 @@ def project_ese(histos_triplets, histos_triplets_labels, ese_thresholds):
             print(f'histos_triplets_labels: {histos_triplets}, {histos_triplets_labels}')
             for histo, label in zip(histos_triplets, histos_triplets_labels):
                 print(f'Processing {label} for ESE selection: {ese_percentile}')
-                # # check if 'FT0c' is in the label tuple, if not skip
-                # if not any('FT0c' in det_label for det_label in label):
-                #     print(f'Skipping {label} for ESE selection: {ese_percentile} since it does not contain FT0c')
-                #     continue
-                # if not any('FV0a' in det_label for det_label in label):
-                #     print(f'Skipping {label} for ESE selection: {ese_percentile} since it does not contain FV0a')
-                #     continue
-                # if not any('TPCneg' in det_label for det_label in label):
-                #     print(f'Skipping {label} for ESE selection: {ese_percentile} since it does not contain TPCneg')
-                #     continue
+                if label != ('FT0c', 'FV0a', 'TPCtot'):
+                    print(f'Skipping {label} for ESE selection: {ese_percentile}')
+                    continue
                 print(f"Processing histogram: {histo[0].GetName()} for ESE selection: {ese_percentile}")
                 hist_cent_vs_qvec_prod_upper, hist_cent_vs_qvec_prod_lower = [], []
                 for single_hist in histo:

@@ -22,6 +22,18 @@ import uproot
 import pandas as pd
 import awkward as ak
 
+def get_ese_thresholds(quantile_file, det, quantile):
+    """Return {cent_bin_int: threshold} for a given detector and quantile."""
+    f = TFile.Open(quantile_file, 'read')
+    h = f.Get(f'{det}/quantile_{quantile}_{det}')
+    if not h:
+        raise RuntimeError(f"Histogram {det}/quantile_{quantile}_{det} not found in {quantile_file}")
+    thr = {}
+    for c in range(0, 100):
+        thr[c] = h.GetBinContent(h.FindBin(c + 0.5))
+    f.Close()
+    return thr
+
 def check_existing_outputs(file_path):
     """
     Check if output file already exists, and open it accordingly.
@@ -121,6 +133,12 @@ def process_sparse(i_file, infile_path, full_cfg, sparse_cfg, prep_out_dir, inpu
     bkg_maxs = full_cfg['preprocess']['bkg_cuts']
     mass_ranges = full_cfg['preprocess'].get('mass_ranges', None)
     axes_to_keep, rebin = sparse_cfg["axes"]['names'], sparse_cfg["axes"]['rebin']
+    ese_cfg = full_cfg.get('ese', {})
+    ese_class = ese_cfg.get('class', 'Inclusive')
+    thr = None
+    if ese_class != 'Inclusive' and axes.get('Qvec') is not None:
+        quantile = 20 if ese_class == 'lower_20' else 80
+        thr = get_ese_thresholds(ese_cfg['quantile_file'], ese_cfg['det'], quantile)
     sparse_type, sparse_path = sparse_cfg['name'], sparse_cfg['path']
     sparse_dir, sparse_name = sparse_path.split('/')[0], sparse_path.split('/')[1]
 
@@ -140,7 +158,29 @@ def process_sparse(i_file, infile_path, full_cfg, sparse_cfg, prep_out_dir, inpu
             mass_min, mass_max = mass_ranges[i_pt]
             sparse.GetAxis(axes['Mass']).SetRangeUser(mass_min, mass_max)
         proj_axes = [axes[ax_to_keep] for ax_to_keep in axes_to_keep]
-        proj_sparse = sparse.Projection(len(proj_axes), array.array('i', proj_axes), 'O')
+
+        if ese_class == 'Inclusive' or axes.get('Qvec') is None:
+            proj_sparse = sparse.Projection(len(proj_axes), array.array('i', proj_axes), 'O')
+        else:
+            ax_cent = sparse.GetAxis(axes['Cent'])
+            ax_q = sparse.GetAxis(axes['Qvec'])
+            acc = None
+            for c in range(int(cent_min), int(cent_max)):
+                ax_cent.SetRangeUser(c + 1e-6, c + 1 - 1e-6)
+                if ese_class == 'lower_20':
+                    ax_q.SetRangeUser(0.0, thr[c])
+                else:
+                    ax_q.SetRangeUser(thr[c], 10.0)
+                h = sparse.Projection(len(proj_axes), array.array('i', proj_axes), 'O')
+                if acc is None:
+                    acc = h.Clone(f'acc_{i_pt}')
+                else:
+                    acc.Add(h)
+                h.Delete()
+            ax_cent.SetRangeUser(cent_min, cent_max)
+            ax_q.SetRange(0, 0)
+            proj_sparse = acc
+
         proj_sparse.SetName(sparse.GetName())
         proj_sparse = proj_sparse.Rebin(array.array('i', rebin))
         make_dir_root_file(sparse_type, out_file)
