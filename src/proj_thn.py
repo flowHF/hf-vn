@@ -22,6 +22,22 @@ from utils import reweight_histo_1D, reweight_histo_2D, reweight_histo_3D, get_v
 
 ROOT.TH1.AddDirectory(False)
 
+TITLE_TO_NAME = {
+    'Inv. mass (GeV/#it{c}^{2})': 'Mass',
+    '#it{p}_{T} (GeV/#it{c})':    'Pt',
+    'Centrality':                 'Cent',
+    'SP':                         'Sp',
+    'Bkg score':                  'ScoreBkg',
+    'FD score':                   'ScoreFD',
+}
+
+def build_axis_idx(sparse):
+    idx = {}
+    for i in range(sparse.GetNdimensions()):
+        title = sparse.GetAxis(i).GetTitle()
+        idx[TITLE_TO_NAME.get(title, title)] = i
+    return idx
+
 def proj_multitrial(config, multitrial_folder, workers, resolution):
 
     pt_bin_label = Path(multitrial_folder).name
@@ -292,7 +308,21 @@ if __name__ == "__main__":
         det_B = config["projections"].get('detB', 'FV0a')
         det_C = config["projections"].get('detC', 'TPCtot')
         logger(f"Getting resolution histogram from file {config['projections']['Resolution']} for triplet {det_A}_{det_B}_{det_C}",  "WARNING")
-        reso_hist = reso_file.Get(f'{det_A}_{det_B}_{det_C}/histo_reso_delta_cent')
+        ese_sel = config["projections"].get("EseSelection", "Inclusive")
+        reso_paths = [
+            f'{ese_sel}/{det_A}_{det_B}_{det_C}/histo_reso_delta_cent',
+            f'{det_A}_{det_B}_{det_C}/histo_reso_delta_cent',
+        ]
+        reso_hist = None
+        for reso_path in reso_paths:
+            reso_hist = reso_file.Get(reso_path)
+            if reso_hist:
+                logger(f"Found resolution histogram at {reso_path}", "INFO")
+                break
+        if not reso_hist:
+            logger(f"Resolution histogram not found in {config['projections']['Resolution']}. "
+                   f"Tried: {', '.join(reso_paths)}", "ERROR")
+            sys.exit(1)
         resolution = reso_hist.GetBinContent(1)
         reso_hist.SetDirectory(0)
         reso_file.Close()
@@ -342,6 +372,11 @@ if __name__ == "__main__":
             pt_label = f"pt_{int(pt_min*10)}_{int(pt_max*10)}"
             make_dir_root_file(pt_label, outfile)
             sparse_flow, sparses_reco, sparses_gen, axes = get_pt_preprocessed_sparses(config, pt_label)
+            axes['FlowSP'] = build_axis_idx(sparse_flow['FlowSP'])
+            for key, i_sparse in sparses_reco.items():
+                axes[key] = build_axis_idx(i_sparse)
+            for key, i_sparse in sparses_gen.items():
+                axes[key] = build_axis_idx(i_sparse)
             outfile.cd(pt_label)
             if operations.get("proj_data"):
                 sparse_flow["FlowSP"].GetAxis(axes['FlowSP']['ScoreFD']).SetRangeUser(fd_min, fd_max)

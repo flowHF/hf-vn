@@ -5,11 +5,9 @@
 '''
 
 import pandas as pd
-import matplotlib.pyplot as plt
 import uproot
 import numpy as np
 import ROOT
-from array import array
 import os
 import sys
 import argparse
@@ -18,8 +16,9 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_dir, '..', 'utils'))
 from utils import logger, get_centrality_bins, make_dir_root_file
 from corr_bkgs_brs import final_states
+from data_model import get_corr_bkg_rename
 from fit_utils import RebinHisto
-from ROOT import TFile, RooRealVar, RooDataSet, RooArgSet, RooKeysPdf, TFile, TH3F, TH1F
+from ROOT import TFile, RooRealVar, RooDataSet, RooArgSet, RooKeysPdf, TH1F
 
 def get_rebinned_mass_sel_histo(histo, mass_min, mass_max, rebin):
     '''
@@ -27,7 +26,7 @@ def get_rebinned_mass_sel_histo(histo, mass_min, mass_max, rebin):
     '''
     n_bins = int((mass_max - mass_min)*1000)
     # n_bins = int((mass_max - mass_min)*1000)+1
-    new_histo = TH1F("histo_temp", "histo_temp", n_bins, mass_min, mass_max)
+    new_histo = TH1F(f"histo_temp_{histo.GetName()}", "histo_temp", n_bins, mass_min, mass_max)
     for i_bin_new in range(1, new_histo.GetNbinsX()+1):
         bin_center = new_histo.GetBinCenter(i_bin_new)
         for i_bin_orig in range(1, histo.GetNbinsX()+1):
@@ -38,13 +37,16 @@ def get_rebinned_mass_sel_histo(histo, mass_min, mass_max, rebin):
     new_histo.SetDirectory(0)
     new_histo = RebinHisto(new_histo, rebin, True)
     integral = new_histo.Integral("width")
+    if integral <= 0:
+        logger(f"Empty template histogram {histo.GetName()} in [{mass_min}, {mass_max}], cannot normalize", "ERROR")
+        sys.exit(1)
     new_histo.Scale(1.0 / integral)
     return new_histo
 
 def get_corr_bkgs_from_reference(corr_bkgs_dict, raw_yields_file, pt_label, massMin, massMax, reb):
 
     ry_file = TFile(raw_yields_file, "READ")
-    templ_dir = f"{pt_label}/templs/"
+    templ_dir = f"{pt_label}/templs"
     hist_fracs = ry_file.Get(f"{templ_dir}/hTemplFracs")
     for i_bin in range(1, hist_fracs.GetNbinsX()+1):
         chn = hist_fracs.GetXaxis().GetBinLabel(i_bin)
@@ -65,21 +67,17 @@ def get_corr_bkg(corr_bkg_file, corr_bkg_chn, sel_string, pt_label, templ_type, 
     input_folder = f"{pt_label}/{corr_bkg_chn}"
     if kwargs.get("verbose", False):
         logger(f"Using correlated bkg file {corr_bkg_file.GetName()} for correlated bkg source {corr_bkg_chn} from folder {input_folder}\n", "INFO")
-    try:
-        hist_pdg_mc_brs = corr_bkg_file.Get(f"{input_folder}/hBRs")
-    except:
-        if kwargs.get("verbose", False):
-            logger(f"Could not retrieve hBRs histogram from {input_folder} in file {corr_bkg_file}", "ERROR")
+    hist_pdg_mc_brs = corr_bkg_file.Get(f"{input_folder}/hBRs")
+    if not hist_pdg_mc_brs:
+        logger(f"Could not retrieve hBRs histogram from {input_folder} in file {corr_bkg_file.GetName()}", "ERROR")
         sys.exit(1)
     br_pdg = hist_pdg_mc_brs.GetBinContent(2)
     br_mc = hist_pdg_mc_brs.GetBinContent(1)
     if kwargs.get("verbose", False):
         logger(f"Branching ratios: PDG = {br_pdg}, MC = {br_mc}", "INFO")
-    try:
-        templ_tree_mass = corr_bkg_file.Get(f"{input_folder}/{templ_type}/treeMass")
-    except:
-        if kwargs.get("verbose", False):
-            logger(f"Could not retrieve treeMass from {input_folder}/{templ_type} in file {corr_bkg_file}", "ERROR")
+    templ_tree_mass = corr_bkg_file.Get(f"{input_folder}/{templ_type}/treeMass")
+    if not templ_tree_mass:
+        logger(f"Could not retrieve treeMass from {input_folder}/{templ_type} in file {corr_bkg_file.GetName()}", "ERROR")
         sys.exit(1)
     templ_tree_mass.SetDirectory(0)
     templ_histo_mass = corr_bkg_file.Get(f"{input_folder}/{templ_type}/hMass{'Smooth' if get_smoothed else 'Raw'}")
@@ -106,7 +104,7 @@ def get_corr_bkg(corr_bkg_file, corr_bkg_chn, sel_string, pt_label, templ_type, 
         return templ_tree_mass, frac
     elif output_type == "df":
         rdf_mass = ROOT.RDataFrame(f"{input_folder}/{templ_type}/treeMass", corr_bkg_file.GetName())
-        df_mass = pd.DataFrame(ROOT.RDataFrame(rdf_mass).AsNumpy())
+        df_mass = pd.DataFrame(rdf_mass.AsNumpy())
         return df_mass, frac
     else:
         if kwargs.get("verbose", False):
@@ -171,7 +169,7 @@ def smear_templs(cfg_corrbkgs, cutset_sel_df, pt_min, pt_max):
     # Copy the dataframe to avoid modifying the original one
     df = cutset_sel_df.copy(deep=True)
     
-    mass_smear = 0.
+    sigma_smear = 0.
     if isinstance(cfg_corrbkgs["smear_mass"], float):
         sigma_smear = cfg_corrbkgs["smear_mass"]
     else:
@@ -185,12 +183,13 @@ def smear_templs(cfg_corrbkgs, cutset_sel_df, pt_min, pt_max):
                 break
         smear_histo.SetDirectory(0)
         smear_file.Close()
-        if sigma_smear > 0:
-            mass_smear = np.random.normal(0.0, sigma_smear, size=len(df)).astype("float32")
-            logger(f"Smearing mass by sigma = {mass_smear[:10]} GeV/c^2", "INFO")
-            df.loc[:, "fM"] = df["fM"] + mass_smear
-        else:
-            logger(f"Mass smearing value is {sigma_smear}, no smearing applied.", "WARNING")
+
+    if sigma_smear > 0:
+        mass_smear = np.random.normal(0.0, sigma_smear, size=len(df)).astype("float32")
+        logger(f"Smearing mass by sigma = {sigma_smear} GeV/c^2", "INFO")
+        df.loc[:, "fM"] = df["fM"] + mass_smear
+    else:
+        logger(f"Mass smearing value is {sigma_smear}, no smearing applied.", "WARNING")
     return df
 
 def produce_chn_corrbkg(cfg_corrbkgs, df, outfile, chn_dir, templ_type='raw'):
@@ -274,8 +273,19 @@ def produce_corr_bkgs_templs(cfg):
     ]
     full_df = pd.concat(full_dfs, axis=1)
 
+    for table_name in cfg["table_names"]:
+        rename_map = get_corr_bkg_rename(table_name)
+        if rename_map:
+            logger(f"Renaming columns of {table_name}: {rename_map}", "INFO")
+            full_df = full_df.rename(columns=rename_map)
+
     ### Centrality selection
     _, (centMin, centMax) = get_centrality_bins(cfg["centrality"])
+
+    if "fCentrality" not in full_df.columns:
+        logger(f"No centrality column in input, assuming the sample is already restricted "
+               f"to {centMin}-{centMax}%", "WARNING")
+        full_df["fCentrality"] = 0.5 * (centMin + centMax)
 
     cent_sel_df = full_df.query(f"fCentrality >= {centMin} and fCentrality < {centMax}")
     logger(f"Initial candidates: {len(full_df)} ----> after cent selection: {len(cent_sel_df)}", "INFO")
@@ -283,16 +293,27 @@ def produce_corr_bkgs_templs(cfg):
     # Precompute final-state masks for all entries
     decay_masks = {}
     for fin_state, info in final_states.items():
-        decay_masks[fin_state] = (abs(cent_sel_df["fFlagMcMatchRec"]) == info["flag_mc_rec"])
+        if fin_state not in cfg.get("fin_states", final_states.keys()):
+            continue
+        decay_mask = (abs(cent_sel_df["fFlagMcMatchRec"]) == info["flag_mc_rec"])
+
+        if "reflected" in info:
+            hypothesis_matches = (
+                ((cent_sel_df["fCandidateSelFlag"] == 1) & (cent_sel_df["fFlagMcMatchRec"] ==  1)) |
+                ((cent_sel_df["fCandidateSelFlag"] == 2) & (cent_sel_df["fFlagMcMatchRec"] == -1))
+            )
+            decay_mask = decay_mask & (~hypothesis_matches if info["reflected"] else hypothesis_matches)
+
+        decay_masks[fin_state] = decay_mask
 
     # Loop over pt bins
+    os.makedirs(os.path.dirname(cfg['outfile']), exist_ok=True)
     for pt_min, pt_max in cfg["pt_bins"]:
         pt_key = f"pt_{int(pt_min*10)}_{int(pt_max*10)}"
         pt_mask = (cent_sel_df.fPt >= pt_min) & (cent_sel_df.fPt < pt_max)
         df_pt = cent_sel_df[pt_mask].reset_index(drop=True)  # pt-selected DataFrame
 
         logger(f"Processing pt bin: {pt_key}\n", "INFO")
-        os.makedirs(os.path.dirname(cfg['outfile']), exist_ok=True)
         outfile = TFile(f"{cfg['outfile']}_{pt_key}.root", "RECREATE")
 
         # Precompute smeared/shifted DataFrames once per pt bin
@@ -306,8 +327,7 @@ def produce_corr_bkgs_templs(cfg):
             decay_pt_mask = decay_mask_full[pt_mask].reset_index(drop=True)
 
             # Apply pt mask
-            mask = pt_mask & decay_pt_mask
-            n_candidates = mask.sum()
+            n_candidates = decay_pt_mask.sum()
             if n_candidates <= cfg.get("min_entries", 0):
                 logger(f"----> No candidates for final state: {fin_state}!", "WARNING")
                 continue

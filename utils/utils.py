@@ -3,17 +3,16 @@ import os
 import sys
 import ROOT
 import ctypes
-from ROOT import TH1, TH1D, TH2, TH3, TFile
+from ROOT import TH1, TH1D, TFile
 import numpy as np
 from pypdf import PdfReader, PdfWriter, Transformation
-from pathlib import Path
 import yaml
 
 
 def merge_cutsets_fits(fits_dir, verbose=True):
 
     all_fit_pdfs = sorted(
-        [p for p in fits_dir.glob("*.pdf") if "AllFits" not in p.name],
+        [p for p in fits_dir.glob("*.pdf")],
         key=lambda p: int(p.stem.split('_')[2])
     )
 
@@ -458,6 +457,7 @@ def get_vnfitter_results(vnFitter, useRefl, useTempl, secPeak, secPeakWidthFrac=
         vn_results['fMassBkgRflFunc'] = vnFitter.GetMassBkgRflFunc()
     
     if useTempl:
+        vn_results['fMassTemplFuncts'] = list(vnFitter.GetMassTemplFuncts())
         vn_results['vnTemplates'] = list(vnFitter.GetVnTemplates())
         vn_results['vnTemplatesUncs'] = list(vnFitter.GetVnTemplatesUncertainties())
 
