@@ -18,7 +18,7 @@ from alive_progress import alive_bar
 from scipy.interpolate import make_interp_spline
 sys.path.append(f"{os.path.dirname(os.path.abspath(__file__))}/../utils")
 from data_model import get_pt_preprocessed_sparses
-from utils import reweight_histo_1D, reweight_histo_2D, reweight_histo_3D, get_vn_versus_mass, profile_mass_sp, make_dir_root_file, logger, get_centrality_bins
+from utils import reweight_histo_1D, reweight_histo_2D, reweight_histo_3D, get_vn_versus_mass, profile_mass_sp, make_dir_root_file, logger, get_centrality_bins, get_ese_band_label
 
 ROOT.TH1.AddDirectory(False)
 
@@ -29,6 +29,7 @@ TITLE_TO_NAME = {
     'SP':                         'Sp',
     'Bkg score':                  'ScoreBkg',
     'FD score':                   'ScoreFD',
+    'Reduced Q-vector':           'Qvec',
 }
 
 def build_axis_idx(sparse):
@@ -113,8 +114,10 @@ def proj_multitrial(config, multitrial_folder, workers, resolution):
 
 def proj_data(i_bin, sparse, axes, resolution, proj_cfg, writeopt):
 
-    proj_vars = proj_cfg.get('ProjVars', [])
-    proj_vars += ['Mass', 'Sp']
+    proj_vars = list(proj_cfg.get('ProjVars', []))
+    for var in ('Mass', 'Sp'):
+        if var not in proj_vars:
+            proj_vars.append(var)
     proj_axes = [axes['FlowSP'][var] for var in proj_vars]
 
     for var, ax in zip(proj_vars, proj_axes):
@@ -308,11 +311,12 @@ if __name__ == "__main__":
         det_B = config["projections"].get('detB', 'FV0a')
         det_C = config["projections"].get('detC', 'TPCtot')
         logger(f"Getting resolution histogram from file {config['projections']['Resolution']} for triplet {det_A}_{det_B}_{det_C}",  "WARNING")
-        ese_sel = config["projections"].get("EseSelection", "Inclusive")
-        reso_paths = [
-            f'{ese_sel}/{det_A}_{det_B}_{det_C}/histo_reso_delta_cent',
-            f'{det_A}_{det_B}_{det_C}/histo_reso_delta_cent',
-        ]
+        ese_band = (config.get('ese') or {}).get('band')
+        ese_sel = (get_ese_band_label(ese_band[0], ese_band[1])
+                   if ese_band and ese_band != 'Inclusive' else 'Inclusive')
+        reso_paths = [f'{ese_sel}/{det_A}_{det_B}_{det_C}/histo_reso_delta_cent']
+        if ese_sel == 'Inclusive':  # legacy reso files without ESE directories
+            reso_paths.append(f'{det_A}_{det_B}_{det_C}/histo_reso_delta_cent')
         reso_hist = None
         for reso_path in reso_paths:
             reso_hist = reso_file.Get(reso_path)

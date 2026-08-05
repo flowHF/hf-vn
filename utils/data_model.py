@@ -141,7 +141,7 @@ def get_sparse_dict(sparse_name, dmeson):
                 'Sp': 3,
                 'ScoreBkg': 4,
                 'ScoreFD': 5,
-                'Occ': 6
+                'Qvec': 6
                 }
     else:
         if dmeson == 'Dzero':

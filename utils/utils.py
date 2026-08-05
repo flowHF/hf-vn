@@ -692,6 +692,13 @@ def get_centrality_bins(centrality):
         print(f"ERROR: cent class \'{centrality}\' is not supported! Exit")
     sys.exit()
 
+def get_ese_band_label(p_lo, p_hi):
+    """Label for an ESE q2 percentile band. Shared by all ESE scripts."""
+    p_lo, p_hi = int(p_lo), int(p_hi)
+    if not 0 <= p_lo < p_hi <= 100:
+        raise ValueError(f"Invalid ESE percentiles [{p_lo}, {p_hi}]: need 0 <= lo < hi <= 100")
+    return f'q2_{p_lo}_{p_hi}'
+
 def suggest_skip_cuts(hRawYields, hEffPrompt, hEffFD, nPtBins):
     """Suggest cuts to skip based on zero or negative efficiencies or raw yields"""
     nCuts = len(hRawYields)
