@@ -120,6 +120,16 @@ corr_bkgs:
             channels: ['DsToPiKK', 'DplusToPiKK']
             fix_to: ['DplusToPiKPi', 'DplusToPiKPi']
 
+# Event shape engineering (omit for the inclusive analysis).
+# 'bands' lists the q2 percentile bands the resolution is computed for, all in one run of compute_reso_with_ese.py.
+# 'band' picks the one this run selects, used by pre_process.py and proj_thn.py.
+# Requires 'Qvec' in the FlowSP sparse axes names below.
+# ese:
+#     det: 'FT0C'
+#     quantile_file: '/path/to/ese_quantiles_summary.root'
+#     bands: [[10, 20], [80, 90]]
+#     band: [10, 20]
+
 projections:
     PtWeightsFile: '/home/mdicosta/FlowDplus/PaperVerify/ptweights/Dplus/k3050/pTweight_Dplus_k3050.root'
     ApplyPtWeightsD: True
@@ -428,7 +438,7 @@ preprocess:
         -   name: 'FlowSP'
             path: 'hf-task-flow-charm-hadrons/hSparseFlowCharm'
             axes: {
-              names: ['Mass', 'Pt', 'Cent', 'Sp', 'ScoreBkg', 'ScoreFD'],
+              names: ['Mass', 'Pt', 'Cent', 'Sp', 'ScoreBkg', 'ScoreFD'],  # add 'Qvec' (and a matching rebin entry) when using ESE
               rebin: [1, 1, 1, 1, 1, 1]
             }
     -   files: [

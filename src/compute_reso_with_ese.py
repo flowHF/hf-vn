@@ -1,12 +1,13 @@
 import sys
 import argparse
+import yaml
 import ROOT
 from ROOT import TH1F, TH2F, TH3
 import os
 import numpy as np
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_dir, '..', 'utils'))
-from utils import get_centrality_bins, make_dir_root_file
+from utils import get_centrality_bins, make_dir_root_file, get_ese_band_label
 from load_utils import load_reso_histos, load_ese_quantiles_thresholds
 from StyleFormatter import SetObjectStyle, SetGlobalStyle
 SetGlobalStyle(padleftmargin=0.15, padbottommargin=0.15,
@@ -14,6 +15,17 @@ SetGlobalStyle(padleftmargin=0.15, padbottommargin=0.15,
                labelsizey=0.04, setoptstat=0, setopttitle=0, palette=ROOT.kGreyScale)
 
 ROOT.gROOT.SetBatch(True)
+
+def parse_ese_bands(bands_cfg):
+    """Build {label: (lo, hi)} from a list of [lo, hi] q2 percentile pairs."""
+    bands = {}
+    for edges in (bands_cfg or []):
+        if not (isinstance(edges, (list, tuple)) and len(edges) == 2):
+            raise ValueError(f"ESE band {edges} must be a [lo, hi] pair of percentiles")
+        p_lo, p_hi = int(edges[0]), int(edges[1])
+        bands[get_ese_band_label(p_lo, p_hi)] = (p_lo, p_hi)
+    return bands
+
 ROOT.TH1.AddDirectory(False)
 
 # TODO: move this to the StyleFormatter
@@ -144,7 +156,8 @@ def compute_resolution(subMean):
         sys.exit(1)
 
 
-def project_ese(histos_triplets, histos_triplets_labels, ese_thresholds):
+def project_ese(histos_triplets, histos_triplets_labels, ese_thresholds, ese_bands,
+                triplet=('FT0c', 'FV0a', 'TPCtot')):
     '''
     Project histograms for each ESE selection
 
@@ -175,93 +188,58 @@ def project_ese(histos_triplets, histos_triplets_labels, ese_thresholds):
                 hist_cent_vs_qvec_prod.append(single_hist)
         histos_ese_sel_dict['Inclusive'][label] = tuple(hist_cent_vs_qvec_prod)
 
-    if ese_thresholds is not None:
-        debug_file = ROOT.TFile.Open("debug_ese.root", "RECREATE")
-        for ese_percentile, percentile_dict in ese_thresholds.items():
-            if int(ese_percentile.split('_')[1]) != 20 and int(ese_percentile.split('_')[1]) != 80:
-                continue
-            print(f'Projecting to TH2 for ESE selection: {ese_percentile}')
-            percentile_from_zero = int(ese_percentile.split('_')[1])
-            histos_ese_sel_dict[f"upper_{100-percentile_from_zero}"] = {}
-            histos_ese_sel_dict[f"lower_{percentile_from_zero}"] = {}
-            hist_thresholds_qa = TH1F(f'h_thresholds_qa_{ese_percentile}', f'h_thresholds_qa_{ese_percentile}', 100, 0, 100)
-            for cent, threshold in percentile_dict.items():
-                hist_thresholds_qa.SetBinContent(hist_thresholds_qa.GetXaxis().FindBin(cent), threshold)
-
-            print(f'histos_triplets_labels: {histos_triplets}, {histos_triplets_labels}')
+    if ese_thresholds:
+        cent_keys = list(next(iter(ese_thresholds.values())).keys())
+        for band_label, (p_lo, p_hi) in ese_bands.items():
+            for p in (p_lo, p_hi):
+                if 0 < p < 100 and f'quantile_{p}' not in ese_thresholds:
+                    raise KeyError(f"quantile_{p} not available in the ESE quantile file "
+                                   f"(available: {sorted(ese_thresholds.keys())})")
+            thr_lo_dict = (ese_thresholds[f'quantile_{p_lo}'] if p_lo > 0
+                           else {c: 0.0 for c in cent_keys})
+            thr_hi_dict = (ese_thresholds[f'quantile_{p_hi}'] if p_hi < 100
+                           else {c: 999.0 for c in cent_keys})
+            print(f'Projecting to TH2 for ESE band: {band_label} '
+                  f'(quantiles {p_lo}-{p_hi})')
+            histos_ese_sel_dict[band_label] = {}
             for histo, label in zip(histos_triplets, histos_triplets_labels):
-                print(f'Processing {label} for ESE selection: {ese_percentile}')
-                if label != ('FT0c', 'FV0a', 'TPCtot'):
-                    print(f'Skipping {label} for ESE selection: {ese_percentile}')
+                if tuple(label) != tuple(triplet):
                     continue
-                print(f"Processing histogram: {histo[0].GetName()} for ESE selection: {ese_percentile}")
-                hist_cent_vs_qvec_prod_upper, hist_cent_vs_qvec_prod_lower = [], []
+                hists_band = []
                 for single_hist in histo:
-                    hist_cent_vs_qvec_prod_upper.append(TH2F(single_hist.GetName(), single_hist.GetName(),
-                                                             single_hist.GetXaxis().GetNbins(), single_hist.GetXaxis().GetXmin(), single_hist.GetXaxis().GetXmax(),
-                                                             single_hist.GetYaxis().GetNbins(), single_hist.GetYaxis().GetXmin(), single_hist.GetYaxis().GetXmax()))
-                    hist_cent_vs_qvec_prod_upper[-1].SetDirectory(0)
-                    hist_cent_vs_qvec_prod_lower.append(TH2F(single_hist.GetName(), single_hist.GetName(),
-                                                             single_hist.GetXaxis().GetNbins(), single_hist.GetXaxis().GetXmin(), single_hist.GetXaxis().GetXmax(),
-                                                             single_hist.GetYaxis().GetNbins(), single_hist.GetYaxis().GetXmin(), single_hist.GetYaxis().GetXmax()))
-                    hist_cent_vs_qvec_prod_lower[-1].SetDirectory(0)
+                    h2 = TH2F(single_hist.GetName(), single_hist.GetName(),
+                              single_hist.GetXaxis().GetNbins(),
+                              single_hist.GetXaxis().GetXmin(),
+                              single_hist.GetXaxis().GetXmax(),
+                              single_hist.GetYaxis().GetNbins(),
+                              single_hist.GetYaxis().GetXmin(),
+                              single_hist.GetYaxis().GetXmax())
+                    h2.SetDirectory(0)
+                    n_matched = 0
                     for i_cent_bin in range(1, single_hist.GetXaxis().GetNbins()+1):
-                        cent_min = single_hist.GetXaxis().GetBinLowEdge(i_cent_bin)
-                        cent_max = single_hist.GetXaxis().GetBinUpEdge(i_cent_bin) 
-                        cent_bin = hist_cent_vs_qvec_prod_upper[-1].GetXaxis().FindBin((cent_min + cent_max)/2)
-                        single_hist.GetXaxis().SetRange(cent_bin, cent_bin)
-
-                        ese_threshold = percentile_dict[(cent_min + cent_max)/2]
-                        make_dir_root_file(f"{ese_percentile}/{label}/{single_hist.GetName()}/cent_{cent_min}_{cent_max}", debug_file, verbose=False)
-                        debug_file.cd(f"{ese_percentile}/{label}/{single_hist.GetName()}/cent_{cent_min}_{cent_max}")
-
-                        single_hist.GetZaxis().SetRangeUser(ese_threshold, 1000)
-                        hist_upper = single_hist.Project3D('y')
-                        hist_upper.SetName(f'proj_{single_hist.GetName()}_upper_{percentile_from_zero}_{cent_min}_{cent_max}')
-                        hist_yx_upper = single_hist.Project3D('yx')
-                        hist_yx_upper.Write("hist_yx_upper")
-                        hist_xz_upper = single_hist.Project3D('xz')
-                        hist_xz_upper.Write("hist_xz_upper")
-                        hist_yz_upper = single_hist.Project3D('yz')
-                        hist_yz_upper.Write("hist_yz_upper")
-
-                        single_hist.GetZaxis().SetRangeUser(0, ese_threshold)
-                        hist_lower = single_hist.Project3D('y')
-                        hist_lower.SetName(f'proj_{single_hist.GetName()}_lower_{100-percentile_from_zero}_{cent_min}_{cent_max}')
-
-                        hist_yx_lower = single_hist.Project3D('yx')
-                        hist_yx_lower.Write("hist_yx_lower")
-                        hist_xz_lower = single_hist.Project3D('xz')
-                        hist_xz_lower.Write("hist_xz_lower")
-                        hist_yz_lower = single_hist.Project3D('yz')
-                        hist_yz_lower.Write("hist_yz_lower")
-                        hist_lower.Write()
-                        h_threshold = ROOT.TH1F(f'h_threshold_{cent_min}_{cent_max}', f'h_threshold_{cent_min}_{cent_max}', 1, 0, 1)
-                        h_threshold.SetBinContent(1, ese_threshold)
-                        h_threshold.Write()
-
-                        for i_qvec_bin in range(1, single_hist.GetYaxis().GetNbins()+1):
-                            content_upper = hist_upper.GetBinContent(i_qvec_bin)
-                            error_upper = hist_upper.GetBinError(i_qvec_bin)
-                            # print(f"cent_bin: {cent_bin}, i_qvec_bin: {i_qvec_bin}, content_upper: {content_upper}, error_upper: {error_upper}")
-                            hist_cent_vs_qvec_prod_upper[-1].SetBinContent(cent_bin, i_qvec_bin, content_upper)
-                            hist_cent_vs_qvec_prod_upper[-1].SetBinError(cent_bin, i_qvec_bin, error_upper)
-
-                            content_lower = hist_lower.GetBinContent(i_qvec_bin)
-                            error_lower = hist_lower.GetBinError(i_qvec_bin)
-                            # print(f"cent_bin: {cent_bin}, i_qvec_bin: {i_qvec_bin}, content_lower: {content_lower}, error_lower: {error_lower}")
-                            hist_cent_vs_qvec_prod_lower[-1].SetBinContent(cent_bin, i_qvec_bin, content_lower)
-                            hist_cent_vs_qvec_prod_lower[-1].SetBinError(cent_bin, i_qvec_bin, error_lower)
-
+                        c_lo = single_hist.GetXaxis().GetBinLowEdge(i_cent_bin)
+                        c_hi = single_hist.GetXaxis().GetBinUpEdge(i_cent_bin)
+                        c_mid = (c_lo + c_hi) / 2
+                        if c_mid not in thr_lo_dict:
+                            continue
+                        cent_bin = h2.GetXaxis().FindBin(c_mid)
+                        single_hist.GetXaxis().SetRange(i_cent_bin, i_cent_bin)
+                        single_hist.GetZaxis().SetRangeUser(thr_lo_dict[c_mid],
+                                                            thr_hi_dict[c_mid])
+                        hproj = single_hist.Project3D('y')
+                        for i_q in range(1, single_hist.GetYaxis().GetNbins()+1):
+                            h2.SetBinContent(cent_bin, i_q, hproj.GetBinContent(i_q))
+                            h2.SetBinError(cent_bin, i_q, hproj.GetBinError(i_q))
                         single_hist.GetXaxis().SetRange(0, 0)
                         single_hist.GetZaxis().SetRange(0, 0)
-
-                histos_ese_sel_dict[f"upper_{100-percentile_from_zero}"][label] = tuple(hist_cent_vs_qvec_prod_upper)
-                histos_ese_sel_dict[f"lower_{percentile_from_zero}"][label] = tuple(hist_cent_vs_qvec_prod_lower)
-                debug_file.cd(f"{ese_percentile}/{label}")
-                hist_thresholds_qa.Write()
-
-        debug_file.Close()
+                        n_matched += 1
+                    if n_matched == 0:
+                        raise RuntimeError(f"Band {band_label}: no centrality bin matched the "
+                                           f"threshold map, check the centrality binning")
+                    hists_band.append(h2)
+                histos_ese_sel_dict[band_label][label] = tuple(hists_band)
+            if not histos_ese_sel_dict[band_label]:
+                raise RuntimeError(f"Band {band_label}: triplet {triplet} not found in input")
 
     return histos_ese_sel_dict
 
@@ -280,6 +258,8 @@ if __name__ == "__main__":
                         default="", help="file with ESE percentiles")
     parser.add_argument("--ese_detector", "-ed", metavar="text",
                         default="", help="Detector for ESE quantiles")
+    parser.add_argument("--config", "-cfg", metavar="text", default="",
+                        help="config file, ESE bands are read from its 'ese' block")
     parser.add_argument("--batch", "-b", action='store_true', help="run in batch mode")
     args = parser.parse_args()
 
@@ -288,10 +268,29 @@ if __name__ == "__main__":
     histos_triplets, histos_triplets_labels = load_reso_histos(args.an_res_file, args.wagon_id)
 
     # Load EsE thresholds if provided and apply selections
+    ese_cfg, proj_cfg = {}, {}
+    if args.config:
+        with open(args.config, 'r') as cfg_file:
+            cfg = yaml.safe_load(cfg_file)
+        ese_cfg = cfg.get('ese') or {}
+        proj_cfg = cfg.get('projections') or {}
+    ese_bands = parse_ese_bands(ese_cfg.get('bands'))
+    ese_file = args.ese_file or ese_cfg.get('quantile_file', '')
+    ese_det = args.ese_detector or ese_cfg.get('det', '')
+    triplet = (proj_cfg.get('detA', 'FT0c'),
+               proj_cfg.get('detB', 'FV0a'),
+               proj_cfg.get('detC', 'TPCtot'))
+
     ese_thresholds = None
-    if args.ese_file:
-        ese_thresholds = load_ese_quantiles_thresholds(args.ese_file, args.ese_detector, cent_min_max[0], cent_min_max[1])
-    histos_filtered_dict = project_ese(histos_triplets, histos_triplets_labels, ese_thresholds)
+    if ese_file and ese_bands:
+        ese_thresholds = load_ese_quantiles_thresholds(ese_file, ese_det,
+                                                       cent_min_max[0], cent_min_max[1])
+        if not ese_thresholds:
+            raise RuntimeError(f"No quantiles loaded from {ese_file} for detector '{ese_det}'")
+    elif ese_bands:
+        print('WARNING: ESE bands defined but no quantile file, only Inclusive will be computed')
+    histos_filtered_dict = project_ese(histos_triplets, histos_triplets_labels,
+                                       ese_thresholds, ese_bands, triplet)
     # exit(1)
 
     # # Save histos for debugging purposes

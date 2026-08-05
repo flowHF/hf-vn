@@ -16,7 +16,7 @@ import concurrent.futures
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(f"{script_dir}/")
 sys.path.append(f"{script_dir}/../utils/")
-from utils import get_centrality_bins, make_dir_root_file, logger
+from utils import get_centrality_bins, make_dir_root_file, logger, get_ese_band_label
 from data_model import get_sparse_dict, get_tree_dict
 import uproot
 import pandas as pd
@@ -24,6 +24,10 @@ import awkward as ak
 
 def get_ese_thresholds(quantile_file, det, quantile):
     """Return {cent_bin_int: threshold} for a given detector and quantile."""
+    if quantile <= 0:
+        return {c: 0.0 for c in range(0, 100)}
+    if quantile >= 100:
+        return {c: 999.0 for c in range(0, 100)}
     f = TFile.Open(quantile_file, 'read')
     h = f.Get(f'{det}/quantile_{quantile}_{det}')
     if not h:
@@ -133,12 +137,23 @@ def process_sparse(i_file, infile_path, full_cfg, sparse_cfg, prep_out_dir, inpu
     bkg_maxs = full_cfg['preprocess']['bkg_cuts']
     mass_ranges = full_cfg['preprocess'].get('mass_ranges', None)
     axes_to_keep, rebin = sparse_cfg["axes"]['names'], sparse_cfg["axes"]['rebin']
-    ese_cfg = full_cfg.get('ese', {})
-    ese_class = ese_cfg.get('class', 'Inclusive')
-    thr = None
-    if ese_class != 'Inclusive' and axes.get('Qvec') is not None:
-        quantile = 20 if ese_class == 'lower_20' else 80
-        thr = get_ese_thresholds(ese_cfg['quantile_file'], ese_cfg['det'], quantile)
+    ese_cfg = full_cfg.get('ese') or {}
+    ese_band = ese_cfg.get('band')
+    do_ese = bool(ese_band) and ese_band != 'Inclusive' and sparse_cfg['name'] == 'FlowSP'
+    thr_lo = thr_hi = None
+    if do_ese:
+        if axes.get('Qvec') is None or axes.get('Cent') is None:
+            raise RuntimeError(f"ESE band {ese_band} requested but sparse {sparse_cfg['name']} "
+                               f"has no Qvec and/or Cent axis")
+        q_lo, q_hi = int(ese_band[0]), int(ese_band[1])
+        bands = [[int(b[0]), int(b[1])] for b in (ese_cfg.get('bands') or [])]
+        if bands and [q_lo, q_hi] not in bands:
+            raise ValueError(f"ESE band {[q_lo, q_hi]} is not listed in ese.bands ({bands}), "
+                             f"so the resolution file will not contain it")
+        logger(f"Applying ESE band {get_ese_band_label(q_lo, q_hi)} "
+               f"from detector {ese_cfg['det']}", "INFO")
+        thr_lo = get_ese_thresholds(ese_cfg['quantile_file'], ese_cfg['det'], q_lo)
+        thr_hi = get_ese_thresholds(ese_cfg['quantile_file'], ese_cfg['det'], q_hi)
     sparse_type, sparse_path = sparse_cfg['name'], sparse_cfg['path']
     sparse_dir, sparse_name = sparse_path.split('/')[0], sparse_path.split('/')[1]
 
@@ -159,7 +174,7 @@ def process_sparse(i_file, infile_path, full_cfg, sparse_cfg, prep_out_dir, inpu
             sparse.GetAxis(axes['Mass']).SetRangeUser(mass_min, mass_max)
         proj_axes = [axes[ax_to_keep] for ax_to_keep in axes_to_keep]
 
-        if ese_class == 'Inclusive' or axes.get('Qvec') is None:
+        if not do_ese:
             proj_sparse = sparse.Projection(len(proj_axes), array.array('i', proj_axes), 'O')
         else:
             ax_cent = sparse.GetAxis(axes['Cent'])
@@ -167,10 +182,7 @@ def process_sparse(i_file, infile_path, full_cfg, sparse_cfg, prep_out_dir, inpu
             acc = None
             for c in range(int(cent_min), int(cent_max)):
                 ax_cent.SetRangeUser(c + 1e-6, c + 1 - 1e-6)
-                if ese_class == 'lower_20':
-                    ax_q.SetRangeUser(0.0, thr[c])
-                else:
-                    ax_q.SetRangeUser(thr[c], 10.0)
+                ax_q.SetRangeUser(thr_lo[c], thr_hi[c])
                 h = sparse.Projection(len(proj_axes), array.array('i', proj_axes), 'O')
                 if acc is None:
                     acc = h.Clone(f'acc_{i_pt}')
