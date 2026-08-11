@@ -59,39 +59,6 @@ void Rescale(TH2* h, std::vector<double>& corr){
     corr.push_back(aMinus);
 }
 
-TH2F* ProjQxQyCentDiff(TH3F* hQxQyCentUncor, float zmin, float zmax, TFile* c){
-
-    TH2F* hQxQyCentDiff = new TH2F(Form("hQxQyCent_%f_%f_Diff", zmin, zmax), "",
-                                   hQxQyCentUncor->GetNbinsX(),
-                                   hQxQyCentUncor->GetXaxis()->GetBinCenter(1) - hQxQyCentUncor->GetXaxis()->GetBinWidth(1)/2.,
-                                   hQxQyCentUncor->GetXaxis()->GetBinCenter(hQxQyCentUncor->GetNbinsX()) +
-                                                                               hQxQyCentUncor->GetXaxis()->GetBinWidth(hQxQyCentUncor->GetNbinsX())/2.,
-                                   hQxQyCentUncor->GetNbinsY(),
-                                   hQxQyCentUncor->GetYaxis()->GetBinCenter(1) - hQxQyCentUncor->GetYaxis()->GetBinWidth(1)/2.,
-                                   hQxQyCentUncor->GetYaxis()->GetBinCenter(hQxQyCentUncor->GetNbinsY()) +
-                                                                               hQxQyCentUncor->GetYaxis()->GetBinWidth(hQxQyCentUncor->GetNbinsY())/2.);
-
-    // In principle not necessary
-    for(int i=0;i<hQxQyCentUncor->GetNbinsX();i++){
-        for(int j=0;j<hQxQyCentUncor->GetNbinsY();j++){
-            hQxQyCentDiff->SetBinContent(i+1, j+1, 0.0);
-        }
-    }
-
-    for(int k=hQxQyCentUncor->GetZaxis()->FindBin(zmin);k<hQxQyCentUncor->GetZaxis()->FindBin(zmax);k++){
-        for(int i=0;i<hQxQyCentUncor->GetNbinsX();i++){
-            for(int j=0;j<hQxQyCentUncor->GetNbinsY();j++){
-                hQxQyCentDiff->SetBinContent(i+1, j+1, hQxQyCentDiff->GetBinContent(i+1, j+1) +
-                                                hQxQyCentUncor->GetBinContent(i+1, j+1, k));
-            }
-        }
-    }
-
-    hQxQyCentDiff->Write();
-
-    return hQxQyCentDiff;
-}
-
 
 std::vector<double> fillCorrections(string outdir, TFile* infile, string detector, string dirname, string ref, int nmode){
 
@@ -102,7 +69,12 @@ std::vector<double> fillCorrections(string outdir, TFile* infile, string detecto
     TH2F* hQvecUncor[nCentBins];
     std::vector<double> CorUncor;
     for(int i=0;i<nCentBins;i++){
-        hQvecUncor[i] = (TH2F*)ProjQxQyCentDiff(hQxQyCentUncor, i, i+1, c);
+        hQxQyCentUncor->GetZaxis()->SetRange(i+1, i+1);
+        hQvecUncor[i] = (TH2F*)(hQxQyCentUncor->Project3D("yx"));
+        int centMin = static_cast<int>(hQxQyCentUncor->GetZaxis()->GetBinLowEdge(i+1));
+        int centMax = static_cast<int>(hQxQyCentUncor->GetZaxis()->GetBinUpEdge(i+1));
+        hQvecUncor[i]->SetTitle(Form("hQxQyCent_%i_%i_Diff;Q_{x};Q_{y}", centMin, centMax));
+        hQvecUncor[i]->Write(Form("hQxQyCent_%i_%i_Diff", centMin, centMax));
         Recenter(hQvecUncor[i], CorUncor);
         Twist(hQvecUncor[i], CorUncor);
         Rescale(hQvecUncor[i], CorUncor);
