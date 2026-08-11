@@ -25,4 +25,4 @@ test*
 # jupyter notebook
 *.ipynb
 
-**/debug_reso/
+**/debug_reso*/
