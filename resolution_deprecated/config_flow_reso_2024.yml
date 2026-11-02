@@ -1,0 +1,83 @@
+out_dir: '/home/mdicosta/alice/hf-vn/resolution/reso_2024_evsels'
+project: True
+suffix: '2024'
+
+ax_evsels:
+    noSameBunchPileup: [5]     # noSameBunchPileup
+    occupancy: [6]             # occupancy
+    timerangenarrow: [7]       # timerangenarrow
+    timerangestandard: [8]     # timerangestandard
+    rofstandard: [9]           # rofstandard
+    all: [5, 6, 7, 8, 9]
+    nosel: []
+
+occ_classes: [ 
+               [0, 9999999999],
+            ]
+
+cent_classes: [ 
+               [0, 10],
+               [10, 20],
+               [20, 30],
+               [30, 40],
+               [40, 50],
+               [50, 60],
+               [60, 70],
+               [70, 80],
+            ]
+
+reso_files: [
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_560089_0.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_560089_1.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_560089_2.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_560089_3.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_560089_4.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_560089_5.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_560089_6.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_560089_7.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_560089_8.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_560089_9.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_560089_10.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_0_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_1_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_2_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_3_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_4_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_5_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_6_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_7_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_8_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_9_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_10_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_11_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_12_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_13_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_14_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_15_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_16_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_17_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_18_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_19_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_20_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_21_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_22_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_23_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_24_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_25_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_26_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_27_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_28_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_29_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_30_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_31_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_32_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_33_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_34_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_35_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_36_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_37_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_38_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_39_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_40_suffix.root,
+  /data/mdicosta/DplusFlow/Resolution/2024/Train389979/MERGED_41_suffix.root,
+]

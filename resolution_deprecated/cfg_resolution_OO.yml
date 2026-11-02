@@ -1,0 +1,39 @@
+output_dir: '/data/mdicosta/DplusFlow/Resolution/OO/'
+reso_output_dir: '/home/mdicosta/alice/hf-vn/resolution/reso_OO_allruns/'
+train_number: 488455
+suffix: 'OO'
+num_merged: 1
+threads: 80
+force: True
+merge_all: False
+sparse_path: "hf-task-flow-charm-hadrons/hSparseFlowCharm"
+
+download_merged_runs: False
+download_single_runs: False
+
+cent_classes: [0, 10, 30, 50, 60, 70, 80]
+
+grid_dirs: [
+  /alice/cern.ch/user/a/alihyperloop/jobs/0275/hy_2759526,
+  /alice/cern.ch/user/a/alihyperloop/jobs/0275/hy_2759527,
+  /alice/cern.ch/user/a/alihyperloop/jobs/0275/hy_2759528,
+  /alice/cern.ch/user/a/alihyperloop/jobs/0275/hy_2759529,
+  /alice/cern.ch/user/a/alihyperloop/jobs/0275/hy_2759530,
+  /alice/cern.ch/user/a/alihyperloop/jobs/0275/hy_2759531,
+  /alice/cern.ch/user/a/alihyperloop/jobs/0275/hy_2759532,
+  /alice/cern.ch/user/a/alihyperloop/jobs/0275/hy_2759533,
+  /alice/cern.ch/user/a/alihyperloop/jobs/0275/hy_2759534
+]
+
+grid_runs: [
+  '564445',
+  '564430',
+  '564414',
+  '564400',
+  '564387',
+  '564374',
+  '564373',
+  '564359',
+  '564356'
+]
+
