@@ -1,0 +1,8 @@
+outfile: 'check_qvec_calibs_2024.root'
+files:
+- name: 'MaximGeneral'
+  alien_path: '/alice/data/CCDB/Users/m/mavirta/Qvector/QvecCalib/v2/15/40847'
+  path: '/home/mdicosta/alice/hf-vn/calibqvec/CCDBMaximGeneral.root'
+- name: 'MaximPersonal'
+  alien_path: '/alice/data/CCDB/Users/m/mavirta/Qvector/LHC24_PbPb_pass3/QvecCalib/v2/03/40321'
+  path: '/home/mdicosta/alice/hf-vn/calibqvec/CCDBMaximPersonal.root'

@@ -1,8 +1,12 @@
 centrality: 'k0100'
-input_file: "/path/to/input/AO2D.root"
-table_names: ["O2hfcanddplite", "O2hfcanddpml"]
+input_files: ["/path/to/input/AO2D.root"]
+table_names: ["O2hfcandd0lite", "O2hfcandd0ml"]
 table_cols_to_keep: [['fM', 'fPt', 'fCentrality', 'fFlagMcMatchRec', 'fOriginMcRec'], ['fMlScore0', 'fMlScore1']]
-sgn_fin_state: "DplusToPiKPi"
+sgn_fin_state: "DzeroToPiK"
+fin_states: ["DzeroToPiK", "DzeroToPiKReflected", "DzeroToPiKPi0",
+             "DzeroToPiPi", "DzeroToPiPiPi0", "DzeroToKK"]
+             # DzeroToPiK (signal) must be listed here too, so its template file
+             # gets produced and get_corr_bkg can read frac_0 for normalization
 pt_bins: [
   [0.0, 1.0],
   [1.0, 2.0],

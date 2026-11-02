@@ -1,0 +1,28 @@
+# Systematic uncertainties on prompt v2 (D0, k60100_loose2to2d5_d20)
+# Extracted from:
+#   fit_syst : .../sys/results/fit/TotalSystV2.root   (hSystV2_vs_pT)
+#   lm_syst  : .../sys/results/v2_vs_pT_LMSys.root    (hSyst)
+#   fd_syst  : .../sys/results/v2_prompt_ratio_0d2_1d3.root (gSysUncAsym, asymmetric low/high)
+#   stat     : central value file (see --central-file) -> gV2Prompt (symmetric)
+# D0:
+#   k60100_loose2to2d5_d20:
+#     pt_bins: [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0]
+#     fit_syst: [0.00521, 0.00206, 0.00247, 0.00293, 0.0014, 0.0021, 0.00237, 0.00279, 0.00406, 0.00615, 0.00653]
+#     lm_syst: [0.01119, 0.00487, 0.00538, 0.00349, 0.00376, 0.00358, 0.00385, 0.00308, 0.00412, 0.0057, 0.00749]
+#     fd_syst_low: [0.00012, 0.00034, 0.00085, 0.00155, 0.00172, 0.00178, 0.00178, 0.00204, 0.00184, 0.00203, 0.00137]
+#     fd_syst_high: [0.00012, 0.00036, 0.00089, 0.00163, 0.00181, 0.00189, 0.00189, 0.00219, 0.00198, 0.00221, 0.00148]
+
+D0:
+  k60100_loose2to2d5_d20:
+    # pT bin edges
+    pt_bins: [0.0, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0]
+    # Updated fit values
+    fit_syst: [0.006, 0.003, 0.003, 0.004, 0.004, 0.004, 0.004, 0.004, 0.005, 0.009, 0.015]
+    # LM values
+    lm_syst: [0.011, 0.005, 0.005, 0.004, 0.004, 0.004, 0.004, 0.004, 0.004, 0.006, 0.007]
+    # FD sys low values
+    fd_syst_low: [0.0001, 0.0003, 0.0008, 0.0015, 0.0017, 0.0018, 0.0018, 0.002, 0.002, 0.002, 0.0014]
+    # FD sys high values
+    fd_syst_high: [0.0001, 0.0003, 0.0009, 0.0017, 0.0018, 0.0019, 0.0019, 0.0022, 0.002, 0.0022, 0.0015]
+    # fp syst (universal scalar, applied to every pT bin)
+    fp_syst: 0.0001

@@ -28,6 +28,15 @@
 
 #include <Rtypes.h>
 #include <RtypesCore.h>
+#include <vector>
+
+namespace AxisLabels {
+    constexpr const char* kRawYield = "#frac{d^{2}N}{d#Delta#eta d#Delta#phi}";
+    constexpr const char* kRawYieldRad = "#frac{d^{2}N}{d#Delta#eta d#Delta#phi} (rad^{-1})";
+    constexpr const char* kRawYieldRad_DP = "#frac{dN}{d#Delta#phi} (rad^{-1})";
+    constexpr const char* kPerTrigYield = "#frac{1}{N_{trig}} #frac{d^{2}N_{assoc}}{d#Delta#eta d#Delta#phi}";
+    constexpr const char* kPerTrigYield_DP = "#frac{1}{N_{trig}} #frac{dN_{assoc}}{d#Delta#phi}";
+}
 
 class DhCorrelationExtraction : public TObject
 {
@@ -39,211 +48,263 @@ class DhCorrelationExtraction : public TObject
                       kDStarD0pi };
   enum selectAnalysisType { kSE,
                             kME };
-  enum selectDmesonOrigin { kPrompt,
-                            kFD };
   enum selectParticleType { kPrimaryPart,
                             kAllPart };
+  enum method {
+    kMassBinning,
+    kDeltaPhiBinning
+  };
+  enum axis { kPool = 0,
+              kPtCand = 1,
+              kPtHad = 2,
+              kDeltaEta = 3,
+              kDeltaPhi = 4,
+              kMass = 5 };
+  struct interval {
+    Double_t low;
+    Double_t up;
+  };
 
   DhCorrelationExtraction(); // default constructor
   DhCorrelationExtraction(const DhCorrelationExtraction& source);
   virtual ~DhCorrelationExtraction();
+  static DhCorrelationExtraction CreateDefault();
+  static DhCorrelationExtraction CreateCustom(const TString& dirNameSE, const TString& dirNameME, const TString& massSparseName);
+  static DhCorrelationExtraction* CreateCopy(const DhCorrelationExtraction& source);
 
-  /// Methods to set the input configuration
-  // Input files, directories and histograms
+  /// Input files, directories and thnsparse
+  // D meson specie
   Bool_t SetDmesonSpecie(DmesonSpecie k);
+  // mass
   void SetInputFilenameMass(TString filenameMass) { fFileNameMass = filenameMass; }
+  void SetMassSparseName(TString massSparseName) { fMassSparseName = massSparseName; }
+  // same event
   void SetInputFilenameSE(TString filenameSE) { fFileNameSE = filenameSE; }
-  void SetInputFilenameME(TString filenameME) { fFileNameME = filenameME; }
-  void SetInputFilenameSecPart(TString filenameSecPart) { fFileSecPartName = filenameSecPart; }
-  void SetInputFilenameBiasBtoD(TString filenamePromptMcRec, TString filenameNonPromptMcRec)
-  {
-    fFilePromptMcRecName = filenamePromptMcRec;
-    fFileNonPromptMcRecName = filenameNonPromptMcRec;
-  }
   void SetDirNameSE(TString dirNameSE) { fDirNameSE = dirNameSE; }
+  void SetCorrelSparseNameSE(TString correlSparseNameSE) { fCorrelSparseNameSE = correlSparseNameSE; }
+  // mixed event
+  void SetInputFilenameME(TString filenameME) { fFileNameME = filenameME; }
   void SetDirNameME(TString dirNameME) { fDirNameME = dirNameME; }
+  void SetCorrelSparseNameME(TString correlSparseNameME) { fCorrelSparseNameME = correlSparseNameME; }
+  /*// secondary particle
+  void SetInputFilenameSecPart(TString filenameSecPart) { fFileSecPartName = filenameSecPart; }
   void SetDirNameSecPart(TString dirNameSecPart) { fDirSecPartName = dirNameSecPart; }
-  void SetMassHistoNameSgn(TString massHistoNameSgn) { fMassHistoNameSgn = massHistoNameSgn; }
-  void SetMassHistoNameBkg(TString massHistoNameBkg) { fMassHistoNameBkg = massHistoNameBkg; }
-  void SetMassHistoNameSBs(TString massHistoNameSBs) { fMassHistoNameSBs = massHistoNameSBs; }
-  void SetCorrelHistoSE(TString correlNameSE) { fSECorrelHistoName = correlNameSE; }
-  void SetCorrelHistoME(TString correlNameME) { fMECorrelHistoName = correlNameME; }
-  void SetSECorrelHistoSignalName(TString correlNameSigSE) { fSECorrelSignalRegionName = correlNameSigSE; }
-  void SetSECorrelHistoSidebandName(TString correlNameSbSE) { fSECorrelSidebandsName = correlNameSbSE; }
-  void SetSECorrelHistoSidebandLeftName(TString correlNameSbSE) { fSECorrelSidebandLeftName = correlNameSbSE; }
-  void SetSECorrelHistoSidebandRightName(TString correlNameSbSE) { fSECorrelSidebandRightName = correlNameSbSE; }
-  void SetMECorrelHistoSignalName(TString correlNameSigME) { fMECorrelSignalRegionName = correlNameSigME; }
-  void SetMECorrelHistoSidebandName(TString correlNameSbME) { fMECorrelSidebandsName = correlNameSbME; }
-  void SetMECorrelHistoSidebandLeftName(TString correlNameSbME) { fMECorrelSidebandLeftName = correlNameSbME; }
-  void SetMECorrelHistoSidebandRightName(TString correlNameSbME) { fMECorrelSidebandRightName = correlNameSbME; }
   void SetHistoSecPartName(TString histoPrimaryPartName, TString histoAllPartName)
   {
     fHistoPrimaryPartName = histoPrimaryPartName;
     fHistoAllPartName = histoAllPartName;
-  }
-  void SetInputFilenameFDTemplate(TString filenameFDTemplate) { fFileFDTemplateName = filenameFDTemplate; }
-  void SetInputFilenameFDPromptFrac(TString filenameFDPromptFrac) { fFileFDPromptFracName = filenameFDPromptFrac; }
-  void SetInputHistoNameFDTemplatePrompt(TString hNameFDTemplatePrompt) { fHistoFDTemplatePromptName = hNameFDTemplatePrompt; }
-  void SetInputHistoNameFDTemplateNonPrompt(TString hNameFDTemplateNonPrompt) { fHistoFDTemplateNonPromptName = hNameFDTemplateNonPrompt; }
-  void SetInputHistoNameFDPromptFrac(TString hNameFDPromptFrac) { fHistoFDPromptFracName = hNameFDPromptFrac; }
+  }*/
+  // method
+  void SetMethod(method m) { fMethod = m; }
+  // Debug level
+  void SetDebugLevel(Int_t debug) { fDebug = debug; }
 
-  // Input conditions: PtCand, PtHad, PoolBins
-  void SetNpools(Int_t npools) { fNpools = npools; }
-  void SetCorrectPoolsSeparately(Bool_t usePools) { fCorrectPoolsSeparately = usePools; }
-  void SetDeltaEtaRange(Double_t etaLow = -1., Double_t etaHigh = 1)
+  /// Input settings
+  // number of pools and pool by pool option
+  void SetPoolSettings(Int_t nPools, Bool_t doPoolByPool)
   {
-    fDeltaEtaMin = etaLow;
-    fDeltaEtaMax = etaHigh;
+    fNpools = nPools;
+    fDoPoolByPool = doPoolByPool;
   }
-  void SetSubtractSoftPiInMEdistr(Bool_t subtractSoftPiME) { fSubtractSoftPiME = subtractSoftPiME; }
-  void SetBkgScaleFactor(Double_t scaleFactor) { fBkgScaleFactor = scaleFactor; }
-  void SetSignalYieldforNorm(Double_t sgnYield) { fSgnYieldNorm = sgnYield; }
-  void SetBkgYield(Double_t bkgYield) { fBkgYield = bkgYield; }
-  void SetSBYield(Double_t SBYield) { fSBYield = SBYield; }
+  void SetDeltaEtaIntegrated(Bool_t deltaEtaIntegrated)
+  {
+    fDeltaEtaIntegrated = deltaEtaIntegrated;
+  }
+  // deltaEta bin for correlation histograms
+  void SetBinDeltaEtaLeft(Double_t etaMin, Double_t etaMax)
+  {
+    fDeltaEtaLeftMin = etaMin;
+    fDeltaEtaLeftMax = etaMax;
+  }
+  void SetBinDeltaEtaRight(Double_t etaMin, Double_t etaMax)
+  {
+    fDeltaEtaRightMin = etaMin;
+    fDeltaEtaRightMax = etaMax;
+  }
+
+  /// Input conditions: PtCand, PtHad, PoolBins
+  // void SetBinCandAndHad(Int_t binCand, Int_t binHad, Int_t binInvMass)
+  // {
+  //   fBinPtCand = binCand;
+  //   fBinPtHad = binHad;
+  //   fBinInvMass = binInvMass;
+  // }
+  void SetCandAndHadBins(std::vector<Double_t> PtCandBins, std::vector<Double_t> PtHadBins)
+  {
+    fPtCandBins = PtCandBins;
+    fPtHadBins = PtHadBins;
+  }
+  void SetInvMassBins(std::vector<Double_t> InvMassBins)
+  {
+    fInvMassBins = InvMassBins;
+  }
+  void SetDeltaPhiBins(std::vector<Double_t> DeltaPhiBins)
+  {
+    fDeltaPhiBins = DeltaPhiBins;
+  }
   void SetRebin2DcorrelHisto(Int_t rebinDeltaEta, Int_t rebinDeltaPhi)
   {
     fRebinAxisDeltaEta = rebinDeltaEta;
     fRebinAxisDeltaPhi = rebinDeltaPhi;
   }
-  void SetRebinOptions(Bool_t rebinAngCorr, Bool_t rebinFDCorr, Bool_t rebinSecPart)
-  {
-    fRebinAngCorr = rebinAngCorr;
-    fRebinFDCorr = rebinFDCorr;
-    fRebinSecPart = rebinSecPart;
-  }
-  void GetSignalAndBackgroundForNorm(Double_t PtCandMin, Double_t PtCandMax);
-  void GetSignalAndBackgroundForNorm_v2(Double_t PtCandMin, Double_t PtCandMax, Double_t InvMassMin, Double_t InvMassMax);
-  void NormalizeMEplot(TH2D*& histoME, TH2D*& histoMEsoftPi);
-  void SetDebugLevel(Int_t debug) { fDebug = debug; }
-  void SetDividedSidebands(Bool_t dividedSideb, Bool_t useSidebLeft, Bool_t useSidebRight)
-  {
-    fSidebandDivided = dividedSideb;
-    fUseSidebLeft = useSidebLeft;
-    fUseSidebRight = useSidebRight;
-  }
-  void SetFDSubtraction(Bool_t subtractFD) { fFDsubtraction = subtractFD; }
-  void SetSecPartContamination(Bool_t secPartContamination) { fSecPartContamination = secPartContamination; }
-  void SetCorrBiasBtoD(Bool_t corrbiasBtoD) { fCorrBiasBtoD = corrbiasBtoD; }
-  void SetBinCandAndHad(Int_t binCand, Int_t binHad, Int_t binInvMass)
-  {
-    fBinPtCand = binCand;
-    fBinPtHad = binHad;
-    fBinInvMass = binInvMass;
-  }
-  void SetBinDeltaPhiEtaForMEnorm(Double_t valPhiMEnorm, Double_t valEtaMEnorm) { fValPhiMEnorm = valPhiMEnorm; fValEtaMEnorm = valEtaMEnorm; }
+  // optional settings
+  /*void SetSubtractSoftPiInMEdistr(Bool_t subtractSoftPiME) { fdoSubtractSoftPiME = subtractSoftPiME; }
+  void SetdoRebinSecondaryPart(Bool_t rebinSecPart) { fdoRebinSecPart = rebinSecPart; }
+  void SetSecPartContamination(Bool_t secPartContamination) { fdoSecPartContamination = secPartContamination; }*/
 
   /// Analysis methods
-  TH2D* GetCorrelHisto(Int_t SEorME, Int_t pool, Double_t PtCandMin, Double_t PtCandMax, Double_t PtHadMin, Double_t PtHadMax, Double_t InvMassMin, Double_t InvMassMax);
-  TH2D* GetFDTemplateHisto(Int_t PromptOrFD, Double_t PtCandMin, Double_t PtCandMax, Double_t PtHadMin, Double_t PtHadMax);
-  TH1D* GetCorrelHistoSecondaryPart(Int_t PrimaryPart, Double_t PtCandMin, Double_t PtCandMax, Double_t PtHadMin, Double_t PtHadMax);
-  TH1D* ReflectCorrHistogram(TH1D*& histo);
+  Bool_t ExtractCorrelations();
+  Bool_t Init();
+  Bool_t ReadInputSEandME();
+  void ProjMassVsPt();
+  TH2D* ProjCorrelHisto(Int_t SEorME, Int_t pool);
+  /*TH1D* ProjCorrelHistoSecondaryPart(Int_t PrimaryPart, Double_t PtCandMin, Double_t PtCandMax, Double_t PtHadMin, Double_t PtHadMax);*/
+  void CalculateNormaliztionFactorME(TH2D*& histoME, Int_t pool);
+  void NormalizeMEplot(TH2D*& histoME, TH2D*& histoMEsoftPi, Int_t pool);
+  TH1D* CorrectedPairsMassDistr(TH2D* hRawSE, TH2D* hCorrectedCorrel, Int_t iPool);
+  Double_t CalculateTriggerNormalizationFactor(TH2D* hMassVsPt, Double_t PtCandMin, Double_t PtCandMax, Double_t InvMassMin, Double_t InvMassMax);
+  /*TH1D* ReflectCorrHistogram(TH1D*& histo);
   TH1D* ReflectHistoRun2(TH1D* h, Double_t scale);
-  TH1D* EvaluateMCClosModulations(Double_t PtCandMin, Double_t PtCandMax, Double_t PtHadMin, Double_t PtHadMax);
-  Double_t GetFDPromptFrac(Double_t PtCandMin, Double_t PtCandMax, Double_t PtHadMin, Double_t PtHadMax);
   Double_t CalculateBaseline(TH1D*& histo, Bool_t totalRange = kTRUE, Bool_t reflected = kFALSE);
   Double_t CalculateBaselineError(TH1D*& histo, Bool_t totalRange = kTRUE, Bool_t reflected = kFALSE);
-  Bool_t ReadInputSEandME();
-  Bool_t ReadInputInvMass();
-  Bool_t ReadInputFDSubtr();
-  Bool_t ReadInputSecondaryPartContamination();
-  Bool_t ExtractCorrelations(Double_t PtCandMin, Double_t PtCandMax, Double_t PtHadMin, Double_t PtHadMax, Double_t InvMassMin, Double_t InvMassMax, TString codeName);
-  TH2F* GetInvMassVsPtHisto() { return fMassVsPt; }
-  TH2D* GetCorrHisto2D_SE() { return fCorrHisto_2D_SE; }
-  TH2D* GetCorrHisto2D_ME() { return fCorrHisto_2D_ME; }
-  TH2D* GetCorrectedCorrHisto2D() { return fCorrectedCorrHisto_2D; }
-  TH1D* GetCorrectedCorrHisto() { return fCorrectedCorrHisto; }
-  TH1D* GetCorrectedCorrHisto_BaselineSubtr() { return fCorrectedCorrHisto_BaselineSubtr; }
-  TH1D* GetCorrectedCorrHisto_Reflected() { return fCorrectedCorrHisto_Reflected; }
-  TH1D* GetCorrectedCorrHisto_Reflected_BaselineSubtr() { return fCorrectedCorrHisto_Reflected_BaselineSubtr; }
+  Bool_t ReadInputSecondaryPartContamination();*/
+
+  /// Getters for the results
+  TH2D* GetMassVsPtHist2D() { return fMassVsPt_2D; }
+  // final results, debug level 0
+  TH1D* GetCorrectedCorrel() { return fCorrectedCorrel; }
+  TH1D* GetNormalizedCorrectedCorrel() { return fNormalizedCorrectedCorrel; }
+  TH1D* GetCorrectedPairsMass() { return fCorrectedPairsMass; }
+  TH1D* GetCorrectionRatio() { return fCorrectionRatio; }
+
+  // intermediate results, debug level 1
+  TH2D* GetRawCorrel_SE_2D() { return fCorrel_SE_2D; }
+  TH2D* GetRawCorrel_ME_2D() { return fCorrel_ME_2D; }
+  TH2D* GetCorrectedCorrel_2D() { return fCorrectedCorrel_2D; }
+  TH2D* GetNormalizedCorrel_ME_2D() { return fNormalizedCorrel_ME_2D; }
+  TH2D* GetOriginalCorrel_SE_2D() { return fOriginalCorrel_SE_2D; }
+  TH2D* GetOriginalCorrel_ME_2D() { return fOriginalCorrel_ME_2D; }
+  TH2D* GetOriginalMassVsDeltaEta_2D() { return fOriginalMassVsDeltaEta_2D; }
+  /*TH1D* GetCorrel_PrimaryPart() { return fCorrel_PrimaryPart; }
+  TH1D* GetCorrel_AllPart() { return fCorrel_AllPart; }
+  TH1D* GetFracSecondaryPart() { return fFracSecondaryPart; }
+  TH1D* GetCorrectedCorrHisto_Before_SecPart() { return fCorrectedCorrHisto_Before_SecPart; }*/
+
+  // original data histograms, debug level 2
+  std::vector<TH2D*> GetPoolVec_OriginalCorrel_SE_2D() { return fPoolVec_OriginalCorrel_SE_2D; }
+  std::vector<TH2D*> GetPoolVec_OriginalCorrel_ME_2D() { return fPoolVec_OriginalCorrel_ME_2D; }
+  std::vector<TH2D*> GetPoolVec_RawCorrel_SE_2D() { return fPoolVec_RawCorrel_SE_2D; }
+  std::vector<TH2D*> GetPoolVec_RawCorrel_ME_2D() { return fPoolVec_RawCorrel_ME_2D; }
+  std::vector<TH2D*> GetPoolVec_NormalizedCorrel_ME_2D() { return fPoolVec_NormalizedCorrel_ME_2D; }
+  std::vector<TH2D*> GetPoolVec_CorrectedCorrel_2D() { return fPoolVec_CorrectedCorrel_2D; }
+  std::vector<TH2D*> GetPoolVec_OriginalMassVsDeltaEta_2D() { return fPoolVec_OriginalMassVsDeltaEta_2D; }
+  std::vector<TH2D*> GetPoolVec_RawMassVsDeltaEta_2D() {return fPoolVec_RawMassVsDeltaEta_2D; }
+  std::vector<TH1D*> GetPoolVec_CorrectedMass() { return fPoolVec_CorrectedMass; }
+  std::vector<TH1D*> GetPoolVec_CorrectionRatio() { return fPoolVec_CorrectionRatio; }
+  /*TH1D* GetOriginalCorrel_PrimaryPart() { return fOriginalCorrel_PrimaryPart; }
+  TH1D* GetOriginalCorrel_AllPart() { return fOriginalCorrel_AllPart; }*/
 
   /// Histogram style
-  void SetTH1HistoStyle(TH1D*& histo, TString hTitle, TString hXaxisTitle, TString hYaxisTitle, Style_t markerStyle = kFullCircle, Color_t markerColor = kRed + 1, Double_t markerSize = 1.4, Color_t lineColor = kRed + 1, Int_t lineWidth = 3, Float_t hTitleXaxisOffset = 1.0, Float_t hTitleYaxisOffset = 1.0, Float_t hTitleXaxisSize = 0.060, Float_t hTitleYaxisSize = 0.060, Float_t hLabelXaxisSize = 0.060, Float_t hLabelYaxisSize = 0.060, Bool_t centerXaxisTitle = false, Bool_t centerYaxisTitle = false);
-  void SetTH2HistoStyle(TH2D*& histo, TString hTitle, TString hXaxisTitle, TString hYaxisTitle, TString hZaxisTitle, Float_t hTitleXaxisOffset = 1.8, Float_t hTitleYaxisOffset = 1.8, Float_t hTitleZaxisOffset = 1.2, Float_t hTitleXaxisSize = 0.060, Float_t hTitleYaxisSize = 0.060, Float_t hTitleZaxisSize = 0.060, Float_t hLabelXaxisSize = 0.060, Float_t hLabelYaxisSize = 0.060, Float_t hLabelZaxisSize = 0.060, Bool_t centerXaxisTitle = true, Bool_t centerYaxisTitle = true);
+  TH1D* SetTH1HistoStyle(TH1D* histo, TString hTitle, TString hXaxisTitle, TString hYaxisTitle, Style_t markerStyle = kFullCircle, Color_t markerColor = kRed + 1, Double_t markerSize = 1.4, Color_t lineColor = kRed + 1, Int_t lineWidth = 3, Float_t hTitleXaxisOffset = 1.0, Float_t hTitleYaxisOffset = 1.0, Float_t hTitleXaxisSize = 0.060, Float_t hTitleYaxisSize = 0.060, Float_t hLabelXaxisSize = 0.060, Float_t hLabelYaxisSize = 0.060, Bool_t centerXaxisTitle = false, Bool_t centerYaxisTitle = false);
+  TH2D* SetTH2HistoStyle(TH2D* histo, TString hTitle, TString hXaxisTitle, TString hYaxisTitle, TString hZaxisTitle, Float_t hTitleXaxisOffset = 1.8, Float_t hTitleYaxisOffset = 1.8, Float_t hTitleZaxisOffset = 1.2, Float_t hTitleXaxisSize = 0.060, Float_t hTitleYaxisSize = 0.060, Float_t hTitleZaxisSize = 0.060, Float_t hLabelXaxisSize = 0.060, Float_t hLabelYaxisSize = 0.060, Float_t hLabelZaxisSize = 0.060, Bool_t centerXaxisTitle = true, Bool_t centerYaxisTitle = true);
 
  private:
-  TFile* fFileMass;         // File containing the mass histograms
-  TFile* fFileSE;           // File containing the Same Event (SE) output
-  TFile* fFileME;           // File containing the Mixed Event (ME) output
-  TFile* fFileFDTemplate;   // File containing FD angular correlation templates
-  TFile* fFileFDPromptFrac; // File containing prompt fraction (used fo FD subtraction)
-  TFile* fFileSecPart;      // File containing secondary particle contaminaion teplates
-  TFile* fFilePromptMc;     // File containing prompt ratio taken from MC Closure test study (to use for B to D bias correction)
-  TFile* fFileNonPromptMc;  // File containing non-prompt ratio taken from MC Closure test study (to use for B to D bias correction)
-
-  TDirectoryFile* fDirMass;    // TDirectory for mass histos
-  TDirectoryFile* fDirSE;      // TDirectory for SE info
-  TDirectoryFile* fDirME;      // TDirectory for ME info
-  TDirectoryFile* fDirSecPart; // TDirectory for seondary particle correction
-
-  TH2D* fCorrHisto_2D_SE;                            // Corrected correlation histogram 2D
-  TH2D* fCorrHisto_2D_ME;                            // Corrected correlation histogram 2D
-  TH2D* fCorrectedCorrHisto_2D;                      // Corrected correlation histogram 2D ME corrected
-  TH2F* fMassVsPt;                                   // Invariant mass vs pt histo
-  TH1D* fCorrectedCorrHisto;                         // Corrected correlation histogram
-  TH1D* fCorrectedCorrHisto_BaselineSubtr;           // Corrected correlation histogram with baseline subtracion
-  TH1D* fCorrectedCorrHisto_Reflected;               // Corrected correlation histogram relected in azimuth
-  TH1D* fCorrectedCorrHisto_Reflected_BaselineSubtr; // Corrected correlation histogram reflected in azimuth with baseline subtraction
-
+  //Copyable properties-----------------------------------------------------------------------------------------------------//
+  // Input configuration parameters，general
   DmesonSpecie fDmesonSpecies;           // D meson specie
   TString fDmesonLabel;                  // D meson label
-  TString fFileNameMass;                 // File name containing inv. mass histograms
+  TString fFileNameMass;                 // File name contaning invariant mass output
   TString fFileNameSE;                   // File name contaning Same Event (SE) output
   TString fFileNameME;                   // File name contaning Mixed Event (ME) output
-  TString fFileSecPartName;              // File name contaning secondary particle correction output
-  TString fFileFDTemplateName;           // File name contaning FD angular correlation templates
-  TString fFileFDPromptFracName;         // File name contaning prompt fraction (used for FD subtraction)
-  TString fFilePromptMcRecName;          // File name contaning prompt angular correlation (used for B to d bias correction)
-  TString fFileNonPromptMcRecName;       // File name contaning non-prompt angular correlation (used for B to d bias correction)
   TString fDirNameSE;                    // Directory in the file containing SE output
   TString fDirNameME;                    // Directory in the file containing ME output
-  TString fDirSecPartName;               // Directory in the file containing secondary particle correction output
-  TString fMassHistoNameSgn;             // Inv. mass histo name signal yield
-  TString fMassHistoNameBkg;             // Inv. mass histo name background yield
-  TString fMassHistoNameSBs;             // Inv. mass histo name sideband yield
-  TString fSECorrelHistoName;            // THnSparse name containing SE - v2 style
-  TString fMECorrelHistoName;            // THnSparse name containing ME - v2 style
-  TString fSECorrelSignalRegionName;     // THnSparse name containing SE output for signal region
-  TString fSECorrelSidebandsName;        // THnSparse name containing SE output for sideband region
-  TString fSECorrelSidebandLeftName;     // THnSparse name containing SE output for sideband left region
-  TString fSECorrelSidebandRightName;    // THnSparse name containing SE output for sideband right region
-  TString fMECorrelSignalRegionName;     // THnSparse name containing ME output for signal region
-  TString fMECorrelSidebandsName;        // THnSparse name containing ME output for sideband regions
-  TString fMECorrelSidebandLeftName;     // THnSparse name containing ME output for sideband left region
-  TString fMECorrelSidebandRightName;    // THnSparse name containing ME output for sideband right region
-  TString fHistoFDTemplatePromptName;    // Prompt angular correlation histogram name
-  TString fHistoFDTemplateNonPromptName; // FD angular correlation histogram name
-  TString fHistoFDPromptFracName;        // Prompt fraction histogram name
-  TString fHistoPrimaryPartName;         // Primary particle histogram (to be used for secondary particle contamination correction)
-  TString fHistoAllPartName;             // All particle histogram (to be used for secondary particle contamination correction)
+  TString fMassSparseName;                   // Inv. mass THnSparse name and directory
+  TString fCorrelSparseNameSE;               // THnSparse name containing SE
+  TString fCorrelSparseNameME;               // THnSparse name containing ME
 
-  Int_t fNpools;            // Number of pools used for the ME correction
+  // TString fTitleCorrel;                   // Title for correlation histograms
+  TString fDeltaEtaGap;                   // TString for the delta eta gap
+
+  /*TString fFileSecPartName;              // File name contaning secondary particle correction output
+  TString fDirSecPartName;               // Directory in the file containing secondary particle correction output
+  TString fHistoPrimaryPartName;         // Primary particle histogram (to be used for secondary particle contamination correction)
+  TString fHistoAllPartName;             // All particle histogram (to be used for secondary particle contamination correction)*/
+  
+  Int_t fNpools;                         // Number of pools used for the ME correction
+  Bool_t fDoPoolByPool;                  // Possibility to do the ME correction pool-by-pool (kTRUE) or merging all pools (kFALSE)
+  Bool_t fDeltaEtaIntegrated;         // Option to correct the pairs mass distribution by the deltaEta integrated ratio or not
+  Double_t fDeltaEtaLeftMin;                // DeltaEta min value
+  Double_t fDeltaEtaLeftMax;                 // DeltaEta max value
+  Double_t fDeltaEtaRightMin;                // DeltaEta min value
+  Double_t fDeltaEtaRightMax;                 // DeltaEta max value
+  Double_t fValDeltaPhiMEnorm;                // Delta phi value to ME normalisation if (0,0) bin is empty
+  Double_t fValDeltaEtaMEnorm;                // Delta eta value to ME normalisation if (0,0) bin is empty
+  
+  /*Bool_t fdoSubtractSoftPiME;       // Soft pion subtraction (for D0 case)
+  Bool_t fdoRebinSecPart;           // Rebin secondary particle contamination histogram
+  Bool_t fdoSecPartContamination;   // Enable seconday particle contamination correction*/
+
+  Int_t fDebug;                          // Debug level
+
+  //Non-copyable properties-----------------------------------------------------------------------------------------------------//
+  TFile* fFileSE;              // File containing the Same Event (SE) output
+  TFile* fFileME;              // File containing the Mixed Event (ME) output
+  TDirectoryFile* fDirSE;      // TDirectory for SE info
+  TDirectoryFile* fDirME;      // TDirectory for ME info
+  /*TFile* fFileSecPart;         // File containing secondary particle contaminaion teplates
+  TDirectoryFile* fDirSecPart; // TDirectory for seondary particle correction*/
+
+  std::vector<Double_t> fPtCandBins;   // Pt bins of the candidate
+  std::vector<Double_t> fPtHadBins;    // Pt bins of the hadron
+  std::vector<Double_t> fInvMassBins;  // Inv mass bins, whole range for deltaPhi binning method
+  std::vector<Double_t> fDeltaPhiBins; // Delta phi bins, only for deltaPhi binning method
+  std::vector<Double_t> fFactorsNormME;    // Normalization factors for ME histograms, pool by pool
   Int_t fRebinAxisDeltaEta; // Rebin deltaEta axis value
   Int_t fRebinAxisDeltaPhi; // Rebin deltaPhi axis value
-  Int_t fDebug;             // Debug level
-  Int_t fBinPtCand;         // Pt bin of the candidate
-  Int_t fBinPtHad;          // Pt bin of the hadron
-  Int_t fBinInvMass;        // Inv mass bin
 
-  Double_t fDeltaEtaMin;    // DeltaEta min value
-  Double_t fDeltaEtaMax;    // DeltaEta max value
-  Double_t fBkgScaleFactor; // Bkg/SB factor to scale correlation plots obtained in the sideband region
-  Double_t fSgnYieldNorm;   // Signal yield (used for normalize correlation plots after bkg subtraction)
-  Double_t fBkgYield;       // Bkg yield under signal peak region
-  Double_t fSBYield;        // Sideband yield
-  Double_t fValPhiMEnorm;   // Delta phi value to ME normalisation if (0,0) bin is empty
-  Double_t fValEtaMEnorm;   // Delta eta value to ME normalisation if (0,0) bin is empty
+  method fMethod; // Method to be used for the analysis
 
-  Bool_t fCorrectPoolsSeparately; // Possibility to do the ME correction pool-by-pool (kTRUE) or merging all pools (kFALSE)
-  Bool_t fSubtractSoftPiME;       // Soft pion subtraction (for D0 case)
-  Bool_t fRebinAngCorr;           // Rebin angular correlaion distributons (SE and ME)
-  Bool_t fRebinFDCorr;            // Rebin angular correlaion distributon templates used for FD correction (theory driven)
-  Bool_t fRebinSecPart;           // Rebin angular correlaion distributon templates used for secodary particle contamination correction
-  Bool_t fSidebandDivided;        // To be set to TRUE if two sideband corrlaion histograms are passed inteh config file
-  Bool_t fUseSidebLeft;           // To be set to TRUE if only sideband left is used for the bkg correction
-  Bool_t fUseSidebRight;          // To be set to TRUE if only sideband right is used for the bkg correction
-  Bool_t fFDsubtraction;          // Enable feed-down (FD) correction
-  Bool_t fSecPartContamination;   // Enable seconday particle contamination correction
-  Bool_t fCorrBiasBtoD;           // Enable bias B to D correction (perfrmed with angular correlaion templates taken from MC simulaions)
+  // Results---------------------------------------------------------------------------------------------------------------//
+  TH2D* fMassVsPt_2D;                                 // Invariant mass vs pt histo
+  // final results, debug level 0
+  TH1D* fCorrectedCorrel;                          // Corrected D-h correlation deltaPhi distribution ME corrected
+  TH1D* fNormalizedCorrectedCorrel;                // Corrected D-h correlation deltaPhi distribution ME corrected and normalized by the number of triggers
+  TH1D* fCorrectedPairsMass;                      // Corrected pairs mass distribution
+  TH1D* fCorrectionRatio;                      // Ratio of corrected SE / SE histogram
+
+  /*TH1D* fCorrectedCorrHisto_BaselineSubtr;            // Corrected correlation histogram with baseline subtracted
+  TH1D* fCorrectedCorrHisto_Reflected;                // Corrected correlation histogram reflected in azimuth
+  TH1D* fCorrectedCorrHisto_Reflected_BaselineSubtr;  // Corrected correlation histogram reflected in azimuth with baseline subtracted*/
+  
+  // intermediate results, debug level 1
+  TH2D* fCorrel_SE_2D;                                // Processed same Event correlation histogram 2D
+  TH2D* fCorrel_ME_2D;                                // Processed Mixed Event correlation histogram 2D
+  TH2D* fCorrectedCorrel_2D;                          // Corrected correlation histogram 2D
+  TH2D* fNormalizedCorrel_ME_2D;                          // Normalized Mixed Event correlation histogram 2D
+  TH2D* fOriginalCorrel_SE_2D;                       // Original same Event correlation histogram 2D, pool integrated
+  TH2D* fOriginalCorrel_ME_2D;                       // Original Mixed Event correlation histogram 2D, pool integrated
+  TH2D* fOriginalMassVsDeltaEta_2D;                // Original mass vs deltaEta histogram 2D, pool integrated
+
+  /*TH1D* fCorrel_PrimaryPart;                          // Processed secondary particle contamination histogram for primary particles
+  TH1D* fCorrel_AllPart;                              // Processed secondary particle contamination histogram for all particles
+  TH1D* fFracSecondaryPart;                           // Fraction of secondary particles histogram
+  TH1D* fCorrectedCorrHisto_Before_SecPart;           // Corrected correlation histogram before secondary particle contamination correction*/
+
+  // original data histograms, debug level 2
+  std::vector<TH2D*> fPoolVec_OriginalCorrel_SE_2D;                       // Original same Event correlation histogram 2D, pool by pool
+  std::vector<TH2D*> fPoolVec_OriginalCorrel_ME_2D;                       // Original Mixed Event correlation histogram 2D, pool by pool
+  std::vector<TH2D*> fPoolVec_RawCorrel_SE_2D;                       // Raw same Event correlation histogram 2D, pool by pool
+  std::vector<TH2D*> fPoolVec_RawCorrel_ME_2D;                       // Raw Mixed Event correlation histogram 2D, pool by pool
+  std::vector<TH2D*> fPoolVec_NormalizedCorrel_ME_2D;                       // Normalized Mixed Event correlation histogram 2D, pool by pool
+  std::vector<TH2D*> fPoolVec_CorrectedCorrel_2D;                       // Corrected correlation histogram 2D, pool by pool
+  std::vector<TH2D*> fPoolVec_OriginalMassVsDeltaEta_2D;                // Original mass vs deltaEta histogram 2D, pool by pool
+  std::vector<TH2D*> fPoolVec_RawMassVsDeltaEta_2D;                // Raw mass vs deltaEta histogram 2D, pool by pool
+  std::vector<TH1D*> fPoolVec_CorrectedMass;                // Corrected mass distribution, pool by pool
+  std::vector<TH1D*> fPoolVec_CorrectionRatio;                // Ratio of corrected SE / SE histogram, pool by pool
+
+  /*TH1D* fOriginalCorrel_PrimaryPart;                  // Original secondary particle contamination histogram for primary particles
+  TH1D* fOriginalCorrel_AllPart;                      // Original secondary particle contamination histogram for all particles*/
+  ClassDef(DhCorrelationExtraction, 1);
 };
 
 #endif // PWGHF_HFC_MACROS_DHCORRELATIONEXTRACTION_H_

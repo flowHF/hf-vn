@@ -44,7 +44,7 @@ def plot_hyp_optimization_results(trials_df, OutPutDir):
     trials_df.to_parquet(f"{OutPutDir}.parquet.gzip")
 
 def plot_output_train_test_root(model, data, bins=80, output_margin=True, labels=None, logscale=False, **kwds):
- 
+
     """
 
         Plot the model output distributions for each class and output
@@ -234,7 +234,7 @@ def data_prep(inputCfg, iBin, PtBin, OutPutDirPt, PromptDf, FDDf, BkgDf, nCandSu
         sys.exit()
 
     # plots
-    VarsToDraw = inputCfg['plots']['plotting_columns']
+    VarsToDraw = inputCfg['plot_cols']
     LegLabels = [inputCfg['output']['leg_labels']['Bkg'],
                  inputCfg['output']['leg_labels']['Prompt']]
     if inputCfg['output']['leg_labels']['FD'] is not None:
@@ -264,6 +264,7 @@ def train_test(inputCfg, PtBin, OutPutDirPt, TrainTestData, iBin): #pylint: disa
     '''
     function for model training and testing
     '''
+    os.makedirs(f'{OutPutDirPt}/train', exist_ok=True)
     n_classes = len(np.unique(TrainTestData[3]))
     modelClf = xgb.XGBClassifier(use_label_encoder=False)
     TrainCols = inputCfg['ml']['training_columns']
@@ -300,7 +301,7 @@ def train_test(inputCfg, PtBin, OutPutDirPt, TrainTestData, iBin): #pylint: disa
             metric = 'roc_auc'
 
         logger('Performing hyper-parameters optimisation: ...', 'INFO')
-        OutFileHypPars = open(f'{OutPutDirPt}/HyperParOpt_pT_{PtBin[0]}_{PtBin[1]}.txt', 'wt')
+        OutFileHypPars = open(f'{OutPutDirPt}/train/HyperParOpt_pT_{PtBin[0]}_{PtBin[1]}.txt', 'wt')
         sys.stdout = OutFileHypPars
         OptunaStudy = ModelHandl.optimize_params_optuna(TrainTestData, OptunaOptConfig, metric,
                                                         n_trials=inputCfg['ml']['hyper_par_opt']['ntrials'],
@@ -309,10 +310,10 @@ def train_test(inputCfg, PtBin, OutPutDirPt, TrainTestData, iBin): #pylint: disa
         OutFileHypPars.close()
         sys.stdout = sys.__stdout__
         if inputCfg['ml']['hyper_par_opt'].get('saveopthistory'):
-            plot_hyp_optimization_results(OptunaStudy.trials_dataframe(), f"{OutPutDirPt}/HypTrials_pT_{PtBin[0]}_{PtBin[1]}")
+            plot_hyp_optimization_results(OptunaStudy.trials_dataframe(), f"{OutPutDirPt}/train/HypTrials_pT_{PtBin[0]}_{PtBin[1]}")
 
         logger('Performing hyper-parameters optimisation: Done!', 'INFO')
-        logger(f'Output saved in {OutPutDirPt}/HyperParOpt_pT_{PtBin[0]}_{PtBin[1]}.txt', 'INFO')
+        logger(f'Output saved in {OutPutDirPt}/train/HyperParOpt_pT_{PtBin[0]}_{PtBin[1]}.txt', 'INFO')
         logger(f'Best hyper-parameters:\n{ModelHandl.get_model_params()}', 'INFO')
     else:
         ModelHandl.set_model_params(HyperPars)
@@ -324,8 +325,8 @@ def train_test(inputCfg, PtBin, OutPutDirPt, TrainTestData, iBin): #pylint: disa
     yPredTrain = ModelHandl.predict(TrainTestData[0], inputCfg['ml']['raw_output'])
 
     # save model handler in pickle
-    ModelHandl.dump_model_handler(f'{OutPutDirPt}/ModelHandler_pT_{PtBin[0]}_{PtBin[1]}.pickle')
-    ModelHandl.dump_original_model(f'{OutPutDirPt}/XGBoostModel_pT_{PtBin[0]}_{PtBin[1]}.model', True)
+    ModelHandl.dump_model_handler(f'{OutPutDirPt}/train/ModelHandler_pT_{PtBin[0]}_{PtBin[1]}.pickle')
+    ModelHandl.dump_original_model(f'{OutPutDirPt}/train/XGBoostModel_pT_{PtBin[0]}_{PtBin[1]}.model', True)
 
     #plots
     LegLabels = [inputCfg['output']['leg_labels']['Bkg'],
@@ -339,31 +340,31 @@ def train_test(inputCfg, PtBin, OutPutDirPt, TrainTestData, iBin): #pylint: disa
     #_____________________________________________
     plt.rcParams["figure.figsize"] = (10, 7)
     MLOutputFig = plot_utils.plot_output_train_test(ModelHandl, TrainTestData, 80, inputCfg['ml']['raw_output'],
-                                                    LegLabels, inputCfg['plots']['train_test_log'], density=True)
+                                                    LegLabels, inputCfg['log_scale_plots'], density=True)
     if n_classes > 2:
         for Fig, Lab in zip(MLOutputFig, OutputLabels):
-            Fig.savefig(f'{OutPutDirPt}/MLOutputDistr{Lab}_pT_{PtBin[0]}_{PtBin[1]}.pdf')
+            Fig.savefig(f'{OutPutDirPt}/train/MLOutputDistr{Lab}_pT_{PtBin[0]}_{PtBin[1]}.pdf')
     else:
-        MLOutputFig.savefig(f'{OutPutDirPt}/MLOutputDistr_pT_{PtBin[0]}_{PtBin[1]}.pdf')
+        MLOutputFig.savefig(f'{OutPutDirPt}/train/MLOutputDistr_pT_{PtBin[0]}_{PtBin[1]}.pdf')
     #_____________________________________________
     plt.rcParams["figure.figsize"] = (10, 9)
     ROCCurveFig = plot_utils.plot_roc(TrainTestData[3], yPredTest, None, LegLabels, inputCfg['ml']['roc_auc_average'],
                                       inputCfg['ml']['roc_auc_approach'])
-    ROCCurveFig.savefig(f'{OutPutDirPt}/ROCCurveAll_pT_{PtBin[0]}_{PtBin[1]}.pdf')
-    pickle.dump(ROCCurveFig, open(f'{OutPutDirPt}/ROCCurveAll_pT_{PtBin[0]}_{PtBin[1]}.pkl', 'wb'))
+    ROCCurveFig.savefig(f'{OutPutDirPt}/train/ROCCurveAll_pT_{PtBin[0]}_{PtBin[1]}.pdf')
+    pickle.dump(ROCCurveFig, open(f'{OutPutDirPt}/train/ROCCurveAll_pT_{PtBin[0]}_{PtBin[1]}.pkl', 'wb'))
     #_____________________________________________
-    model_converter = H4MLConverter(ModelHandl) 
+    model_converter = H4MLConverter(ModelHandl)
     model_onnx = model_converter.convert_model_onnx(1, len(TrainCols))
-    model_converter.dump_model_onnx(f'{OutPutDirPt}/ModelHandler_pT_{PtBin[0]}_{PtBin[1]}.onnx') # dump the model in ONNX format
+    model_converter.dump_model_onnx(f'{OutPutDirPt}/train/ModelHandler_pT_{PtBin[0]}_{PtBin[1]}.onnx') # dump the model in ONNX format
     #_____________________________________________
     plt.rcParams["figure.figsize"] = (10, 9)
     ROCCurveTTFig = plot_utils.plot_roc_train_test(TrainTestData[3], yPredTest, TrainTestData[1], yPredTrain, None,
                                                    LegLabels, inputCfg['ml']['roc_auc_average'],
                                                    inputCfg['ml']['roc_auc_approach'])
-    ROCCurveTTFig.savefig(f'{OutPutDirPt}/ROCCurveTrainTest_pT_{PtBin[0]}_{PtBin[1]}.pdf')
+    ROCCurveTTFig.savefig(f'{OutPutDirPt}/train/ROCCurveTrainTest_pT_{PtBin[0]}_{PtBin[1]}.pdf')
     #_____________________________________________
     PrecisionRecallFig = plot_utils.plot_precision_recall(TrainTestData[3], yPredTest, LegLabels)
-    PrecisionRecallFig.savefig(f'{OutPutDirPt}/PrecisionRecallAll_pT_{PtBin[0]}_{PtBin[1]}.pdf')
+    PrecisionRecallFig.savefig(f'{OutPutDirPt}/train/PrecisionRecallAll_pT_{PtBin[0]}_{PtBin[1]}.pdf')
     #_____________________________________________
     plt.rcParams["figure.figsize"] = (12, 7)
     FeaturesImportanceFig = plot_utils.plot_feature_imp(TrainTestData[2][TrainCols], TrainTestData[3], ModelHandl,
@@ -372,69 +373,17 @@ def train_test(inputCfg, PtBin, OutPutDirPt, TrainTestData, iBin): #pylint: disa
     for iFig, Fig in enumerate(FeaturesImportanceFig):
         if iFig < n_plot:
             label = OutputLabels[iFig] if n_classes > 2 else ''
-            Fig.savefig(f'{OutPutDirPt}/FeatureImportance{label}_pT_{PtBin[0]}_{PtBin[1]}.pdf')
+            Fig.savefig(f'{OutPutDirPt}/train/FeatureImportance{label}_pT_{PtBin[0]}_{PtBin[1]}.pdf')
         else:
-            Fig.savefig(f'{OutPutDirPt}/FeatureImportanceAll_pT_{PtBin[0]}_{PtBin[1]}.pdf')
+            Fig.savefig(f'{OutPutDirPt}/train/FeatureImportanceAll_pT_{PtBin[0]}_{PtBin[1]}.pdf')
 
     return ModelHandl
-
-
-def appl(inputCfg, PtBin, OutPutDirPt, ModelHandl, DataDfPtSel, PromptDfPtSelForEff, FDDfPtSelForEff):
-    OutputLabels = [inputCfg['output']['out_labels']['Bkg'],
-                    inputCfg['output']['out_labels']['Prompt']]
-    if inputCfg['output']['out_labels']['FD'] is not None:
-        OutputLabels.append(inputCfg['output']['out_labels']['FD'])
-    logger('Applying ML model to prompt dataframe: ...', 'INFO')
-    yPredPromptEff = ModelHandl.predict(PromptDfPtSelForEff, inputCfg['ml']['raw_output'])
-    df_column_to_save_list = inputCfg['appl']['column_to_save_list']
-    if not isinstance(df_column_to_save_list, list):
-        logger('df_column_to_save_list must be defined!', 'FATAL')
-        sys.exit()
-    if 'fM' not in df_column_to_save_list:
-        logger('inv_mass is not going to be saved in the output dataframe!', 'WARNING')
-    if 'fPt' not in df_column_to_save_list:
-        logger('fPt is not going to be saved in the output dataframe!', 'WARNING')
-    PromptDfPtSelForEff = PromptDfPtSelForEff.loc[:, df_column_to_save_list]
-    if FDDfPtSelForEff.empty:
-        out = 'Signal'
-        PromptDfPtSelForEff['ML_output'] = yPredPromptEff
-    else:
-        out = 'Prompt'
-        for Pred, Lab in enumerate(OutputLabels):
-            PromptDfPtSelForEff[f'ML_output_{Lab}'] = yPredPromptEff[:, Pred]
-    PromptDfPtSelForEff.to_parquet(f'{OutPutDirPt}/{out}_pT_{PtBin[0]}_{PtBin[1]}_ModelApplied.parquet.gzip')
-    logger('Applying ML model to prompt dataframe: Done!', 'INFO')
-
-    if not FDDfPtSelForEff.empty:
-        logger('Applying ML model to FD dataframe: ...', 'INFO')
-        yPredFDEff = ModelHandl.predict(FDDfPtSelForEff, inputCfg['ml']['raw_output'])
-        FDDfPtSelForEff = FDDfPtSelForEff.loc[:, df_column_to_save_list]
-        for Pred, Lab in enumerate(OutputLabels):
-            FDDfPtSelForEff[f'ML_output_{Lab}'] = yPredFDEff[:, Pred]
-        FDDfPtSelForEff.to_parquet(f'{OutPutDirPt}/FD_pT_{PtBin[0]}_{PtBin[1]}_ModelApplied.parquet.gzip')
-        logger('Applying ML model to FD dataframe: Done!', 'INFO')
-
-    logger('Applying ML model to data dataframe: ...', 'INFO')
-    yPredData = ModelHandl.predict(DataDfPtSel, inputCfg['ml']['raw_output'])
-    df_column_to_save_list_data = df_column_to_save_list
-    if 'pt_B' in df_column_to_save_list_data:
-        df_column_to_save_list_data.remove('pt_B') # only in MC
-    DataDfPtSel = DataDfPtSel.loc[:, df_column_to_save_list_data]
-    if FDDfPtSelForEff.empty:
-        DataDfPtSel['ML_output'] = yPredData
-    else:
-        for Pred, Lab in enumerate(OutputLabels):
-            DataDfPtSel[f'ML_output_{Lab}'] = yPredData[:, Pred]
-    DataDfPtSel.to_parquet(f'{OutPutDirPt}/Data_pT_{PtBin[0]}_{PtBin[1]}_ModelApplied.parquet.gzip')
-    logger('Applying ML model to data dataframe: Done!', 'INFO')
 
 
 def main(): #pylint: disable=too-many-statements
     # read config file
     parser = argparse.ArgumentParser(description='Arguments to pass')
     parser.add_argument('cfgFileName', metavar='text', default='cfgFileNameML.yml', help='config file name for ml')
-    parser.add_argument("--train", help="perform only training and testing", action="store_true")
-    parser.add_argument("--apply", help="perform only application", action="store_true")
     args = parser.parse_args()
 
     logger('Loading analysis configuration: ...', 'INFO')
@@ -473,7 +422,7 @@ def main(): #pylint: disable=too-many-statements
     for iBin, PtBin in enumerate(PtBins):
         logger(f'Starting ML analysis --- {PtBin[0]} < pT < {PtBin[1]} GeV/c', 'INFO')
 
-        OutPutDirPt = os.path.join(os.path.expanduser(inputCfg['output']['dir']), f'pt{PtBin[0]}_{PtBin[1]}')
+        OutPutDirPt = os.path.join(os.path.expanduser(inputCfg['output']['dir']), f'pt_{PtBin[0]}_{PtBin[1]}')
         if os.path.isdir(OutPutDirPt):
             logger(f'Output directory \'{OutPutDirPt}\' already exists, overwrites possibly ongoing!', 'WARNING')
         else:
@@ -485,29 +434,10 @@ def main(): #pylint: disable=too-many-statements
         TrainTestData, PromptDfSelForEff, FDDfSelForEff = data_prep(inputCfg, iBin, PtBin, OutPutDirPt,
                                                                     PromptHandler.get_slice(iBin), FDDfPt,
                                                                     BkgHandler.get_slice(iBin), nCandSummary)
-        if args.apply and inputCfg['data_prep']['test_fraction'] < 1.:
-            logger('Using only a fraction of the MC for the application! Are you sure?', 'WARNING')
 
         # training, testing
         #_____________________________________________
-        if not args.apply:
-            ModelHandl = train_test(inputCfg, PtBin, OutPutDirPt, TrainTestData, iBin)
-        else:
-            ModelList = inputCfg['ml']['saved_models']
-            ModelPath = ModelList[iBin]
-            if not isinstance(ModelPath, str):
-                logger('Path to model not correctly defined!', 'FATAL')
-                sys.exit()
-            ModelPath = os.path.expanduser(ModelPath)
-            logger(f'Loaded saved model: {ModelPath}', 'INFO')
-            ModelHandl = ModelHandler()
-            ModelHandl.load_model_handler(ModelPath)
-
-        # model application
-        #_____________________________________________
-        if not args.train:
-            appl(inputCfg, PtBin, OutPutDirPt, ModelHandl, DataHandler.get_slice(iBin),
-                 PromptDfSelForEff, FDDfSelForEff)
+        train_test(inputCfg, PtBin, OutPutDirPt, TrainTestData, iBin)
 
         # delete dataframes to release memory
         for data in TrainTestData:

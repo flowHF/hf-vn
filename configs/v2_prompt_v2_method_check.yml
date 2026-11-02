@@ -5,8 +5,8 @@ mode:
 
 input:
   fractions:
-    file: /Users/zbiao/Downloads/hf-vn-pr/OOCharmFlow/cutvar_D0_combined/frac/frac_00.root
-
+    file: /home/wuct/MetaData/DATA/OO/apass2/corr/results/prompt/cutvar_test_correlated/frac/frac_00.root
+    # file: /home/wuct/MetaData/DATA/OO/apass2/corr/results/prompt/K2050/cutvar_test_correlated/frac/frac_00.root
     # used only when method=ratio, note: use corrected fraction here since the prompt v2 is not corrected
     objects_ratio:
       f_prompt: hPromptFracCorr
@@ -18,8 +18,9 @@ input:
       f_FD: hFDFrac
 
   v2obs:
-    file: /Users/zbiao/Downloads/hf-vn-pr/OOCharmFlow/cutvar_D0_combined/raw_yields/raw_yields_00.root
-    object: gVnSimFit
+    file: /home/wuct/MetaData/DATA/OO/apass2/corr/results/fifth/k020_gausPer/k60100_loose2to2d5_d20/sys/central/CorrelExtract_0d2_1d3/final_results.root
+    # file: /home/wuct/MetaData/DATA/OO/apass2/corr/results/fifth/k2050_wider_loose1_rebin/CorrelExtract_0d2_1d3_AppDeltaPhi/results_k2050_rebin_loose_k60100_GausPeriodic_fixed_noBL/final_results.root
+    object: hv2Delta_PtBinAssoc1_InvMassBin1
 
 assumption:
   # for ratio
@@ -30,7 +31,7 @@ assumption:
   v2_FD_fixed_err: 0.0
 
 output:
-  file: v2_prompt_ratio.root
+  file: /home/wuct/MetaData/DATA/OO/apass2/corr/results/fifth/k020_gausPer/k60100_loose2to2d5_d20/sys/results/v2_prompt_ratio_0d2_1d3.root
   object: gV2Prompt
   title: "v2^{prompt}"
 

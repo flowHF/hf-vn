@@ -26,7 +26,7 @@ args = parser.parse_args()
 with open(args.reference_cfg, 'r') as ymlCfgFile:
     ref_cfg = yaml.load(ymlCfgFile, yaml.FullLoader)
 
-ref_folder = f"{ref_cfg['outdir']}/cutvar_{ref_cfg['suffix']}_combined/"
+ref_folder = f"{ref_cfg['outdir']}/vn_extr_{ref_cfg['suffix']}_combined/"
 
 base_dir = Path(args.base_dir)
 trials_dir = base_dir / "trials"

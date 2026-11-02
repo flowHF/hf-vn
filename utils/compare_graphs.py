@@ -4,11 +4,12 @@ run: python CompareGraphs.py cfgFileName.yml
 '''
 
 import sys
+import os
 from os.path import join
 import argparse
 import numpy as np
 import yaml
-from ROOT import TCanvas, TFile, TLegend, TLine, gROOT # pylint: disable=import-error,no-name-in-module
+from ROOT import TCanvas, TFile, TLegend, TLine, gROOT, TLatex# pylint: disable=import-error,no-name-in-module
 sys.path.append('..')
 from StyleFormatter import SetGlobalStyle, SetObjectStyle, GetROOTColor, GetROOTMarker #pylint: disable=wrong-import-position,import-error
 from analysis_utils import ComputeRatioDiffBins, ScaleGraph, ComputeRatioGraph #pylint: disable=wrong-import-position,import-error
@@ -31,6 +32,7 @@ objNames = inputCfg['inputs']['objectnames']
 nObj = len(objNames)
 
 outFileName = inputCfg['output']['filename']
+os.makedirs(os.path.dirname(outFileName), exist_ok=True)
 outExtensions = inputCfg['output']['extensions']
 
 objTypes = inputCfg['options']['ROOTobject']
@@ -94,7 +96,10 @@ legTextSize = inputCfg['options']['legend']['textsize']
 ncolumns = inputCfg['options']['legend']['ncolumns']
 
 # set global style
-SetGlobalStyle(padleftmargin=0.18, padbottommargin=0.14, titleoffsety=1.5)
+SetGlobalStyle(padleftmargin=inputCfg['options']['canvas'].get('padleftmargin', 0.18),
+               padbottommargin=inputCfg['options']['canvas'].get('padbottommargin', 0.14),
+               padtopmargin=inputCfg['options']['canvas'].get('padtopmargin', 0.035),
+               titleoffsety=inputCfg['options']['canvas'].get('titleoffsety', 1.5))
 
 leg = TLegend(xLegLimits[0], yLegLimits[0], xLegLimits[1], yLegLimits[1])
 leg.SetFillStyle(0)
@@ -272,6 +277,16 @@ for histo, objType, drawOpt in zip(hToCompare, objTypes, drawOptions):
         histo.DrawCopy(f'{drawOpt}same')
     else:
         histo.Draw(drawOpt)
+
+if inputCfg['options'].get('text'):
+    for text_line in inputCfg['options']['text']:
+        text = TLatex(text_line['x'], text_line['y'], text_line['text'])
+        text.SetNDC()
+        text.SetTextFont(text_line.get('textfont', 42))
+        text.SetTextSize(text_line.get('textsize', 0.04))
+        text.SetTextAlign(text_line.get('textalign', 12))
+        text.Draw("same")
+
 if  not avoidLeg:
     leg.Draw()
 
@@ -324,6 +339,6 @@ for ext in outExtensions:
                 histo.Write()
         outFile.Close()
     else:
+        if inputCfg.get('DrawGrid'):
+            gPad.SetGrid()
         cOut.SaveAs(f'{outFileName}.{ext}')
-
-input("Press enter to exit")

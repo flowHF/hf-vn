@@ -1,0 +1,41 @@
+nDeltaPhiBins: [16,32]
+pTBins:
+  - ranges: [[0., 1.0], [1.0, 1.5], [1.5, 2.0], [2.0, 2.5], [2.5, 3.0], [3.0, 3.5], [3.5, 4.0]]
+    MaxChi2: 15
+    MinSignificance: 5
+    MaxSignificance: 500
+    multitrial:
+        MassMin: [1.70, 1.72, 1.73]
+        MassMax: [2.01, 2.02, 2.04]
+        Rebin: [2, 4, 5]
+        BkgFunc: ["kLin", "kPol2", "kPol3", "kExpo"]
+
+  - ranges: [[4.0, 5.0], [5.0, 6.0]]
+    MaxChi2: 15
+    MinSignificance: 5
+    MaxSignificance: 500
+    multitrial:
+        MassMin: [1.68, 1.70, 1.72]
+        MassMax: [2.03, 2.04, 2.06]
+        Rebin: [6, 8, 10]
+        BkgFunc: ["kLin", "kPol2", "kPol3", "kExpo"]
+  
+  - ranges: [[6.0, 7.0]]
+    MaxChi2: 15
+    MinSignificance: 5
+    MaxSignificance: 500
+    multitrial:
+        MassMin: [1.68, 1.70, 1.72]
+        MassMax: [2.03, 2.04, 2.06]
+        Rebin: [6, 8, 10]
+        BkgFunc: ["kLin", "kPol2", "kPol3", "kExpo"]
+
+  - ranges: [[7.0, 8.0]]
+    MaxChi2: 15
+    MinSignificance: 5
+    MaxSignificance: 500
+    multitrial:
+        MassMin: [1.68, 1.70, 1.72]
+        MassMax: [2.04, 2.06, 2.08]
+        Rebin: [6, 8, 10]
+        BkgFunc: ["kLin", "kPol2", "kPol3", "kExpo"]

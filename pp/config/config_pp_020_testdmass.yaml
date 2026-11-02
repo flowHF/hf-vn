@@ -1,0 +1,460 @@
+# Operations
+operations:
+  dopreprocess: false  
+  docorrelations: false
+  dofourier: true 
+  dosimfit: true
+  dodeltaphi: false # Optional: if you want to save the Δφ vs mass maps for each candidate pT bin.
+  dojetshape: false
+  doefficiency: false
+  donpfractions: false
+  dopromptv2: false
+  dosystematics: false
+
+# Paths relative to this YAML, or absolute paths.
+inputs:
+  SE:
+    file: [
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239369_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239368_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239367_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239366_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239365_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239364_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239363_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239362_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239361_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239360_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239359_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239358_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239357_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239356_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239355_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239354_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239353_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239352_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239351_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239350_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239349_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239348_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239347_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239346_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239345_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239344_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239343_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239342_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239341_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239340_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239339_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239337_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239336_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239335_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239334_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239333_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239332_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239331_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239330_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239329_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239328_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239327_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239326_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239325_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239324_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239323_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239322_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239321_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239320_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239319_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239318_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239317_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239316_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239315_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239314_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239313_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239312_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239311_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239310_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239309_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239308_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239307_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239306_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239305_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239304_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239303_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239302_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239301_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239300_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239299_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239297_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239296_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239295_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239294_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239293_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239292_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239291_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239290_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239289_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239288_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239287_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239286_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239283_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239281_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239280_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239279_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239278_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239277_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239274_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239273_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239272_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239271_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239270_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239269_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239268_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239267_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239266_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239265_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239264_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239263_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239262_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239261_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239260_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239259_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239258_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239257_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239256_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239254_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239251_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239249_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239248_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239246_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239245_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239244_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239243_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239242_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239241_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239240_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239239_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239238_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239237_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239236_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239235_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239234_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239233_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239232_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239231_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239230_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239229_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239228_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239227_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239226_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239225_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239224_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239223_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239222_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239221_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239220_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239219_AnalysisResults.root,
+        /home/spolitan/alice/dplus_v2_pp/101026/inputs/se/hy_6239218_AnalysisResults.root,
+           ]
+    histogram: hf-correlator-flow-charm-hadrons-reduced/hSparseCorrelationsSECharmHad
+    hsparsemass: hf-correlator-flow-charm-hadrons-reduced/hSparseTrigCandsCharm
+  ME:
+    file: [
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239677_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239676_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239675_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239674_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239673_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239672_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239671_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239670_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239669_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239668_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239667_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239666_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239665_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239664_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239663_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239662_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239661_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239660_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239659_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239658_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239657_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239656_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239655_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239654_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239653_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239652_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239651_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239650_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239649_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239648_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239647_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239646_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239645_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239644_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239643_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239642_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239641_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239640_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239639_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239638_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239637_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239636_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239635_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239634_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239633_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239632_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239631_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239630_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239629_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239628_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239627_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239626_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239625_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239624_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239623_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239622_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239621_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239620_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239619_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239618_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239617_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239616_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239615_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239614_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239613_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239612_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239611_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239610_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239609_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239608_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239607_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239606_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239605_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239604_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239603_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239602_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239601_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239600_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239599_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239598_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239597_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239596_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239595_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239594_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239593_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239592_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239591_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239590_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239589_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239588_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239587_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239586_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239585_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239584_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239583_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239582_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239581_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239580_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239579_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239578_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239577_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239576_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239575_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239574_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239573_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239572_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239571_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239570_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239569_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239568_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239567_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239566_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239565_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239564_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239563_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239562_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239561_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239560_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239559_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239558_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239557_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239556_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239555_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239554_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239553_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239552_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239551_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239550_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239549_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239548_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239547_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239546_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239545_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239544_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239543_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239542_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239541_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239540_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239539_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239538_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239537_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239535_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239534_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239532_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239531_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239530_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239529_AnalysisResults.root,
+      /home/spolitan/alice/dplus_v2_pp/101026/inputs/me/hy_6239528_AnalysisResults.root,
+           ]
+    histogram: hf-correlator-flow-charm-hadrons-reduced/hSparseCorrelationsMECharmHad
+output_dir: /home/spolitan/alice/dplus_v2_pp/111026/outputs/pp_020  # Output directory for all results. Will be created if it does not exist.
+
+# Common SE/ME axis indices from your diagnostic. Their bin edges may differ.
+axes:
+  multiplicity: null  # These inputs have no separate multiplicity axis.
+  pool: 0
+  pt_cand: 1
+  pt_assoc: 2
+  delta_eta: 3
+  delta_phi: 4
+  mass: 5
+  bdt_background: 6
+  bdt_prompt: 7
+
+mass_axes:
+  mass: 0
+  pt_cand: 1
+  bdt_background: 2
+  bdt_prompt: 3
+
+multiplicity_label: pp_020  # Label of the existing input selection; no new cut.
+
+bins:
+  multiplicity: null
+  pt_cand: [1, 2, 3, 4, 6, 8, 10]
+  pt_assoc: [0.3, 3.0]
+
+# Integrate extra regular-bin axes. No additional BDT cut in this example.
+# To select BDT: use {axis: bdt_prompt, ranges: [0.2, 1.0]}.
+# Numeric indices remain supported; verify BDT names/indices for your input.
+# Or ranges: [[low1, high1], ..., [low5, high5]] for candidate-pT-dependent cuts.
+# All requested edges must already exist on the input axes.
+preprocess:
+  keep_axes: [pool, mass, delta_eta, delta_phi, bdt_prompt] # Keep all relevant axes in THIS ORDER. pt_cand, pt_assoc, multiplicity are integrated out
+  rebin: {mass: 2, delta_eta: 1, delta_phi: 2}
+  cuts: [
+    {axis: bdt_prompt, ranges: [0., 1.0]},
+    {axis: bdt_background, ranges: [0., 0.1]},
+    #{axis: pool, ranges: [3., 20.]},
+    #{axis: delta_eta, ranges: [0.8, 1.6]}
+  ]
+
+correlation:
+  mass_bins:
+  mass_bins:
+    - 1.72
+    - 1.76
+    - 1.80
+    - 1.84
+    - 1.86
+    - 1.88
+    - 1.90
+    - 1.92
+    - 1.94
+    - 1.96
+    - 2.00
+  save_pdf: true               # correlation maps
+  pdf_draw_option: "SURF1"      # optional; "SURF1" / "LEGO2" also work
+
+deltaphi:
+  delta_eta_ranges:
+    - [-1.4, -1.]
+    - [1., 1.4]
+
+  fit_range: [1.72, 2.08]
+
+  mass_fit:
+    signal: gaus
+    background: [pol3, expo, expo, expo, expo, expo, expo, expo, expo, expo, expo, expo]
+
+    initial_parameters:
+      Mean:  [1.869, 1.82, 1.92]
+      Sigma: [0.012, 0.003, 0.040]
+
+  fail_on_bad_fit: true
+  save_pdf: true
+
+fourier:
+  is_lm: true
+  delta_eta_ranges:
+    - [-1.4, -1.0]
+    - [1.0, 1.4]
+  lm_file: /home/spolitan/alice/dplus_v2_pp/111026/outputs/pp_60100/fourier/
+  # opzionale; se assente usa tutto il range di Δφ
+  fit_range: [-1.57079632679, 4.71238898038]
+  save_pdf: true               # Fourier fits
+  systematics:
+    dosyst: false
+    vary_fit_range: false
+    vary_delta_eta_ranges: false
+    vary_lm: false
+
+Dmeson: Dplus
+simultaneous_fit:
+  Sigma: [0.02, 0.02, 0.02, 0.02, 0.02, 0.02]
+  MassFitRanges:
+    - [1.78, 1.96]
+    - [1.78, 1.96]
+    - [1.76, 1.98]
+    - [1.76, 1.98]
+    - [1.76, 1.98]
+    - [1.76, 2.00]
+  BkgFunc: [kExpo, kExpo, kExpo, kExpo, kExpo, kLin]
+  SgnFunc: kGaus
+  BkgFuncVn: [kLin, kLin, kLin, kLin, kLin, kLin]
+  Rebin: 6
+  InclSecPeak: 0
+  SigmaSecPeak: [0.01, 0.01, 0.02, 0.01, 0.01, 0.02]
+  FixMean: 1
+  FixSigma: 0
+  NSigma4SB: 3
+  harmonic: 2
+  save_pdf: true
+  # Choose exactly ONE v2HH input mode.
+  # A) fixed V_{2Delta}^{h-h}: no uncertainty is assigned to v2HH
+  # v2HH: 0.055
+  # B) ROOT input: value and uncertainty are read vs associated-track pT
+  v2HH: 0.07
+  # file: /path/to/v2hh.root
+  # object: hV2HH
+
+efficiency:
+  # Optional: if you have a separate efficiency histogram, specify it here.
+  # file: /path/to/efficiency.root
+  # histogram: hEfficiency
+
+fraction:
+  # Optional: if you have a separate prompt fraction histogram, specify it here.
+  # file: /path/to/prompt_fraction.root
+  # histogram: hPromptFraction
+  # systematics
+  #   dosyst: false
+
+jetshape:
+  delta_phi_range: [-0.1963495408, 0.1963495408]
+  # range in DeltaEta used for the fit
+  fit_range: [-0.4, 0.4]
+  # optional initial values / limits
+  mean_initial: 0.0
+  mean_limits: [-0.5, 0.5]
+  sigma_initial: 0.4
+  sigma_limits: [0.02, 10000.0]
+  beta_initial: 2.0
+  beta_limits: [0.5, 10.0]
+  save_pdf: true  
+
+# Enable only if the input is known to contain unweighted counts without Sumw2.
+allow_poisson_errors: true
