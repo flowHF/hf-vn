@@ -5,6 +5,8 @@ import sys
 import ROOT
 from ROOT import gStyle, TFile, TH1, TH1D, TH1F, TCanvas, TLegend, TLine, TBox, kDashed, kGray, kRed, kBlue # pylint: disable=import-error,no-name-in-module
 from ROOT import RooFit
+from ROOT import RooRealProxy, RooChi2Var, RooMinimizer, RooRealVar, RooFormulaVar, RooRealSumFunc, RooDataHist, RooHistPdf, RooAddPdf, RooArgList, RooArgSet, RooExtendPdf, RooMsgService
+from ROOT import RooAbsTestStatistic, RooChebychev, RooGaussian, RooPolynomial, RooExponential, RooDataSet, RooMsgService
 gStyle.SetEndErrorSize(0)
 script_dir = os.path.dirname(os.path.realpath(__file__))
 os.sys.path.append(os.path.join(script_dir, '..', 'utils'))
@@ -17,7 +19,7 @@ from flarefly.fitter import F2MassFitter
 import uproot
 import copy
 import numpy as np
-msg_service = ROOT.RooMsgService.instance()
+msg_service = RooMsgService.instance()
 msg_service.setGlobalKillBelow(RooFit.FATAL)  # Only show FATAL errors (you can also use RooFit.ERROR or INFO)
 os.environ["CUDA_VISIBLE_DEVICES"] = ""  # pylint: disable=wrong-import-position
 ROOT.gROOT.SetBatch(True)  # Run in batch mode to avoid opening canvases
@@ -67,7 +69,7 @@ class RawYieldFitter:
         self.model = None
         self.pt_min = pt_min
         self.pt_max = pt_max
-        self.pdfs = ROOT.RooArgList()
+        self.pdfs = RooArgList()
         self.mc_pars = {}
         self.fit_counter = 0
         self.fix_sgn_to_first_fit = False
@@ -134,7 +136,7 @@ class RawYieldFitter:
         self.fit_range_min = fit_range_min
         self.fit_range_max = fit_range_max
         if self.minimize_roofit: # Very loose range, to be constrained specifically for each fit
-            self.roofit_fit_var = ROOT.RooRealVar("fM", "Invariant Mass", self.fit_range_min, self.fit_range_max)
+            self.roofit_fit_var = RooRealVar("fM", "Invariant Mass", self.fit_range_min, self.fit_range_max)
 
     def set_rebin(self, rebin):
         if self.verbose:
@@ -150,7 +152,7 @@ class RawYieldFitter:
             self.data = DataHandler(data, limits=[self.fit_range_min, self.fit_range_max])
             # self.data = DataHandler(data, limits=[self.fit_range_min, self.fit_range_max], rebin=self.rebin)
         else:
-            self.data = ROOT.RooDataHist("data_hist", "data_hist", ROOT.RooArgList(self.roofit_fit_var), data)
+            self.data = RooDataHist("data_hist", "data_hist", RooArgList(self.roofit_fit_var), data)
 
     def set_fix_sgn_to_mc_prefit(self, fix):
         if self.verbose:
@@ -210,8 +212,8 @@ class RawYieldFitter:
                 self.mc_pars[name] = self.fit_model[name]['mcfitter'].get_signal_pars()[0]
             else:
                 self.roofit_fit_var.setRange(f"mc_fit_{name}", init_mass-0.2, init_mass+0.2)
-                self.fit_model[name]['mchist'] = ROOT.RooDataHist(f"mc_dataset_{name}", f"mc_dataset_{name}",
-                                                 ROOT.RooArgList(self.roofit_fit_var), hist_mc)
+                self.fit_model[name]['mchist'] = RooDataHist(f"mc_dataset_{name}", f"mc_dataset_{name}",
+                                                 RooArgList(self.roofit_fit_var), hist_mc)
                 fit_result = self.fit_model[name]['pdf'].fitTo(self.fit_model[name]['mchist'], RooFit.Range(f"mc_fit_{name}"),
                                                                RooFit.Save(), RooFit.PrintLevel(1 if self.verbose else -1),
                                                                RooFit.PrintEvalErrors(1 if self.verbose else 0))
@@ -226,7 +228,7 @@ class RawYieldFitter:
         else:
             self.sp_range_min = -4.
             self.sp_range_max = 4.
-            self.roofit_sp_var = ROOT.RooRealVar("fScalarProd", "Scalar Product", self.sp_range_min, self.sp_range_max)
+            self.roofit_sp_var = RooRealVar("fScalarProd", "Scalar Product", self.sp_range_min, self.sp_range_max)
 
             # Temporary TTree
             tmp_tree = ROOT.TTree("tmp_tree", "temporary tree")
@@ -248,15 +250,15 @@ class RawYieldFitter:
                 buf_sp[0] = float(sp)
                 tmp_tree.Fill()
 
-            self.data = ROOT.RooDataSet("data", "dataset from dataframe", tmp_tree,
-                                        ROOT.RooArgList(self.roofit_fit_var, self.roofit_sp_var))
+            self.data = RooDataSet("data", "dataset from dataframe", tmp_tree,
+                                        RooArgList(self.roofit_fit_var, self.roofit_sp_var))
 
     def set_data_to_fit_tree(self, data_tree, var_name):
         if self.minimize_flarefly:
             self.data = DataHandler(data_tree, var_name=var_name, limits=[self.fit_range_min, self.fit_range_max])
         else:
             # RooFit data structure
-            self.data = ROOT.RooDataSet("data", "dataset with fM", data_tree, ROOT.RooArgSet(ROOT.RooRealVar(var_name, var_name, self.fit_range_min, self.fit_range_max)))
+            self.data = RooDataSet("data", "dataset with fM", data_tree, RooArgSet(RooRealVar(var_name, var_name, self.fit_range_min, self.fit_range_max)))
 
     def reduce_dataset(self, var_name, var_range):
         if self.minimize_flarefly:
@@ -345,7 +347,7 @@ class RawYieldFitter:
             if self.minimize_flarefly:
                 self.fit_model[chn]['frac'] = frac
             else:
-                self.fit_model[chn]['frac'] = ROOT.RooRealVar(f"frac_{chn}", f"frac_{chn}", frac)
+                self.fit_model[chn]['frac'] = RooRealVar(f"frac_{chn}", f"frac_{chn}", frac)
             self.fit_model[chn]['type'] = 'bkg'
             self.fit_model[chn]['idx'] = self.n_pdfs_bkg
             self.n_pdfs_bkg += 1
@@ -361,10 +363,10 @@ class RawYieldFitter:
                     logger(f"Correlated bkg source {self.fit_model[chn]['label']} without 'fix_to' or 'init_to' key", level="WARNING")
 
             if self.minimize_roofit:
-                self.fit_model[chn]['RooDataSet'] = ROOT.RooDataHist(f"dataset_{chn}", f"dataset_{chn}",
-                                                     ROOT.RooArgList(self.roofit_fit_var), self.fit_model[chn]['data'])
-                self.fit_model[chn]['pdf'] = ROOT.RooHistPdf(chn, chn, ROOT.RooArgSet(self.roofit_fit_var), self.fit_model[chn]['RooDataSet'])
-                self.fit_model[chn]['yield'] = ROOT.RooRealVar(f"yield_{chn}", f"yield_{chn}", 5000, 0, 1e7)
+                self.fit_model[chn]['RooDataSet'] = RooDataHist(f"dataset_{chn}", f"dataset_{chn}",
+                                                     RooArgList(self.roofit_fit_var), self.fit_model[chn]['data'])
+                self.fit_model[chn]['pdf'] = RooHistPdf(chn, chn, RooArgSet(self.roofit_fit_var), self.fit_model[chn]['RooDataSet'])
+                self.fit_model[chn]['yield'] = RooRealVar(f"yield_{chn}", f"yield_{chn}", 5000, 0, 1e7)
             else:
                 self.fit_model[chn]['pdf'] = 'hist' if self.data.get_is_binned() else 'kde_grid'
 
@@ -669,7 +671,7 @@ class RawYieldFitter:
                     RooFit.Range(f"mc_fit_{name}"),
                     RooFit.Normalization(
                         self.fit_model[name]['mchist'].sumEntries(),
-                        ROOT.RooAbsReal.NumEvent
+                        RooAbsReal.NumEvent
                     )
                 )
                 canvas = ROOT.TCanvas("mc_prefit_canvas", "MC Prefit Canvas", 800, 600)
@@ -901,17 +903,17 @@ class RawYieldFitter:
 
             # fraction of PDF in that range
             frac = self.fit_model['Comb. bkg']['pdf'].createIntegral(
-                ROOT.RooArgSet(self.roofit_fit_var),
+                RooArgSet(self.roofit_fit_var),
                 RooFit.NormSet(self.roofit_fit_var),
                 RooFit.Range("subrange")
             ).getVal()
             nbkg = self.fit_model['Comb. bkg']['yield'].getVal()  # fitted yield
             bkg_yield = frac * nbkg
             # Define the formula: fraction * yield
-            bkg_in_range = ROOT.RooFormulaVar(
+            bkg_in_range = RooFormulaVar(
                 "bkg_in_range",
                 "@0 * @1",                    # formula: fraction * yield
-                ROOT.RooArgList(
+                RooArgList(
                     RooFit.RooConst(frac),   # frac is constant, no error
                     self.fit_model['Comb. bkg']['yield']  # RooRealVar with fitted error
                 )
@@ -931,7 +933,7 @@ class RawYieldFitter:
         try:
             if self.minimize_roofit:
                 # RooFit binned fit: chi2 from model vs data (createChi2)
-                chi2_obj = self.model.createChi2(self.data, ROOT.RooFit.Range("fit"), ROOT.RooFit.NumCPU(1))
+                chi2_obj = self.model.createChi2(self.data, RooFit.Range("fit"), RooFit.NumCPU(1))
                 chi2_val = float(chi2_obj.getVal())
                 n_bins = self.hist.GetXaxis().FindBin(self.fit_range_max) - self.hist.GetXaxis().FindBin(self.fit_range_min) + 1
                 n_free = int(self.fit_result.floatParsFinal().getSize())
@@ -1099,7 +1101,7 @@ class RawYieldFitter:
                     if self.verbose:
                         logger(f"Fixing fraction of component {comp['label']} to value {frac}", "WARNING")
                     comp['frac'].setConstant(True)
-                comp['yieldRooLinearVar'] = ROOT.RooLinearVar(    # a * X + b = frac * anchor_yield + 0
+                comp['yieldRooLinearVar'] = RooLinearVar(    # a * X + b = frac * anchor_yield + 0
                     f"yield_{name}_lin",
                     f"yield_{name}_lin",
                     self.fit_model[anchor_func]['yield'],         # X  (the anchor yield)
@@ -1112,7 +1114,7 @@ class RawYieldFitter:
 
             if self.verbose:
                 logger(f"Creating extended RooFit PDFs for component: {comp}", "INFO")
-            comp['ext_pdf'] = ROOT.RooExtendPdf(f"ext_{comp['label']}", f"extended_{comp['label']}",
+            comp['ext_pdf'] = RooExtendPdf(f"ext_{comp['label']}", f"extended_{comp['label']}",
                                                 comp['pdf'], comp.get('yieldRooLinearVar', comp['yield']))
 
     def perform_fit_roofit(self):
@@ -1134,11 +1136,11 @@ class RawYieldFitter:
                             logger(f"Fixing parameter {par_name} of last signal pdf to MC prefit value {par_val}", "WARNING")
                         self.fit_model[name][f"par_{par_name}"].setConstant(True)
 
-            self.model = ROOT.RooAddPdf(" + ".join([comp['label'] for comp in self.fit_model.values()]),
+            self.model = RooAddPdf(" + ".join([comp['label'] for comp in self.fit_model.values()]),
                                         " + ".join([comp['label'] for comp in self.fit_model.values()]),
-                                        ROOT.RooArgList([comp['pdf'] for comp in self.fit_model.values()]),
-                                        ROOT.RooArgList([comp.get('yieldRooLinearVar', comp['yield']) for comp in self.fit_model.values()]))
-                                        # ROOT.RooArgList([comp['ext_pdf'] for comp in self.fit_model.values()]))
+                                        RooArgList([comp['pdf'] for comp in self.fit_model.values()]),
+                                        RooArgList([comp.get('yieldRooLinearVar', comp['yield']) for comp in self.fit_model.values()]))
+                                        # RooArgList([comp['ext_pdf'] for comp in self.fit_model.values()]))
             # Check the yield vars of the single components
             if self.verbose:
                 logger("=== Yield variables of the fit components ===", "WARNING")
@@ -1162,9 +1164,9 @@ class RawYieldFitter:
             if n_lost > 0:
                 logger(f"Rebin({self.rebin}): {n_lost} trailing bins dropped "
                 f"({100.*n_lost/n_orig:.2f}%)", "WARNING")
-                self.data = ROOT.RooDataHist(
+                self.data = RooDataHist(
                 "data_rebinned", "data_rebinned",
-                ROOT.RooArgSet(self.roofit_fit_var),
+                RooArgSet(self.roofit_fit_var),
                 h_reb
                 )
         self.fit_result = self.model.fitTo(
@@ -1221,12 +1223,12 @@ class RawYieldFitter:
             if self.verbose:
                 logger(f"Adding Gaussian signal function", "INFO")
             if self.minimize_roofit:
-                mu = ROOT.RooRealVar(f"mu_{label}", f"mean_{label}", init_mass, init_mass - 0.02, init_mass + 0.02)
-                sigma = ROOT.RooRealVar(f"sigma_{label}", f"sigma_{label}", 0.015, 0.005, 0.1)
+                mu = RooRealVar(f"mu_{label}", f"mean_{label}", init_mass, init_mass - 0.02, init_mass + 0.02)
+                sigma = RooRealVar(f"sigma_{label}", f"sigma_{label}", 0.015, 0.005, 0.1)
                 self.fit_model[label]['par_mu'] = mu
                 self.fit_model[label]['par_sigma'] = sigma
-                self.fit_model[label]['pdf'] = ROOT.RooGaussian(label, label, self.roofit_fit_var, mu, sigma)
-                self.fit_model[label]['yield'] = ROOT.RooRealVar(f"yield_{label}", f"yield_{label}", 5000, 0, 1e7)
+                self.fit_model[label]['pdf'] = RooGaussian(label, label, self.roofit_fit_var, mu, sigma)
+                self.fit_model[label]['yield'] = RooRealVar(f"yield_{label}", f"yield_{label}", 5000, 0, 1e7)
             else:
                 self.fit_model[label]['par_mu'] = init_mass
                 self.fit_model[label]['par_sigma'] = 0.015
@@ -1235,20 +1237,20 @@ class RawYieldFitter:
             if self.verbose:
                 logger(f"Adding Double-Sided Asymm CB signal function", "INFO")
             if self.minimize_roofit:
-                mu = ROOT.RooRealVar(f"mu_{label}", f"mean_{label}", init_mass, init_mass - 0.02, init_mass + 0.02)
-                sigma = ROOT.RooRealVar(f"sigma_{label}", f"sigma_{label}", 0.015, 0.005, 0.1)
-                alphaL = ROOT.RooRealVar(f"alphaL_{label}", f"alphaL_{label}", 1.885, 0.5, 5.0)
-                nL = ROOT.RooRealVar(f"nL_{label}", f"nL_{label}", 1.90, 0.5, 10.0)
-                alphaR = ROOT.RooRealVar(f"alphaR_{label}", f"alphaR_{label}", 1.391, 0.5, 5.0)
-                nR = ROOT.RooRealVar(f"nR_{label}", f"nR_{label}", 8.188, 0.5, 20.0)
+                mu = RooRealVar(f"mu_{label}", f"mean_{label}", init_mass, init_mass - 0.02, init_mass + 0.02)
+                sigma = RooRealVar(f"sigma_{label}", f"sigma_{label}", 0.015, 0.005, 0.1)
+                alphaL = RooRealVar(f"alphaL_{label}", f"alphaL_{label}", 1.885, 0.5, 5.0)
+                nL = RooRealVar(f"nL_{label}", f"nL_{label}", 1.90, 0.5, 10.0)
+                alphaR = RooRealVar(f"alphaR_{label}", f"alphaR_{label}", 1.391, 0.5, 5.0)
+                nR = RooRealVar(f"nR_{label}", f"nR_{label}", 8.188, 0.5, 20.0)
                 self.fit_model[label]['par_mu'] = mu
                 self.fit_model[label]['par_sigma'] = sigma
                 self.fit_model[label]['par_alphaL'] = alphaL
                 self.fit_model[label]['par_nL'] = nL
                 self.fit_model[label]['par_alphaR'] = alphaR
                 self.fit_model[label]['par_nR'] = nR
-                self.fit_model[label]['pdf'] = ROOT.RooCrystalBall(label, label, self.roofit_fit_var, mu, sigma, alphaL, nL, alphaR, nR)
-                self.fit_model[label]['yield'] = ROOT.RooRealVar(f"yield_{label}", f"yield_{label}", 5000, 0, 1e7)
+                self.fit_model[label]['pdf'] = RooCrystalBall(label, label, self.roofit_fit_var, mu, sigma, alphaL, nL, alphaR, nR)
+                self.fit_model[label]['yield'] = RooRealVar(f"yield_{label}", f"yield_{label}", 5000, 0, 1e7)
             else:
                 self.fit_model[label]['par_mu'] = init_mass
                 self.fit_model[label]['par_sigma'] = 0.015
@@ -1261,10 +1263,10 @@ class RawYieldFitter:
             if self.verbose:
                 logger(f"Adding Exponential background function", "INFO")
             if self.minimize_roofit:
-                lambd = ROOT.RooRealVar(f"lambda_{label}", f"exponential lambda_{label}", -1.0, -5.0, 0.0)
+                lambd = RooRealVar(f"lambda_{label}", f"exponential lambda_{label}", -1.0, -5.0, 0.0)
                 self.fit_model[label]['par_lambda'] = lambd
-                self.fit_model[label]['pdf'] = ROOT.RooExponential(label, label, self.roofit_fit_var, lambd)
-                self.fit_model[label]['yield'] = ROOT.RooRealVar(f"yield_{label}", f"yield_{label}", 100000, 0, 1e8)
+                self.fit_model[label]['pdf'] = RooExponential(label, label, self.roofit_fit_var, lambd)
+                self.fit_model[label]['yield'] = RooRealVar(f"yield_{label}", f"yield_{label}", 100000, 0, 1e8)
             else:
                 self.fit_model[label]['par_lambda'] = 1.0
                 self.fit_model[label]['pdf'] = "expo"
@@ -1272,12 +1274,12 @@ class RawYieldFitter:
             if self.verbose:
                 logger(f"Adding Chebyshev Polynomial of degree 1 background function", "INFO")
             if self.minimize_roofit:
-                # c0 = ROOT.RooRealVar(f"c0_{label}", f"c0_{label}", 0.0, -1.0, 1.0)
-                c1 = ROOT.RooRealVar(f"c1_{label}", f"c1_{label}", 0.0, -1.0, 1.0)
+                # c0 = RooRealVar(f"c0_{label}", f"c0_{label}", 0.0, -1.0, 1.0)
+                c1 = RooRealVar(f"c1_{label}", f"c1_{label}", 0.0, -1.0, 1.0)
                 # self.fit_model[label]['par_c0'] = c0
                 self.fit_model[label]['par_c1'] = c1
-                self.fit_model[label]['pdf'] = ROOT.RooChebychev(label, label, self.roofit_fit_var, ROOT.RooArgList(c1))
-                self.fit_model[label]['yield'] = ROOT.RooRealVar(f"yield_{label}", f"yield_{label}", 100000, 0, 1e8)
+                self.fit_model[label]['pdf'] = RooChebychev(label, label, self.roofit_fit_var, RooArgList(c1))
+                self.fit_model[label]['yield'] = RooRealVar(f"yield_{label}", f"yield_{label}", 100000, 0, 1e8)
             else:
                 self.fit_model[label]['par_c0'] = 1.0
                 self.fit_model[label]['par_c1'] = 0.0
@@ -1286,14 +1288,14 @@ class RawYieldFitter:
             if self.verbose:
                 logger(f"Adding Chebyshev Polynomial of degree 2 background function", "INFO")
             if self.minimize_roofit:
-                # c0 = ROOT.RooRealVar(f"c0_{label}", f"c0_{label}", 0.0, -1.0, 1.0)
-                c1 = ROOT.RooRealVar(f"c1_{label}", f"c1_{label}", 0.0, -1.0, 1.0)
-                c2 = ROOT.RooRealVar(f"c2_{label}", f"c2_{label}", 0.0, -1.0, 1.0)
+                # c0 = RooRealVar(f"c0_{label}", f"c0_{label}", 0.0, -1.0, 1.0)
+                c1 = RooRealVar(f"c1_{label}", f"c1_{label}", 0.0, -1.0, 1.0)
+                c2 = RooRealVar(f"c2_{label}", f"c2_{label}", 0.0, -1.0, 1.0)
                 # self.fit_model[label]['par_c0'] = c0
                 self.fit_model[label]['par_c1'] = c1
                 self.fit_model[label]['par_c2'] = c2
-                self.fit_model[label]['pdf'] = ROOT.RooChebychev(label, label, self.roofit_fit_var, ROOT.RooArgList(c1, c2))
-                self.fit_model[label]['yield'] = ROOT.RooRealVar(f"yield_{label}", f"yield_{label}", 100000, 0, 1e8)
+                self.fit_model[label]['pdf'] = RooChebychev(label, label, self.roofit_fit_var, RooArgList(c1, c2))
+                self.fit_model[label]['yield'] = RooRealVar(f"yield_{label}", f"yield_{label}", 100000, 0, 1e8)
             else:
                 self.fit_model[label]['par_c0'] = 1.0
                 self.fit_model[label]['par_c1'] = 0.0
@@ -1303,14 +1305,14 @@ class RawYieldFitter:
             if self.verbose:
                 logger(f"Adding Chebyshev Polynomial of degree 3 background function", "INFO")
             if self.minimize_roofit:
-                c1 = ROOT.RooRealVar(f"c1_{label}", f"c1_{label}", 0.0, -1.0, 1.0)
-                c2 = ROOT.RooRealVar(f"c2_{label}", f"c2_{label}", 0.0, -1.0, 1.0)
-                c3 = ROOT.RooRealVar(f"c3_{label}", f"c3_{label}", 0.0, -1.0, 1.0)
+                c1 = RooRealVar(f"c1_{label}", f"c1_{label}", 0.0, -1.0, 1.0)
+                c2 = RooRealVar(f"c2_{label}", f"c2_{label}", 0.0, -1.0, 1.0)
+                c3 = RooRealVar(f"c3_{label}", f"c3_{label}", 0.0, -1.0, 1.0)
                 self.fit_model[label]['par_c1'] = c1
                 self.fit_model[label]['par_c2'] = c2
                 self.fit_model[label]['par_c3'] = c3
-                self.fit_model[label]['pdf'] = ROOT.RooChebychev(label, label, self.roofit_fit_var, ROOT.RooArgList(c1, c2, c3))
-                self.fit_model[label]['yield'] = ROOT.RooRealVar(f"yield_{label}", f"yield_{label}", 100000, 0, 1e8)
+                self.fit_model[label]['pdf'] = RooChebychev(label, label, self.roofit_fit_var, RooArgList(c1, c2, c3))
+                self.fit_model[label]['yield'] = RooRealVar(f"yield_{label}", f"yield_{label}", 100000, 0, 1e8)
             else:
                 raise RuntimeError("kPol3 is only supported with minimizer='RooFit'")
         else:
