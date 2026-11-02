@@ -1,0 +1,54 @@
+out_dir: '/home/mdicosta/alice/hf-vn/resolution/reso_2023_evsels'
+project: False
+suffix: '2023'
+
+ax_evsels:
+    noSameBunchPileup: [5]     # noSameBunchPileup
+    occupancy: [6]             # occupancy
+    timerangenarrow: [7]       # timerangenarrow
+    timerangestandard: [8]     # timerangestandard
+    rofstandard: [9]           # rofstandard
+    all: [5, 6, 7, 8, 9]
+    nosel: []
+
+occ_classes: [ 
+               [0, 9999999999],
+            ]
+
+cent_classes: [ 
+               [0, 10],
+               [10, 20],
+               [20, 30],
+               [30, 40],
+               [40, 50],
+               [50, 60],
+               [60, 70],
+               [70, 80],
+            ]
+
+reso_files: [
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_545171_after300.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_545171_first300.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_544640.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_0.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_1.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_2.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_3.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_4.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_5.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_6.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_7.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_8.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_9.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_10.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_11.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_12.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_13.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_14.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_15.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_16.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_17.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_18.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_19.root,
+  /data/mdicosta/DplusFlow/Resolution/2023/MERGED_20.root,
+]

@@ -140,6 +140,26 @@ def SetGlobalStyle(**kwargs):
 
     gROOT.ForceStyle()
 
+# TODO: move this to the StyleFormatter
+def SetFrameStyle(hFrame, xtitle, ytitle, ytitleoffset, ytitlesize, ylabelsize,
+                  ylabeloffset, xticklength, yticklength, xtitlesize, xlabelsize,
+                  xtitleoffset, xlabeloffset, ydivisions, xmoreloglabels, ycentertitle, ymaxdigits):
+    hFrame.GetXaxis().SetTitle(xtitle)
+    hFrame.GetYaxis().SetTitle(ytitle)
+    hFrame.GetYaxis().SetTitleOffset(ytitleoffset)
+    hFrame.GetYaxis().SetTitleSize(ytitlesize)
+    hFrame.GetYaxis().SetLabelSize(ylabelsize)
+    hFrame.GetYaxis().SetLabelOffset(ylabeloffset)
+    hFrame.GetXaxis().SetTickLength(xticklength)
+    hFrame.GetYaxis().SetTickLength(yticklength)
+    hFrame.GetXaxis().SetTitleSize(xtitlesize)
+    hFrame.GetXaxis().SetLabelSize(xlabelsize)
+    hFrame.GetXaxis().SetTitleOffset(xtitleoffset)
+    hFrame.GetXaxis().SetLabelOffset(xlabeloffset)
+    hFrame.GetYaxis().SetNdivisions(ydivisions)
+    hFrame.GetXaxis().SetMoreLogLabels(xmoreloglabels)
+    hFrame.GetYaxis().CenterTitle(ycentertitle)
+    hFrame.GetYaxis().SetMaxDigits(ymaxdigits)
 
 def SetObjectStyle(obj, **kwargs):
     '''

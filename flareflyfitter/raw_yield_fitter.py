@@ -741,6 +741,7 @@ class RawYieldFitter:
             self.data.plotOn(
                 frame,
                 RooFit.Range("fit"),
+                RooFit.Binning(int(1000 * (self.fit_range_max - self.fit_range_min) / self.rebin)),
                 RooFit.MarkerStyle(ROOT.kFullCircle),
                 RooFit.MarkerSize(0.8),
                 RooFit.LineColor(ROOT.kBlack),
@@ -787,7 +788,7 @@ class RawYieldFitter:
                 legend_dummies.append(dummy)  # keep reference
 
             # --- Total fit curve ---
-            total_curve = self.model.plotOn(
+            self.datatotal_curve = self.model.plotOn(
                 frame,
                 RooFit.Range("fit"),
                 RooFit.LineColor(ROOT.kAzure + 4),
@@ -850,13 +851,15 @@ class RawYieldFitter:
             if self.verbose:
                 logger(f"Plot saved to {path}", "INFO")
 
-    def plot_raw_residuals(self):
+    def plot_raw_residuals(self, path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         fig_res = self.fitter.plot_raw_residuals(style="ATLAS",
                                                  figsize=(8, 8),
                                                  axis_title=self.x_axis_label)
         return fig_res
 
-    def plot_std_residuals(self):
+    def plot_std_residuals(self, path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         fig_pulls = self.fitter.plot_std_residuals(style="ATLAS",
                                                    figsize=(8, 8),
                                                    axis_title=self.x_axis_label)
