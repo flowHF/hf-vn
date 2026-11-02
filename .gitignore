@@ -2,7 +2,7 @@
 **/.vscode/
 **/config/
 **/__pycache__/
-**/resolution/reso*
+**/resolution_deprecated/reso*
 ptweights/weights/
 mltraining/models/
 
@@ -13,7 +13,6 @@ test*
 # compilation files to ignore
 *.so
 *.pcm
-*_dict.cxx
 *.d
 *tmp*
 *.h
@@ -21,8 +20,22 @@ test*
 *.out
 *.in
 *ACLIC*
+*_dict.*
+*_dictUmbrella.*
+*_dictContent.*
 
 # jupyter notebook
 *.ipynb
 
-**/debug_reso*/
+# resolution
+resolution/reso*
+
+# images
+*.pdf
+
+# machine learning
+*.onnx
+*.parquet.gzip
+*.pickle
+*.model
+*.pkl
