@@ -108,12 +108,14 @@ def _config_ranges(edges, count, what):
 
 
 def with_name(label, name):
-    """Display a label and directory name when they differ."""
+    """Add directory context, except internal associated-pT identifiers."""
+    if re.fullmatch(r"pt_assoc_\d+", name):
+        return "" if label == name else label
     return label if label == name else f"{label}   [{name}]"
 
 
 def pt_labels(fin, names, edges, context):
-    """Labels from ROOT metadata, configured edges, or directory names."""
+    """Associated-pT intervals from metadata or config; omit unknown ranges."""
     from_config = _config_ranges(edges, len(names), f"{context}: pt_assoc_bins")
     labels = []
     missing = False
@@ -125,7 +127,7 @@ def pt_labels(fin, names, edges, context):
 
         if limits is None:
             missing = True
-            labels.append(name)
+            labels.append("")
             continue
         lo, hi = limits
         labels.append(f"{lo:g} < #it{{p}}_{{T}}^{{assoc}} < {hi:g} {PT_UNIT}")
@@ -133,7 +135,7 @@ def pt_labels(fin, names, edges, context):
     if missing:
         _warn_once(
             f"{context}: associated-pT ranges unavailable in ROOT and config; "
-            "using directory names for those bins"
+            "omitting labels for those bins"
         )
     return labels
 
@@ -144,6 +146,10 @@ def mass_labels(fin, pt_name, mass_names, edges, context):
     labels, missing = [], False
     for j, name in enumerate(mass_names):
         directory = fin.GetDirectory(f"{pt_name}/{name}")
+        selection = directory.Get("correlation_selection") if directory else None
+        if selection:
+            labels.append(selection.GetTitle())
+            continue
         limits = read_range(directory, MASS_RANGE_OBJECTS) if directory else None
 
         if limits is None and from_config:
@@ -217,17 +223,41 @@ def _make_style(palette_alpha):
 @contextmanager
 
 
-def pdf_rendering(palette_alpha=DEFAULT_PALETTE_ALPHA):
-    """Batch mode + private style, restoring the global state afterwards."""
-    previous_style = ROOT.gStyle
+def _batch_rendering():
+    """Restore the actual TStyle object, not PyROOT's live gStyle proxy."""
+    previous_style = ROOT.gROOT.GetStyle(ROOT.gStyle.GetName())
     was_batch = ROOT.gROOT.IsBatch()
-    ROOT.gROOT.SetBatch(True)
-    _make_style(float(palette_alpha)).cd()
     try:
+        ROOT.gROOT.SetBatch(True)
         yield
     finally:
         previous_style.cd()
         ROOT.gROOT.SetBatch(was_batch)
+
+
+@contextmanager
+def pdf_rendering(palette_alpha=DEFAULT_PALETTE_ALPHA):
+    """Batch mode + private style, restoring the global state afterwards."""
+    with _batch_rendering():
+        _make_style(float(palette_alpha)).cd()
+        yield
+
+
+@lru_cache(maxsize=1)
+def _make_mass_fit_style():
+    """Private Modern defaults, independent of the caller's plotting style."""
+    style = ROOT.TStyle("pipelineMassFitStyle", "2PC mass-fit style")
+    style.Reset("Modern")
+    style.SetEndErrorSize(0)
+    return style
+
+
+@contextmanager
+def mass_fit_rendering():
+    """Use one mass-fit style in both the main process and fit workers."""
+    with _batch_rendering():
+        _make_mass_fit_style().cd()
+        yield
 
 
 def draw_pad_label(pad, text):
@@ -320,7 +350,8 @@ def save_mass_fit_qa(fitter, output_path):
     """Delegate the invariant-mass fit QA plot to RawYieldFitter."""
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    fitter.plot_fit(logy=False, path=str(output_path), show_extra_info=False)
+    with mass_fit_rendering():
+        fitter.plot_fit(logy=False, path=str(output_path), show_extra_info=False)
 
 
 def _draw_summary_hist(pad, hist, y_title):
@@ -353,7 +384,7 @@ def save_summary_pdf(root_file, pdf_path):
             opener.Close()
         for ipt, pt_name in enumerate(pt_names):
             pt_dir = fin.GetDirectory(pt_name)
-            canvas = ROOT.TCanvas(f"cDeltaPhiSummary_{ipt}", pt_name, 900, 1000)
+            canvas = ROOT.TCanvas(f"cDeltaPhiSummary_{ipt}", "Delta-phi summary", 900, 1000)
             canvas.Divide(1, 3)
             keep = [
                 _draw_summary_hist(
@@ -539,8 +570,8 @@ def _read_fit_status(in_mass):
     return int(match.group(1)) if match else None
 
 
-def _draw_fit(pad, in_mass, config, mass_label, context):
-    """Draw data, total fit, baseline and harmonics for one mass bin."""
+def _draw_fit(pad, in_mass, config, mass_label, context, y_title="C(#Delta#varphi)"):
+    """Draw data, total fit, baseline and harmonics for one Fourier fit."""
     hist = in_mass.Get("hDeltaPhi")
     func = in_mass.Get("fFourier")
     baseline = in_mass.Get("fBaseline")
@@ -559,12 +590,13 @@ def _draw_fit(pad, in_mass, config, mass_label, context):
     ymin = min(c - e for c, e in points)
     ymax = max(c + e for c, e in points)
     span = (ymax - ymin) or abs(ymax) or 1.0
+    hist.UseCurrentStyle()
     hist.SetStats(False)
     hist.SetTitle("")
     hist.SetMinimum(ymin - 0.15 * span)
     hist.SetMaximum(ymax + 0.50 * span)
     hist.GetXaxis().SetTitle("#Delta#varphi (rad)")
-    hist.GetYaxis().SetTitle("C(#Delta#varphi)")
+    hist.GetYaxis().SetTitle(y_title)
     hist.GetYaxis().SetTitleOffset(1.8)
     hist.GetXaxis().SetTitleOffset(1.1)
     hist.SetMarkerStyle(20)
@@ -620,6 +652,7 @@ def _draw_fit(pad, in_mass, config, mass_label, context):
     x = pad.GetLeftMargin() + 0.04
     y = 1.0 - pad.GetTopMargin() - 0.03
     displayed = in_mass.Get("hLMCorrectionParameters") if has_lm else hpars
+    cms_parameters = in_mass.Get("hCMSCorrectionParameters")
     flow_values = []
 
     if has_lm:
@@ -628,11 +661,13 @@ def _draw_fit(pad, in_mass, config, mass_label, context):
 
             if name.startswith("V") and name.endswith("DeltaFlow") and name != "V1DeltaFlow":
                 flow_values.append((name[1:-9], displayed.GetBinContent(ibin), displayed.GetBinError(ibin)))
+    elif cms_parameters:
+        flow_values = list(_read_v_values(cms_parameters))
     else:
         flow_values = list(_read_v_values(hpars))
     for harmonic, value, error in flow_values:
         text.DrawLatexNDC(
-            x, y, f"#it{{V}}_{{{harmonic}#Delta}} = {value:.4f} #pm {error:.4f}"
+            x, y, f"#it{{V}}_{{{harmonic}#Delta}}{'^{CMS}' if cms_parameters else ''} = {value:.4f} #pm {error:.4f}"
         )
         y -= 0.055
     text.DrawLatexNDC(
@@ -659,8 +694,8 @@ def _draw_fit(pad, in_mass, config, mass_label, context):
     return keep
 
 
-def _fit_cell(in_mass, config, mass_label, context):
-    return lambda pad: _draw_fit(pad, in_mass, config, mass_label, context)
+def _fit_cell(in_mass, config, mass_label, context, y_title="C(#Delta#varphi)"):
+    return lambda pad: _draw_fit(pad, in_mass, config, mass_label, context, y_title)
 
 
 def _legend_cell(config, has_lm=False):
@@ -698,7 +733,7 @@ def _legend_cell(config, has_lm=False):
         legend.SetBorderSize(0)
         legend.SetFillStyle(0)
         legend.SetTextFont(42)
-        legend.SetTextSize(min(0.065, 0.35 / len(entries)))
+        legend.SetTextSize(min(0.05, 0.35 / len(entries)))
         for graph, label, option in entries:
             legend.AddEntry(graph, label, option)
         legend.Draw()
@@ -746,7 +781,8 @@ def _save_fit_pdf(fourier_file, pdf_path, config, pt_cand_bins=None):
             has_lm = any(bool(fin.GetDirectory(f"{pt}/{mass_name}").Get("fLMTemplate")) for mass_name in mass_names[pt])
             cells.append(_legend_cell(config, has_lm=has_lm))
             heading = _candidate_pt_label(name, pt_cand_bins) if pt_cand_bins is not None else stem
-            pages.append(([f"{heading}   |   {with_name(pt_label, pt)}"], cells))
+            header = "   |   ".join(part for part in (heading, pt_label) if part)
+            pages.append(([header], cells))
         write_pdf_pages(pdf_path, pages)
     finally:
         fin.Close()

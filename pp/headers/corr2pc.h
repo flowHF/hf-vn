@@ -46,7 +46,7 @@ namespace corr2pc {
 struct Settings {
   // Axis indices in the preprocessed SE and ME sparse histograms.
   int poolAxis = 0;
-  int massAxis = 1;
+  int massAxis = 1; // -1 selects one inclusive hh map without a mass axis.
   int etaAxis = 2;
   int phiAxis = 3;
 
@@ -68,7 +68,9 @@ inline void validateAxis(const THnSparseD* h, int axis, const std::string& name)
 
 inline void validateSettings(const THnSparseD* h, const Settings& setting) {
   validateAxis(h, setting.poolAxis, "poolAxis");
-  validateAxis(h, setting.massAxis, "massAxis");
+  if (setting.massAxis != -1) {
+    validateAxis(h, setting.massAxis, "massAxis");
+  }
   validateAxis(h, setting.etaAxis, "etaAxis");
   validateAxis(h, setting.phiAxis, "phiAxis");
 
@@ -84,6 +86,9 @@ inline void validateSettings(const THnSparseD* h, const Settings& setting) {
     throw std::runtime_error("normEpsilon must be finite and > 0");
   }
 
+  if (setting.massAxis == -1) {
+    return;
+  }
   if (setting.massBins.size() < 2) {
     throw std::runtime_error("At least two correlation.mass_bins edges are required");
   }
@@ -265,15 +270,24 @@ inline int processFile(const std::string& inputFilename, const std::string& outp
     const int nPools = se->GetAxis(setting.poolAxis)->GetNbins();
     const int nEta = se->GetAxis(setting.etaAxis)->GetNbins();
     const int nPhi = se->GetAxis(setting.phiAxis)->GetNbins();
-    const int nMassOut = static_cast<int>(setting.massBins.size()) - 1;
+    const bool hasMass = setting.massAxis != -1;
+    const int nMassOut = hasMass ? static_cast<int>(setting.massBins.size()) - 1 : 1;
     const int nCorrBins = nEta * nPhi;
 
     if (me->GetAxis(setting.poolAxis)->GetNbins() != nPools || me->GetAxis(setting.etaAxis)->GetNbins() != nEta ||
         me->GetAxis(setting.phiAxis)->GetNbins() != nPhi) {
-      throw std::runtime_error("SE/ME pool or correlation-axis binning mismatch");
+      throw std::runtime_error("SE/ME pool or correlation-axis binning mismatch in " +
+          inputFilename + " (" + ptDirName + "): SE/ME bin counts: pool=" +
+          std::to_string(nPools) + "/" + std::to_string(me->GetAxis(setting.poolAxis)->GetNbins()) +
+          ", delta_eta=" + std::to_string(nEta) + "/" +
+          std::to_string(me->GetAxis(setting.etaAxis)->GetNbins()) +
+          ", delta_phi=" + std::to_string(nPhi) + "/" +
+          std::to_string(me->GetAxis(setting.phiAxis)->GetNbins()) +
+          ". Regenerate SE and ME with matching pool and correlation axes.");
     }
 
-    const auto massMap = buildMassMap(se->GetAxis(setting.massAxis), setting.massBins);
+    const auto massMap = hasMass ? buildMassMap(se->GetAxis(setting.massAxis), setting.massBins)
+                                 : std::vector<int>{-1, 0};
 
     // Accumulate ME as [pool][eta, phi], integrating over mass and any other axes.
     // The integration over the mass is valid under the assumption that the ME is mass-independent.
@@ -373,7 +387,7 @@ inline int processFile(const std::string& inputFilename, const std::string& outp
     for (Long64_t ibin = 0; ibin < se->GetNbins(); ++ibin) {
       const double valSE = se->GetBinContent(ibin, coordSE.data());
       const int pool = coordSE[setting.poolAxis];
-      const int sourceMass = coordSE[setting.massAxis];
+      const int sourceMass = hasMass ? coordSE[setting.massAxis] : 1;
       const int iEta = coordSE[setting.etaAxis];
       const int iPhi = coordSE[setting.phiAxis];
 
@@ -458,10 +472,14 @@ inline int processFile(const std::string& inputFilename, const std::string& outp
       hME->Write("hME", TObject::kOverwrite);
       hCorr->Write("hCorr", TObject::kOverwrite);
 
-      const std::string range = "[" + std::to_string(setting.massBins[iMass]) + ", " +
-          std::to_string(setting.massBins[iMass + 1]) + ")";
-
-      TNamed massRange("mass_range", range.c_str());
+      if (hasMass) {
+        const std::string range = "[" + std::to_string(setting.massBins[iMass]) + ", " +
+            std::to_string(setting.massBins[iMass + 1]) + ")";
+        TNamed massRange("mass_range", range.c_str());
+      } else {
+        TNamed selection("correlation_selection", "Inclusive hh");
+        selection.Write("correlation_selection", TObject::kOverwrite);
+      }
 
       ++nMapsWritten;
     }

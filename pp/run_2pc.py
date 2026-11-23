@@ -68,7 +68,7 @@ def main():
     do_preprocess = bool(
         operations.get("dopreprocess", False)
     )
-    do_corrections = bool(
+    do_correlations = bool(
         operations.get("docorrelations", False)
     )
     do_deltaphi = bool(
@@ -90,7 +90,7 @@ def main():
     print("=" * 70)
     print(f"Config        : {config_file}")
     print(f"Preprocess    : {do_preprocess}")
-    print(f"Correlations  : {do_corrections}")
+    print(f"Correlations  : {do_correlations}")
     print(f"deltaphi vs mass    : {do_deltaphi}")
     print(f"Fourier       : {do_fourier}")
     print(f"Simultaneous Fit: {do_simfit}")
@@ -114,7 +114,7 @@ def main():
     # Step 2: correlations
     # ------------------------------------------------------------------
 
-    if do_corrections:
+    if do_correlations:
         run_correlations(cfg)
     else:
         print()

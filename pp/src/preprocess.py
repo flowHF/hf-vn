@@ -153,6 +153,22 @@ def read_config(path):
     cfg["output_dir"] = str(output_dir.resolve())
     axes = cfg["axes"]
     keep = cfg.setdefault("keep_axes", list(DEFAULT_KEEP))
+    is_hh = str(cfg.get("Dmeson", "")).lower() == "hh"
+    if is_hh:
+        # Hadron pairs have no invariant-mass or classifier axes.
+        skipped = {"mass", "bdt", "bdt_background", "bdt_prompt"}
+        skipped.update(name for name in axes if name.startswith("bdt_"))
+        skipped_indices = {axes[name] for name in skipped if axes.get(name) is not None}
+        if isinstance(keep, list):
+            keep = cfg["keep_axes"] = [name for name in keep if name not in skipped]
+        if isinstance(cfg.get("rebin"), dict):
+            cfg["rebin"] = {name: factor for name, factor in cfg["rebin"].items() if name not in skipped}
+        cfg["cuts"] = [
+            cut for cut in cfg.get("cuts", [])
+            if cut["axis"] not in skipped and cut["axis"] not in skipped_indices
+        ]
+        cfg["axes"] = axes = {name: index for name, index in axes.items() if name not in skipped}
+        cfg["inputs"]["SE"].pop("hsparsemass", None)
     if (
         not isinstance(keep, list)
         or not keep
@@ -538,13 +554,6 @@ def run_preprocess(config_path, jobs=None):
         if d_out.exists():
             shutil.rmtree(d_out)
         d_out.mkdir(parents=True, exist_ok=True)
-    import ROOT
-
-    ROOT.gROOT.SetBatch(True)
-    source = Path(__file__).resolve().with_name("split_sparse.cxx")
-    # Compile once here, before any worker exists, so that workers only load it.
-    if not ROOT.gSystem.CompileMacro(str(source), "kO"):
-        raise RuntimeError(f"Cannot compile {source}")
     axes, bins = cfg["axes"], cfg["bins"]
     serialized = yaml.safe_dump(cfg, sort_keys=False)
     (out / "config.yaml").write_text(serialized)

@@ -63,7 +63,7 @@ def _make_settings(cfg, mass_bins, axes, DEFAULT_NORM_EPSILON=1e-6):
     corr_ns = _load_corr2pc()
     corr_cfg = cfg.get("correlation", {})
     settings = corr_ns.Settings()
-    settings.mixingAxis = axes["pool"]
+    settings.poolAxis = axes["pool"]
     settings.massAxis = axes["mass"]
     settings.etaAxis = axes["delta_eta"]
     settings.phiAxis = axes["delta_phi"]
@@ -88,7 +88,7 @@ class FourierConfig:
     pt_trigger_bins: tuple | None = None
 
 
-def _read_config(cfg, *, harmonics=(2, 3)):
+def _read_config(cfg, *, harmonics=(2, 3), mass_summary=True):
     """Read and validate the configuration once, up front."""
     fcfg = cfg.get("fourier", {})
     # Δη ranges
@@ -134,7 +134,7 @@ def _read_config(cfg, *, harmonics=(2, 3)):
     # Mass bins
     mass_bins = cfg.get("correlation", {}).get("mass_bins")
 
-    if mass_bins is None or len(mass_bins) < 2:
+    if mass_summary and (mass_bins is None or len(mass_bins) < 2):
         raise RuntimeError(
             "correlation.mass_bins must contain at least two edges "
             "to build the Fourier-vs-mass summary histograms"
@@ -173,7 +173,7 @@ def _read_config(cfg, *, harmonics=(2, 3)):
         eta_ranges=tuple(eta_ranges),
         harmonics=harmonics,
         fit_range=fit_range,
-        mass_bins=tuple(float(x) for x in mass_bins),
+        mass_bins=tuple(float(x) for x in (mass_bins or ())),
         baseline_limits=amplitude_limits("baseline_limits"),
         lm_scale_limits=amplitude_limits("lm_scale_limits"),
         save_pdf=save_pdf,
